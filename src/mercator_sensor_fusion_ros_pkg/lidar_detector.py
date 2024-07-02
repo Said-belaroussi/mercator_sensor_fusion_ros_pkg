@@ -6,9 +6,12 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import PoseArray
 from geometry_msgs.msg import Pose
+from std_msgs.msg import Header
 import math
 import numpy as np
+from scipy.spatial import KDTree
 from sklearn.cluster import DBSCAN
+from visualization_msgs.msg import Marker
 import threading
 
 def polar_to_cartesian(range_data, angle_min, angle_increment):
@@ -81,6 +84,7 @@ class LidarDetectorNode:
         self.oak_sub = rospy.Subscriber('oak', Detection2DArray, self.oak_callback)
         self.scan_sub = rospy.Subscriber('scan', LaserScan, self.scan_callback)
 
+
         if self.detection_method == "fully_assisted_detection":
             # Fully assisted detection requires the position from the camera in the LiDAR frame of the object
             self.camera_sub = rospy.Subscriber(self.camera_poses_topic, PoseArray, self.camera_callback)
@@ -90,6 +94,8 @@ class LidarDetectorNode:
 
         if self.visualize:
             self.marker_pub = rospy.Publisher('detected_robots', Marker, queue_size=10)
+
+        self.run()
 
     def visualize_detected_robot(self, positions):
         marker = Marker()
@@ -407,4 +413,4 @@ if __name__ == '__main__':
         object_depth_finder = LidarDetectorNode()
         object_depth_finder.run()
     except rospy.ROSInterruptException:
-        pass
+        print("Process LidarDetectorNode interrupted")

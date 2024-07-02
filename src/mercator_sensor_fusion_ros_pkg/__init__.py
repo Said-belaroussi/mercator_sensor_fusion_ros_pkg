@@ -1,1 +1,2 @@
-from ros_python_pkg.base_node import BaseNode
+from mercator_sensor_fusion_ros_pkg.base_node import BaseNode
+from mercator_sensor_fusion_ros_pkg.lidar_detector import LidarDetectorNode

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 
 # EDIT: name of package
-project(ros_python_pkg)
+project(mercator_sensor_fusion_ros_pkg)
 
 # EDIT: list all <build_depend> and <depend> package dependencies
 find_package(catkin REQUIRED COMPONENTS
