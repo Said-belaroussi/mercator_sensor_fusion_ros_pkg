@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+from ros_python_pkg.examples import ExamplePublisher
+from ros_python_pkg.util import config_utils
+
+
+if __name__ == '__main__':
+    ros_args, user_args = config_utils.parse_args()
+
+    # debug(ros_args, user_args)
+
+    node = ExamplePublisher()
+
