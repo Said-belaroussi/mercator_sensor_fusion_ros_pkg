@@ -1,2 +1,3 @@
 from mercator_sensor_fusion_ros_pkg.base_node import BaseNode
 from mercator_sensor_fusion_ros_pkg.lidar_detector import LidarDetectorNode
+from mercator_sensor_fusion_ros_pkg.calibration_cam_lidar import CalibrationCamLidar
