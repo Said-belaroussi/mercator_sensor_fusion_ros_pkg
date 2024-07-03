@@ -5,7 +5,7 @@ from geometry_msgs.msg import PoseArray
 from threading import Lock
 from time import time
 
-class CalibrationCamLidar:
+class CalibrationCamLidarNode:
     def __init__(self):
         rospy.init_node('calibration_cam_lidar_node')
 
@@ -103,7 +103,7 @@ class CalibrationCamLidar:
 
 
 if __name__ == '__main__':
-    collector = CalibrationCamLidar()
+    collector = CalibrationCamLidarNode()
     rospy.sleep(collector.collect_time + 0.5)  # Ensure all data is collected
     collector.compute_calibration_matrices()
     rospy.spin()  # Keep node running if not all topics are unregistered

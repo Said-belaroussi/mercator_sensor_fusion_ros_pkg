@@ -146,6 +146,8 @@ class PoseFusionNode:
         self.last_id = 0
         self.kalman_filters = dict()
 
+        self.run()
+
     def generate_new_id(self):
         self.last_id += 1
         return self.last_id
@@ -490,6 +492,9 @@ class PoseFusionNode:
             fused_poses.poses.append(pose_msg)
 
         self.fused_pub.publish(fused_poses)
+
+    def run(self):
+        rospy.spin()
 
 
 if __name__ == '__main__':
