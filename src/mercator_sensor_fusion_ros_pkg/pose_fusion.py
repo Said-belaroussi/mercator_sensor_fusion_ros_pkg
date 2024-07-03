@@ -131,11 +131,11 @@ class PoseFusionNode:
         self.frequency = rospy.get_param('~frequency', 25.0)
         self.initial_sensors_variances = rospy.get_param('~initial_sensors_variances', [0.0256, 0.0196])
         self.robot_average_radius = rospy.get_param('~robot_average_radius', 0.15) # in meters
-        self.divergence_only_lidar_threshold = robot_average_radius*2
+        self.divergence_only_lidar_threshold = self.robot_average_radius*2
         self.initial_velocity = rospy.get_param('~initial_velocity', 0.0)
         self.initial_position = rospy.get_param('~initial_position', 0.0)
 
-        if sensors_number != len(sensors_topics):
+        if self.sensors_number != len(self.sensors_topics):
             raise ValueError("The number of sensors topics should be equal to the number of sensors")
 
         self.lidar_scan_sub = rospy.Subscriber('scan', LaserScan, self.lidar_scan_callback)
@@ -247,12 +247,12 @@ class PoseFusionNode:
             cam_absolute_error = self.cam_absolute_error(measurements[0], measurements[1])
             cam_variance = cam_absolute_error**2
             covariance_noise_matrix = np.array([[cam_variance, 0],
-                                                [0, cam_variance])
+                                                [0, cam_variance]])
         elif sensors_topics[0] == 'lidar_poses':
             lidar_absolute_error = self.lidar_absolute_error(measurements[0], measurements[1])
             lidar_variance = lidar_absolute_error**2
             covariance_noise_matrix = np.array([[lidar_variance, 0],
-                                                [0, lidar_variance])
+                                                [0, lidar_variance]])
         else:
             raise ValueError("The sensor topic is not recognized")
 
@@ -321,7 +321,9 @@ class PoseFusionNode:
 
         if (self.keep_tracking_with_only_lidar):
             self.non_matched_kf_ids = [key for key in self.kalman_filters.keys() if key not in corresponding_kf_ids]
-            for key in non_matched_kf_ids:
+            for key in self.non_matched_kf_ids:
+                # TODO
+                pass
         for i in range(len(poses_xy)):
             if i not in cam_indices:
                 new_id = self.generate_new_id()

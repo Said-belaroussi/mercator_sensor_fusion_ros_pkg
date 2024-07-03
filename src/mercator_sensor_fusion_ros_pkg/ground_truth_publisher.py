@@ -7,7 +7,7 @@ import numpy as np
 from tf2_msgs.msg import TFMessage
 
 class GroundTruthPublisherNode:
-    def __init__(self, robot_names, reference_robot_name):
+    def __init__(self, robot_names=["base_link_38"], reference_robot_name='base_link_0'):
         rospy.init_node('ground_truth_publisher_node')
 
         # Get list of robot names and reference robot name from parameter server
