@@ -6,9 +6,9 @@ from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 from math import sin, cos, atan2
 
-class MessageRepublisher:
+class OdometryCorrectorNode:
     def __init__(self):
-        rospy.init_node('message_republisher', anonymous=True)
+        rospy.init_node('odometry_corrector_node', anonymous=True)
         self.imu_subscriber = rospy.Subscriber('rvr/imu', Imu, self.imu_callback)
         self.imu_publisher = rospy.Publisher('imu', Imu, queue_size=10)
         self.odom_subscriber = rospy.Subscriber('/rvr/odom', Odometry, self.odom_callback)
@@ -20,6 +20,8 @@ class MessageRepublisher:
         self.initial_y = None
 
         self.last_orientation = None
+
+        self.run()
 
     def imu_callback(self, imu_msg):
         # Modify the frame_id field to "base_link"
@@ -75,13 +77,12 @@ class MessageRepublisher:
                 # self.odom_imu_mixed_publisher.publish(odom_msg)
 
 
-
     def run(self):
         rospy.spin()
 
 if __name__ == '__main__':
     try:
-        message_republisher = MessageRepublisher()
+        message_republisher = OdometryCorrectorNode()
         message_republisher.run()
     except rospy.ROSInterruptException:
         pass
