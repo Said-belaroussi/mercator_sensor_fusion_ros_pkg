@@ -151,7 +151,10 @@ class LidarDetectorNode:
         elif self.detection_method == "fully_assisted_detection":
             return self.fully_assisted_detection(data)
         else:
-            raise ValueError("Invalid detection method")
+            rospy.loginfo("deeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+            rospy.loginfo(self.detection_method)
+            # raise ValueError("Invalid detection method")
+            return None
         
     def fully_assisted_detection(self, data):
 
@@ -390,15 +393,17 @@ class LidarDetectorNode:
             self.last_detections = data
 
     def scan_callback(self, data):
-        if self.last_detections is None:
-            rospy.logwarn("No detections received yet.")
-            return
 
         positions = self.detect_robots(data)
-        self.publish_positions(positions)
 
-        if self.visualize:
-            self.visualize_detected_robot(positions)
+        if positions is not None:
+            self.publish_positions(positions)
+
+            if self.visualize:
+                self.visualize_detected_robot(positions)
+        else:
+            rospy.loginfo("Error: positions were not calculated")
+
 
     def camera_callback(self, data):
         # Store the last camera poses
