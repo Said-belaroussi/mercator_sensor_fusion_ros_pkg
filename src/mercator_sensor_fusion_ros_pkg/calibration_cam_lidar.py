@@ -15,6 +15,13 @@ class CalibrationCamLidarNode:
             "lidar_poses": [],
             "ground_truth_poses": []
         }
+
+        self.last_data = {
+            "cam_poses": None,
+            "lidar_poses": None,
+            "ground_truth_poses": None
+        }
+
         self.locks = {
             "cam_poses": Lock(),
             "lidar_poses": Lock(),
@@ -29,7 +36,7 @@ class CalibrationCamLidarNode:
         }
 
         # Timing for 5 seconds collection
-        self.collect_time = 5  # seconds
+        self.collect_time = rospy.get_param("~collect_time", 5.0)
         self.start_time = time()
 
         self.run()
@@ -39,7 +46,14 @@ class CalibrationCamLidarNode:
         current_time = time()
         if current_time - self.start_time < self.collect_time:
             with self.locks[topic_key]:
-                self.data[topic_key].append(data)
+                self.last_data[topic_key] = data
+            if topic_key == "lidar_poses":
+                with self.locks[topic_key]:
+                    self.data[topic_key].append(data)
+                with self.locks["cam_poses"]:
+                    self.data["cam_poses"].append(self.last_data["cam_poses"])
+                with self.locks["ground_truth_poses"]:
+                    self.data["ground_truth_poses"].append(self.last_data["ground_truth_poses"])
         else:
             # Unregister to stop listening after the time limit
             self.subscribers[topic_key].unregister()
@@ -57,9 +71,9 @@ class CalibrationCamLidarNode:
                     transformation_matrix = self.calculate_transformation(ground_truth, processed_data[key])
                     print(f"Transformation matrix for {key} to ground_truth:")
                     print(transformation_matrix)
-                    transformation_matrix = self.calculate_transformation(processed_data["cam_poses"], processed_data["lidar_poses"])
-                    print(f"Transformation matrix for cam_poses to lidar_poses:")
-                    print(transformation_matrix)
+        transformation_matrix = self.calculate_transformation(processed_data["lidar_poses"], processed_data["cam_poses"])
+        print(f"Transformation matrix for cam_poses to lidar_poses:")
+        print(transformation_matrix)
 
     def convert_poses_to_np_array(self, pose_arrays):
         """Convert PoseArray to numpy array of [x, y] coordinates."""

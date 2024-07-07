@@ -1,0 +1,11 @@
+<launch>
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="odometry_corrector" name="odometry_corrector" output="screen">
+    
+    <!-- Topic remappings -->
+    <!-- <remap from="rvr/imu" to="/input_imu" />
+    <remap from="imu" to="/output_imu" />
+    <remap from="/rvr/odom" to="/input_odom" />
+    <remap from="/rvr/odom/correct" to="/output_correct_odom" /> -->
+  </node>
+</launch>
