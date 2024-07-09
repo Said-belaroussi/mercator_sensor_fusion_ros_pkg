@@ -138,6 +138,10 @@ class PoseFusionNode:
         self.initial_position = rospy.get_param('~initial_position', 0.0)
 
         if self.sensors_number != len(self.sensors_topics):
+            rospy.loginfo(self.sensors_number)
+            rospy.loginfo(self.sensors_topics)
+            rospy.loginfo(len(self.sensors_topics))
+            rospy.loginfo(type(self.sensors_topics))
             raise ValueError("The number of sensors topics should be equal to the number of sensors")
 
         self.lidar_scan_sub = rospy.Subscriber('scan', LaserScan, self.lidar_scan_callback)

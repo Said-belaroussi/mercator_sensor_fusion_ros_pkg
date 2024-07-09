@@ -9,3 +9,5 @@ cd "$SCRIPT_DIR"
 if [ -f "./requirements.txt" ]; then
     pip install -r requirements.txt
 fi
+chmod +x ./nodes/*
+chmod +x ./scripts/*

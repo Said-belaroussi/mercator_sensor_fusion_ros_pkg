@@ -1,8 +1,10 @@
 <launch>
+    <arg name="sensors_topics" default="['cam_poses', 'lidar_poses']"/>
+
     <!-- Node to run the pose_fusion_node -->
     <node pkg="mercator_sensor_fusion_ros_pkg" type="pose_fusion" name="pose_fusion" output="screen">
         <!-- Parameters for the node -->
-        <param name="sensors_topics" value="['cam_poses', 'lidar_poses']"/>
+        <rosparam param="sensors_topics" subst_value="True">$(arg sensors_topics)</rosparam>
         <param name="sensors_trusts" value="[true, false]"/>
         <param name="keep_tracking_with_only_lidar" value="false"/>
         <param name="sensors_number" value="2"/>
