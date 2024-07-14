@@ -118,7 +118,7 @@ def visualize_detection(frame, detection, labelMap, box_position):
 
 
 
-def start_oak_camera(blob_filename, json_filename, visualize, compressed=True, offset=(0,0), IR=False):
+def start_oak_camera(blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0,0), IR=False):
 
     (confidenceThreshold, numClasses, anchors, anchorMasks,
      coordinateSize, iouThreshold, inputSizeX, inputSizeY, labelMap) = get_config_from_json(json_filename)
@@ -251,7 +251,7 @@ def start_oak_camera(blob_filename, json_filename, visualize, compressed=True, o
                 bbox_data_list.append(bbox_data)
                 publisher_position(position_data)  # Publish the position data
 
-                if visualize == True:
+                if publish_frames == True:
                     visualize_detection(frame, detection, labelMap,
                                         (x1, y1, x2, y2))  # Visualize the detection on the frame
                     # Publish frame as ROS Image message
@@ -272,6 +272,7 @@ def OakDetectorNode():
     blob_file_name = rospy.get_param("~blob_file_path")
     json_file_name = rospy.get_param("~json_file_path")
     visualize = rospy.get_param("~visualize", False)
+    publish_frames = rospy.get_param("~publish_frames", False)
 
     if blob_file_name == "" or json_file_name == "":
         rospy.logerr("Blob or JSON file not provided")
@@ -287,7 +288,7 @@ def OakDetectorNode():
     pub_frame = rospy.Publisher("oak_frames", Image, queue_size=1)
     pub_poses = rospy.Publisher("cam_poses", PoseArray, queue_size=1)
 
-    start_oak_camera(blob_filename, json_filename, visualize)
+    start_oak_camera(blob_filename, json_filename, visualize, publish_frames)
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
