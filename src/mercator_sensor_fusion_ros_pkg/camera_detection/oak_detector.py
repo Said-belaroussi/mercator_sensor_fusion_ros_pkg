@@ -53,7 +53,7 @@ class OakDetectorNode:
 
         self.start_oak_camera(self.blob_filename, self.json_filename, self.visualize, self.publish_frames)
         
-    def publisher_bbox(bbox_data_list):
+    def publisher_bbox(self, bbox_data_list):
         """
         Function to publish the bounding box information as a Detection2DArray message
         """
@@ -78,9 +78,9 @@ class OakDetectorNode:
             detection_2d_list.append(detection_2d_msg)
 
         msg.detections = detection_2d_list
-        pub_bbox.publish(msg)
+        self.pub_bbox.publish(msg)
 
-    def publisher_position(data):
+    def publisher_position(self, data):
         """
         Function to publish the position information as a tf message
         data: (x,y) position
@@ -88,7 +88,7 @@ class OakDetectorNode:
         br = tf.TransformBroadcaster()
         br.sendTransform((data["x"], data["y"], 0),(0,0,0,1),rospy.Time.now(),"Mercator_1", "odom")
 
-    def publisher_images_post_proc(frame):
+    def publisher_images_post_proc(self, frame):
         """
         Function to publish the frame as ROS messages
         """
@@ -96,9 +96,9 @@ class OakDetectorNode:
         if frame is None:
             return
         frame_msg = bridge.cv2_to_imgmsg(frame, "bgr8")
-        pub_frame.publish(frame_msg)
+        self.pub_frame.publish(frame_msg)
 
-    def get_config_from_json(json_filename):
+    def get_config_from_json(self, json_filename):
         """
         Function to read configuration parameters from a JSON file
         """
@@ -120,7 +120,7 @@ class OakDetectorNode:
         return confidenceThreshold, numClasses, anchors, anchorMasks, \
             coordinateSize, iouThreshold, inputSizeX, inputSizeY, labelMap
 
-    def visualize_detection(frame, detection, labelMap, box_position):
+    def visualize_detection(self, frame, detection, labelMap, box_position):
         try:
             label = labelMap[detection.label]  # Get the label of the detection from the label map
         except:
@@ -139,11 +139,10 @@ class OakDetectorNode:
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,255), cv2.FONT_HERSHEY_SIMPLEX)  # Draw the bounding box on the frame
 
 
-
-    def start_oak_camera(blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0,0), IR=False):
+    def start_oak_camera(self, blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0,0), IR=False):
 
         (confidenceThreshold, numClasses, anchors, anchorMasks,
-        coordinateSize, iouThreshold, inputSizeX, inputSizeY, labelMap) = get_config_from_json(json_filename)
+        coordinateSize, iouThreshold, inputSizeX, inputSizeY, labelMap) = self.get_config_from_json(json_filename)
 
         # Define camera pipeline and its components
         pipeline = dai.Pipeline()
@@ -271,15 +270,17 @@ class OakDetectorNode:
 
                     detections_position.poses.append(Pose(Point(position_data["x"], position_data["y"], 0), geometry_msgs.msg.Quaternion(0, 0, 0, 1)))
                     bbox_data_list.append(bbox_data)
-                    publisher_position(position_data)  # Publish the position data
+                    self.publisher_position(position_data)  # Publish the position data
 
                     if publish_frames == True:
-                        visualize_detection(frame, detection, labelMap,
+                        self.visualize_detection(frame, detection, labelMap,
                                             (x1, y1, x2, y2))  # Visualize the detection on the frame
-                        # Publish frame as ROS Image message
-                        publisher_images_post_proc(frame)
+                
+                if publish_frames == True:
+                    # Publish frame as ROS Image message
+                    self.publisher_images_post_proc(frame)
                 # Publish the position data of each detection in a PoseArray message to the cam_poses topic    
-                pub_poses.publish(detections_position)
+                self.pub_poses.publish(detections_position)
                 if visualize == True:
                     cv2.putText(frame, f"FPS: {int(fps)}", (0, frame.shape[0] - 5), cv2.FONT_HERSHEY_SIMPLEX,
                             0.5, (0, 0, 0))  # Draw the FPS on the frame
@@ -288,24 +289,3 @@ class OakDetectorNode:
                     cv2.imshow("Detections with position", frame)
                     if cv2.waitKey(1) == ord('q'):
                         break
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("usage: /path/oak_detector.py /path/blob_file_name /path/json_file_name")
-        exit(1)
-    else:
-        blob_filename = sys.argv[1]
-        json_filename = sys.argv[2]
-    if len(sys.argv) == 4 and sys.argv[3] == "visualize":
-        visualize = True
-    else:
-        visualize = False
-
-    rospy.init_node("oak_detector", anonymous=True)
-    pub_bbox = rospy.Publisher("oak", Detection2DArray, queue_size=1)
-    pub_frame = rospy.Publisher("oak_frames", Image, queue_size=1)
-    pub_poses = rospy.Publisher("cam_poses", PoseArray, queue_size=1)
-
-    start_oak_camera(blob_filename, json_filename, visualize)
-
