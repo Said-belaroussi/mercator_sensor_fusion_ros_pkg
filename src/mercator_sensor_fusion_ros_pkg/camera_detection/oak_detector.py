@@ -29,266 +29,266 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
 
+class OakDetectorNode:
+    def __init__(self):
+        rospy.init_node("oak_detector", anonymous=True)
+        self.blob_filename = rospy.get_param("~blob_file_path")
+        self.json_filename = rospy.get_param("~json_file_path")
+        self.visualize = rospy.get_param("~visualize", False)
+        self.publish_frames = rospy.get_param("~publish_frames", False)
+
+        if self.blob_filename == "" or self.json_filename == "":
+            rospy.logerr("Blob or JSON file not provided")
+            exit(1)
+        if not os.path.isfile(self.blob_filename):
+            rospy.logerr(f"Blob file not found: {self.blob_filename}")
+            exit(1)
+        if not os.path.isfile(self.json_filename):
+            rospy.logerr(f"JSON file not found: {self.json_filename}")
+            exit(1)
+
+        self.pub_bbox = rospy.Publisher("oak", Detection2DArray, queue_size=1)
+        self.pub_frame = rospy.Publisher("oak_frames", Image, queue_size=1)
+        self.pub_poses = rospy.Publisher("cam_poses", PoseArray, queue_size=1)
+
+        self.start_oak_camera(self.blob_filename, self.json_filename, self.visualize, self.publish_frames)
+        
+    def publisher_bbox(bbox_data_list):
+        """
+        Function to publish the bounding box information as a Detection2DArray message
+        """
+        msg = Detection2DArray()
+        header = Header()
+        header.stamp = rospy.Time.now()
+        msg.header = header
+        detection_2d_list = []
+
+        for i in bbox_data_list:
+            detection_2d_msg = Detection2D()
+            detection_2d_msg.header = header
+            bounding_box_2d = BoundingBox2D()
+            pose_2d = Pose2D()
+            pose_2d.x = i["x"]
+            pose_2d.y = i["y"]
+            pose_2d.theta = i["confidence"]
+            bounding_box_2d.center = pose_2d
+            bounding_box_2d.size_x = i["width"]
+            bounding_box_2d.size_y = i["height"]
+            detection_2d_msg.bbox = bounding_box_2d
+            detection_2d_list.append(detection_2d_msg)
+
+        msg.detections = detection_2d_list
+        pub_bbox.publish(msg)
+
+    def publisher_position(data):
+        """
+        Function to publish the position information as a tf message
+        data: (x,y) position
+        """
+        br = tf.TransformBroadcaster()
+        br.sendTransform((data["x"], data["y"], 0),(0,0,0,1),rospy.Time.now(),"Mercator_1", "odom")
+
+    def publisher_images_post_proc(frame):
+        """
+        Function to publish the frame as ROS messages
+        """
+        bridge = CvBridge()
+        if frame is None:
+            return
+        frame_msg = bridge.cv2_to_imgmsg(frame, "bgr8")
+        pub_frame.publish(frame_msg)
+
+    def get_config_from_json(json_filename):
+        """
+        Function to read configuration parameters from a JSON file
+        """
+        f = open(json_filename)
+        jsonData = json.load(f)
+        f.close()
+        confidenceThreshold = jsonData["nn_config"]["NN_specific_metadata"]["confidence_threshold"]
+        numClasses = jsonData["nn_config"]["NN_specific_metadata"]["classes"]
+        anchors = jsonData["nn_config"]["NN_specific_metadata"]["anchors"]
+        anchorMasks = jsonData["nn_config"]["NN_specific_metadata"]["anchor_masks"]
+        coordinateSize = jsonData["nn_config"]["NN_specific_metadata"]["coordinates"]
+        iouThreshold = jsonData["nn_config"]["NN_specific_metadata"]["iou_threshold"]
+        inputSize = jsonData["nn_config"]["input_size"]
+        inputSizeX, inputSizeY = inputSize.split("x")
+        inputSizeX = int(inputSizeX)
+        inputSizeY = int(inputSizeY)
+        labelMap = jsonData["mappings"]["labels"]
+
+        return confidenceThreshold, numClasses, anchors, anchorMasks, \
+            coordinateSize, iouThreshold, inputSizeX, inputSizeY, labelMap
+
+    def visualize_detection(frame, detection, labelMap, box_position):
+        try:
+            label = labelMap[detection.label]  # Get the label of the detection from the label map
+        except:
+            label = detection.label
+        x1, y1, x2, y2 = box_position
+        cv2.putText(frame, str(label), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0))  # Draw the label on the frame
+        cv2.putText(frame, f"Conf: {int(detection.confidence * 100)} %", (x1, y1 + 20), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.3, (0, 0, 0))  # Draw the confidence percentage on the frame
+        cv2.putText(frame, f"x: {int(detection.spatialCoordinates.x/10)} cm", (x1, y1 + 30), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.3, (0, 0, 0))  # Draw the x-coordinate of the spatial position on the frame
+        cv2.putText(frame, f"y: {int(detection.spatialCoordinates.z/10)} cm", (x1, y1 + 40), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.3, (0, 0, 0))  # Draw the y-coordinate of the spatial position on the frame
+        cv2.putText(frame, f"z: {int(detection.spatialCoordinates.y/10)} cm", (x1, y1 + 50), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.3, (0, 0, 0))  # Draw the z-coordinate of the spatial position on the frame
+
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,255), cv2.FONT_HERSHEY_SIMPLEX)  # Draw the bounding box on the frame
 
 
-def publisher_bbox(bbox_data_list):
-    """
-    Function to publish the bounding box information as a Detection2DArray message
-    """
-    msg = Detection2DArray()
-    header = Header()
-    header.stamp = rospy.Time.now()
-    msg.header = header
-    detection_2d_list = []
 
-    for i in bbox_data_list:
-        detection_2d_msg = Detection2D()
-        detection_2d_msg.header = header
-        bounding_box_2d = BoundingBox2D()
-        pose_2d = Pose2D()
-        pose_2d.x = i["x"]
-        pose_2d.y = i["y"]
-        pose_2d.theta = i["confidence"]
-        bounding_box_2d.center = pose_2d
-        bounding_box_2d.size_x = i["width"]
-        bounding_box_2d.size_y = i["height"]
-        detection_2d_msg.bbox = bounding_box_2d
-        detection_2d_list.append(detection_2d_msg)
+    def start_oak_camera(blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0,0), IR=False):
 
-    msg.detections = detection_2d_list
-    pub_bbox.publish(msg)
+        (confidenceThreshold, numClasses, anchors, anchorMasks,
+        coordinateSize, iouThreshold, inputSizeX, inputSizeY, labelMap) = get_config_from_json(json_filename)
 
-def publisher_position(data):
-    """
-    Function to publish the position information as a tf message
-    data: (x,y) position
-    """
-    br = tf.TransformBroadcaster()
-    br.sendTransform((data["x"], data["y"], 0),(0,0,0,1),rospy.Time.now(),"Mercator_1", "odom")
+        # Define camera pipeline and its components
+        pipeline = dai.Pipeline()
 
-def publisher_images_post_proc(frame):
-    """
-    Function to publish the frame as ROS messages
-    """
-    bridge = CvBridge()
-    if frame is None:
-        return
-    frame_msg = bridge.cv2_to_imgmsg(frame, "bgr8")
-    pub_frame.publish(frame_msg)
+        # Define needed components
+        camRgb = pipeline.create(dai.node.ColorCamera)
+        yolo_spatial_detection_network = pipeline.create(dai.node.YoloSpatialDetectionNetwork)
+        monoLeft = pipeline.create(dai.node.MonoCamera)
+        monoRight = pipeline.create(dai.node.MonoCamera)
+        stereo = pipeline.create(dai.node.StereoDepth)
+        nnNetworkOut = pipeline.create(dai.node.XLinkOut)
+        xoutRgb = pipeline.create(dai.node.XLinkOut)
+        xoutNN = pipeline.create(dai.node.XLinkOut)
+        xoutDepth = pipeline.create(dai.node.XLinkOut)
 
-def get_config_from_json(json_filename):
-    """
-    Function to read configuration parameters from a JSON file
-    """
-    f = open(json_filename)
-    jsonData = json.load(f)
-    f.close()
-    confidenceThreshold = jsonData["nn_config"]["NN_specific_metadata"]["confidence_threshold"]
-    numClasses = jsonData["nn_config"]["NN_specific_metadata"]["classes"]
-    anchors = jsonData["nn_config"]["NN_specific_metadata"]["anchors"]
-    anchorMasks = jsonData["nn_config"]["NN_specific_metadata"]["anchor_masks"]
-    coordinateSize = jsonData["nn_config"]["NN_specific_metadata"]["coordinates"]
-    iouThreshold = jsonData["nn_config"]["NN_specific_metadata"]["iou_threshold"]
-    inputSize = jsonData["nn_config"]["input_size"]
-    inputSizeX, inputSizeY = inputSize.split("x")
-    inputSizeX = int(inputSizeX)
-    inputSizeY = int(inputSizeY)
-    labelMap = jsonData["mappings"]["labels"]
+        xoutRgb.setStreamName("rgb")
+        xoutNN.setStreamName("detections")
+        xoutDepth.setStreamName("depth")
+        nnNetworkOut.setStreamName("nnNetwork")
 
-    return confidenceThreshold, numClasses, anchors, anchorMasks, \
-        coordinateSize, iouThreshold, inputSizeX, inputSizeY, labelMap
+        # RGB camera setup
+        camRgb.setPreviewSize(inputSizeX, inputSizeY)
+        camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
+        camRgb.setInterleaved(False)
+        camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
 
-def visualize_detection(frame, detection, labelMap, box_position):
-    try:
-        label = labelMap[detection.label]  # Get the label of the detection from the label map
-    except:
-        label = detection.label
-    x1, y1, x2, y2 = box_position
-    cv2.putText(frame, str(label), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0))  # Draw the label on the frame
-    cv2.putText(frame, f"Conf: {int(detection.confidence * 100)} %", (x1, y1 + 20), cv2.FONT_HERSHEY_SIMPLEX,
-                0.3, (0, 0, 0))  # Draw the confidence percentage on the frame
-    cv2.putText(frame, f"x: {int(detection.spatialCoordinates.x/10)} cm", (x1, y1 + 30), cv2.FONT_HERSHEY_SIMPLEX,
-                0.3, (0, 0, 0))  # Draw the x-coordinate of the spatial position on the frame
-    cv2.putText(frame, f"y: {int(detection.spatialCoordinates.z/10)} cm", (x1, y1 + 40), cv2.FONT_HERSHEY_SIMPLEX,
-                0.3, (0, 0, 0))  # Draw the y-coordinate of the spatial position on the frame
-    cv2.putText(frame, f"z: {int(detection.spatialCoordinates.y/10)} cm", (x1, y1 + 50), cv2.FONT_HERSHEY_SIMPLEX,
-                0.3, (0, 0, 0))  # Draw the z-coordinate of the spatial position on the frame
+        # If NN take horizontally compressed images as input. Increases FOV
+        if compressed == True:
+            camRgb.setPreviewKeepAspectRatio(False)
 
-    cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,255), cv2.FONT_HERSHEY_SIMPLEX)  # Draw the bounding box on the frame
+        # Setting resolution for depth 800P OR 400P
+        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+        monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
+        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+        monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
+        # setting node configs
+        stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
+        # Change the depth frame alignment to the center camera, by default set to the right camera
+        stereo.setDepthAlign(dai.CameraBoardSocket.RGB)
+        stereo.setOutputSize(monoLeft.getResolutionWidth(), monoLeft.getResolutionHeight())
 
+        # Setting neural network parameters
+        yolo_spatial_detection_network.setBlobPath(blob_filename)
+        yolo_spatial_detection_network.setConfidenceThreshold(confidenceThreshold)
+        yolo_spatial_detection_network.input.setBlocking(False)
+        yolo_spatial_detection_network.setBoundingBoxScaleFactor(0.5)
+        yolo_spatial_detection_network.setDepthLowerThreshold(100)
+        yolo_spatial_detection_network.setDepthUpperThreshold(10000)
+        # Calculation method for depth : can be set to AVERAGE,MIN,MAX,MEDIAN,MODE
+        yolo_spatial_detection_network.setSpatialCalculationAlgorithm(dai.SpatialLocationCalculatorAlgorithm.AVERAGE)
 
-def start_oak_camera(blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0,0), IR=False):
+        # Yolo specific parameters
+        # https://docs.luxonis.com/projects/api/en/latest/components/nodes/yolo_spatial_detection_network/
+        yolo_spatial_detection_network.setNumClasses(numClasses)
+        yolo_spatial_detection_network.setCoordinateSize(coordinateSize)
+        yolo_spatial_detection_network.setAnchors(anchors)
+        yolo_spatial_detection_network.setAnchorMasks(anchorMasks)
+        yolo_spatial_detection_network.setIouThreshold(iouThreshold)
 
-    (confidenceThreshold, numClasses, anchors, anchorMasks,
-     coordinateSize, iouThreshold, inputSizeX, inputSizeY, labelMap) = get_config_from_json(json_filename)
+        monoLeft.out.link(stereo.left)
+        monoRight.out.link(stereo.right)
 
-    # Define camera pipeline and its components
-    pipeline = dai.Pipeline()
+        camRgb.preview.link(yolo_spatial_detection_network.input)
+        yolo_spatial_detection_network.passthrough.link(xoutRgb.input)
+        yolo_spatial_detection_network.out.link(xoutNN.input)
+        stereo.depth.link(yolo_spatial_detection_network.inputDepth)
+        yolo_spatial_detection_network.passthroughDepth.link(xoutDepth.input)
+        yolo_spatial_detection_network.outNetwork.link(nnNetworkOut.input)
 
-    # Define needed components
-    camRgb = pipeline.create(dai.node.ColorCamera)
-    yolo_spatial_detection_network = pipeline.create(dai.node.YoloSpatialDetectionNetwork)
-    monoLeft = pipeline.create(dai.node.MonoCamera)
-    monoRight = pipeline.create(dai.node.MonoCamera)
-    stereo = pipeline.create(dai.node.StereoDepth)
-    nnNetworkOut = pipeline.create(dai.node.XLinkOut)
-    xoutRgb = pipeline.create(dai.node.XLinkOut)
-    xoutNN = pipeline.create(dai.node.XLinkOut)
-    xoutDepth = pipeline.create(dai.node.XLinkOut)
+        # Connect to device and start processing
+        with dai.Device(pipeline) as device:
+            if IR == True:
+                device.setIrLaserDotProjectorBrightness(800)  # in mA, 0..1200
+                # device.setIrFloodLightBrightness(200)
 
-    xoutRgb.setStreamName("rgb")
-    xoutNN.setStreamName("detections")
-    xoutDepth.setStreamName("depth")
-    nnNetworkOut.setStreamName("nnNetwork")
+            previewQueue = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
+            detectionNNQueue = device.getOutputQueue(name="detections", maxSize=4, blocking=False)
+            depthQueue = device.getOutputQueue(name="depth", maxSize=4, blocking=False)
+            networkQueue = device.getOutputQueue(name="nnNetwork", maxSize=4, blocking=False);
 
-    # RGB camera setup
-    camRgb.setPreviewSize(inputSizeX, inputSizeY)
-    camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
-    camRgb.setInterleaved(False)
-    camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
+            previous_time = time.time()
+            counter = 0
+            fps = 0
 
-    # If NN take horizontally compressed images as input. Increases FOV
-    if compressed == True:
-        camRgb.setPreviewKeepAspectRatio(False)
+            while True:
+                inPreview = previewQueue.get()
+                inDet = detectionNNQueue.get()
+                depth = depthQueue.get()
 
-    # Setting resolution for depth 800P OR 400P
-    monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
-    monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
-    monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
-    monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
+                frame = inPreview.getCvFrame()
 
-    # setting node configs
-    stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
-    # Change the depth frame alignment to the center camera, by default set to the right camera
-    stereo.setDepthAlign(dai.CameraBoardSocket.RGB)
-    stereo.setOutputSize(monoLeft.getResolutionWidth(), monoLeft.getResolutionHeight())
+                counter += 1
+                current_time = time.time()
+                if (current_time - previous_time) > 1:
+                    fps = counter / (current_time - previous_time)
+                    previous_time = current_time
+                    counter = 0
+                detections = inDet.detections
 
-    # Setting neural network parameters
-    yolo_spatial_detection_network.setBlobPath(blob_filename)
-    yolo_spatial_detection_network.setConfidenceThreshold(confidenceThreshold)
-    yolo_spatial_detection_network.input.setBlocking(False)
-    yolo_spatial_detection_network.setBoundingBoxScaleFactor(0.5)
-    yolo_spatial_detection_network.setDepthLowerThreshold(100)
-    yolo_spatial_detection_network.setDepthUpperThreshold(10000)
-    # Calculation method for depth : can be set to AVERAGE,MIN,MAX,MEDIAN,MODE
-    yolo_spatial_detection_network.setSpatialCalculationAlgorithm(dai.SpatialLocationCalculatorAlgorithm.AVERAGE)
+                height, width = frame.shape[0], frame.shape[1]
 
-    # Yolo specific parameters
-    # https://docs.luxonis.com/projects/api/en/latest/components/nodes/yolo_spatial_detection_network/
-    yolo_spatial_detection_network.setNumClasses(numClasses)
-    yolo_spatial_detection_network.setCoordinateSize(coordinateSize)
-    yolo_spatial_detection_network.setAnchors(anchors)
-    yolo_spatial_detection_network.setAnchorMasks(anchorMasks)
-    yolo_spatial_detection_network.setIouThreshold(iouThreshold)
+                detections_position = PoseArray()
+                bbox_data_list = []
+                for detection in detections:
+                    bbox_data = dict()
+                    position_data = dict()
 
-    monoLeft.out.link(stereo.left)
-    monoRight.out.link(stereo.right)
+                    x1 = int(detection.xmin * width)
+                    x2 = int(detection.xmax * width)
+                    y1 = int(detection.ymin * height)
+                    y2 = int(detection.ymax * height)
 
-    camRgb.preview.link(yolo_spatial_detection_network.input)
-    yolo_spatial_detection_network.passthrough.link(xoutRgb.input)
-    yolo_spatial_detection_network.out.link(xoutNN.input)
-    stereo.depth.link(yolo_spatial_detection_network.inputDepth)
-    yolo_spatial_detection_network.passthroughDepth.link(xoutDepth.input)
-    yolo_spatial_detection_network.outNetwork.link(nnNetworkOut.input)
+                    # Bounding box info for detection ros msg
+                    bbox_data["x"] = (x1 + x2) / 2
+                    bbox_data["y"] = (y1 + y2) / 2
+                    bbox_data["width"] = x2 - x1
+                    bbox_data["height"] = y2 - y1
+                    bbox_data["confidence"] = detection.confidence
 
-    # Connect to device and start processing
-    with dai.Device(pipeline) as device:
-        if IR == True:
-            device.setIrLaserDotProjectorBrightness(800)  # in mA, 0..1200
-            # device.setIrFloodLightBrightness(200)
+                    # Position info for tf message msg
+                    offset_x, offset_y = offset
+                    position_data["x"] = ((detection.spatialCoordinates.x) + offset_x) / 1000
+                    position_data["y"] = ((detection.spatialCoordinates.z) + offset_y) / 1000
 
-        previewQueue = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
-        detectionNNQueue = device.getOutputQueue(name="detections", maxSize=4, blocking=False)
-        depthQueue = device.getOutputQueue(name="depth", maxSize=4, blocking=False)
-        networkQueue = device.getOutputQueue(name="nnNetwork", maxSize=4, blocking=False);
+                    detections_position.poses.append(Pose(Point(position_data["x"], position_data["y"], 0), geometry_msgs.msg.Quaternion(0, 0, 0, 1)))
+                    bbox_data_list.append(bbox_data)
+                    publisher_position(position_data)  # Publish the position data
 
-        previous_time = time.time()
-        counter = 0
-        fps = 0
-
-        while True:
-            inPreview = previewQueue.get()
-            inDet = detectionNNQueue.get()
-            depth = depthQueue.get()
-
-            frame = inPreview.getCvFrame()
-
-            counter += 1
-            current_time = time.time()
-            if (current_time - previous_time) > 1:
-                fps = counter / (current_time - previous_time)
-                previous_time = current_time
-                counter = 0
-            detections = inDet.detections
-
-            height, width = frame.shape[0], frame.shape[1]
-
-            detections_position = PoseArray()
-            bbox_data_list = []
-            for detection in detections:
-                bbox_data = dict()
-                position_data = dict()
-
-                x1 = int(detection.xmin * width)
-                x2 = int(detection.xmax * width)
-                y1 = int(detection.ymin * height)
-                y2 = int(detection.ymax * height)
-
-                # Bounding box info for detection ros msg
-                bbox_data["x"] = (x1 + x2) / 2
-                bbox_data["y"] = (y1 + y2) / 2
-                bbox_data["width"] = x2 - x1
-                bbox_data["height"] = y2 - y1
-                bbox_data["confidence"] = detection.confidence
-
-                # Position info for tf message msg
-                offset_x, offset_y = offset
-                position_data["x"] = ((detection.spatialCoordinates.x) + offset_x) / 1000
-                position_data["y"] = ((detection.spatialCoordinates.z) + offset_y) / 1000
-
-                detections_position.poses.append(Pose(Point(position_data["x"], position_data["y"], 0), geometry_msgs.msg.Quaternion(0, 0, 0, 1)))
-                bbox_data_list.append(bbox_data)
-                publisher_position(position_data)  # Publish the position data
-
-                if publish_frames == True:
-                    visualize_detection(frame, detection, labelMap,
-                                        (x1, y1, x2, y2))  # Visualize the detection on the frame
+                    if publish_frames == True:
+                        visualize_detection(frame, detection, labelMap,
+                                            (x1, y1, x2, y2))  # Visualize the detection on the frame
+                        # Publish frame as ROS Image message
+                        publisher_images_post_proc(frame)
+                # Publish the position data of each detection in a PoseArray message to the cam_poses topic    
+                pub_poses.publish(detections_position)
+                if visualize == True:
+                    cv2.putText(frame, f"FPS: {int(fps)}", (0, frame.shape[0] - 5), cv2.FONT_HERSHEY_SIMPLEX,
+                            0.5, (0, 0, 0))  # Draw the FPS on the frame
                     # Publish frame as ROS Image message
-                    publisher_images_post_proc(frame)
-            # Publish the position data of each detection in a PoseArray message to the cam_poses topic    
-            pub_poses.publish(detections_position)
-            if visualize == True:
-                cv2.putText(frame, f"FPS: {int(fps)}", (0, frame.shape[0] - 5), cv2.FONT_HERSHEY_SIMPLEX,
-                           0.5, (0, 0, 0))  # Draw the FPS on the frame
-                # Publish frame as ROS Image message
-                # publisher_images_post_proc(frame)
-                cv2.imshow("Detections with position", frame)
-                if cv2.waitKey(1) == ord('q'):
-                    break
+                    # publisher_images_post_proc(frame)
+                    cv2.imshow("Detections with position", frame)
+                    if cv2.waitKey(1) == ord('q'):
+                        break
 
-def OakDetectorNode():
-    rospy.init_node("oak_detector", anonymous=True)
-    blob_filename = rospy.get_param("~blob_file_path")
-    json_filename = rospy.get_param("~json_file_path")
-    visualize = rospy.get_param("~visualize", False)
-    publish_frames = rospy.get_param("~publish_frames", False)
-
-    if blob_filename == "" or json_filename == "":
-        rospy.logerr("Blob or JSON file not provided")
-        exit(1)
-    if not os.path.isfile(blob_filename):
-        rospy.logerr(f"Blob file not found: {blob_filename}")
-        exit(1)
-    if not os.path.isfile(json_filename):
-        rospy.logerr(f"JSON file not found: {json_filename}")
-        exit(1)
-
-    pub_bbox = rospy.Publisher("oak", Detection2DArray, queue_size=1)
-    pub_frame = rospy.Publisher("oak_frames", Image, queue_size=1)
-    pub_poses = rospy.Publisher("cam_poses", PoseArray, queue_size=1)
-
-    start_oak_camera(blob_filename, json_filename, visualize, publish_frames)
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
