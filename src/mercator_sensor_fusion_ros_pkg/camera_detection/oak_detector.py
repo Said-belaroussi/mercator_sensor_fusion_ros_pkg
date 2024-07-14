@@ -269,19 +269,19 @@ def start_oak_camera(blob_filename, json_filename, visualize, publish_frames, co
 
 def OakDetectorNode():
     rospy.init_node("oak_detector", anonymous=True)
-    blob_file_name = rospy.get_param("~blob_file_path")
-    json_file_name = rospy.get_param("~json_file_path")
+    blob_filename = rospy.get_param("~blob_file_path")
+    json_filename = rospy.get_param("~json_file_path")
     visualize = rospy.get_param("~visualize", False)
     publish_frames = rospy.get_param("~publish_frames", False)
 
-    if blob_file_name == "" or json_file_name == "":
+    if blob_filename == "" or json_filename == "":
         rospy.logerr("Blob or JSON file not provided")
         exit(1)
-    if not os.path.isfile(blob_file_name):
-        rospy.logerr(f"Blob file not found: {blob_file_name}")
+    if not os.path.isfile(blob_filename):
+        rospy.logerr(f"Blob file not found: {blob_filename}")
         exit(1)
-    if not os.path.isfile(json_file_name):
-        rospy.logerr(f"JSON file not found: {json_file_name}")
+    if not os.path.isfile(json_filename):
+        rospy.logerr(f"JSON file not found: {json_filename}")
         exit(1)
 
     pub_bbox = rospy.Publisher("oak", Detection2DArray, queue_size=1)
