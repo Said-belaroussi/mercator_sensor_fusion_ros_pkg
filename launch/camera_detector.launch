@@ -4,8 +4,8 @@
     <!-- Parameters -->
     <param name="blob_file_path" value="$(find mercator_sensor_fusion_ros_pkg)\src\mercator_sensor_fusion_ros_pkg\models\rvr_stretched_1.blob" />
     <param name="json_file_path" value="$(find mercator_sensor_fusion_ros_pkg)\src\mercator_sensor_fusion_ros_pkg\models\rvr_stretched_1.json" />
-    <param name="visualize" value="true" />
-    <param name="publish_frames" value="true" />
+    <param name="visualize" value="false" />
+    <param name="publish_frames" value="false" />
 
     <!-- Topic remappings -->
     <!-- <remap from="oak" to="/output_oak" />

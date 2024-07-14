@@ -28,6 +28,22 @@ import geometry_msgs.msg
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
+from collections import deque
+
+def calculate_fps():
+    if not hasattr(calculate_fps, 'timestamps'):
+        calculate_fps.timestamps = deque(maxlen=30)
+    
+    current_time = time.time()
+    calculate_fps.timestamps.append(current_time)
+
+    if len(calculate_fps.timestamps) > 1:
+        time_diffs = [t2 - t1 for t1, t2 in zip(calculate_fps.timestamps, list(calculate_fps.timestamps)[1:])]
+        average_time_diff = sum(time_diffs) / len(time_diffs)
+        average_fps = 1.0 / average_time_diff
+        print(f"Average FPS over last {len(calculate_fps.timestamps)} frames: {average_fps:.2f}")
+    else:
+        print("Calculating FPS...")
 
 class OakDetectorNode:
     def __init__(self):
@@ -138,16 +154,6 @@ class OakDetectorNode:
 
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,255), cv2.FONT_HERSHEY_SIMPLEX)  # Draw the bounding box on the frame
 
-    def calculate_fps(self):
-        if not hasattr(calculate_fps, 'previous_time'):
-            calculate_fps.previous_time = time.time()
-            rospy.loginfo("Calculating FPS...")
-        else:
-            current_time = time.time()
-            time_diff = current_time - calculate_fps.previous_time
-            fps = 1.0 / time_diff
-            rospy.loginfo(f"Current FPS: {fps:.2f}")
-            calculate_fps.previous_time = current_time
 
     def start_oak_camera(self, blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0,0), IR=False):
 
@@ -184,9 +190,9 @@ class OakDetectorNode:
             camRgb.setPreviewKeepAspectRatio(False)
 
         # Setting resolution for depth 800P OR 400P
-        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
         monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
-        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
         monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
         # setting node configs
@@ -239,6 +245,7 @@ class OakDetectorNode:
             fps = 0
 
             while True:
+                calculate_fps()
                 inPreview = previewQueue.get()
                 inDet = detectionNNQueue.get()
                 depth = depthQueue.get()
