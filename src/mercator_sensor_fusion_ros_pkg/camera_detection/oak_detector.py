@@ -138,6 +138,16 @@ class OakDetectorNode:
 
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,255), cv2.FONT_HERSHEY_SIMPLEX)  # Draw the bounding box on the frame
 
+    def calculate_fps(self):
+        if not hasattr(calculate_fps, 'previous_time'):
+            calculate_fps.previous_time = time.time()
+            rospy.loginfo("Calculating FPS...")
+        else:
+            current_time = time.time()
+            time_diff = current_time - calculate_fps.previous_time
+            fps = 1.0 / time_diff
+            rospy.loginfo(f"Current FPS: {fps:.2f}")
+            calculate_fps.previous_time = current_time
 
     def start_oak_camera(self, blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0,0), IR=False):
 
