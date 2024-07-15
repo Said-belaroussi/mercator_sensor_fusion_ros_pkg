@@ -1,0 +1,42 @@
+<launch>
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="ground_truth_publisher" name="ground_truth_publisher" output="screen">
+    <!-- Parameters -->
+    <param name="robot_names" value="['base_link_23']" />
+    <param name="reference_robot_name" value="base_link_40" />
+    
+    <!-- Topic remappings -->
+    <!-- <remap from="/tf" to="/input_tf" />
+    <remap from="ground_truth_poses" to="/output_ground_truth_poses" /> -->
+  </node>
+
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="calibration_cam_lidar" name="calibration_cam_lidar" output="screen">
+    <!-- Parameters -->
+    <param name="collect_time" value="5.0" />
+    
+    <!-- Topic remappings -->
+    <!-- <remap from="cam_poses" to="/input_cam_poses" />
+    <remap from="lidar_poses" to="/input_lidar_poses" />
+    <remap from="ground_truth_poses" to="/input_ground_truth_poses" /> -->
+  </node>
+
+        <!-- Define parameters within the lidar_detector namespace -->
+    <param name="lidar_detector/camera_fov_deg" value="95" />
+    <param name="lidar_detector/camera_resolution" value="256" />
+    <param name="lidar_detector/detection_method" value="standalone_euclidean_clustering" />
+    <param name="lidar_detector/visualize" value="true" />
+    <param name="lidar_detector/clustering_distance_threshold" value="0.15" />
+    <param name="lidar_detector/clustering_min_points" value="2" />
+    <param name="lidar_detector/clustering_max_points" value="30" />
+    <param name="lidar_detector/camera_poses_topic" value="camera_poses" />
+
+    <!-- Specify the node to be launched -->
+    <node pkg="mercator_sensor_fusion_ros_pkg" type="lidar_detector" name="lidar_detector" output="screen">
+        <!-- Remap topics if necessary -->
+        <remap from="oak" to="oak" />
+        <remap from="scan" to="scan" />
+        <remap from="lidar_poses" to="lidar_poses" />
+        <remap from="~detected_robots" to="~detected_robots" />
+    </node>
+</launch>

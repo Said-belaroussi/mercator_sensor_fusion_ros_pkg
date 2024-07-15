@@ -10,7 +10,13 @@ class CalibrationCamLidarNode:
         rospy.init_node('calibration_cam_lidar_node')
 
         # Data storage
-        self.data = {
+        self.data_for_cam_calibration = {
+            "cam_poses": [],
+            "lidar_poses": [],
+            "ground_truth_poses": []
+        }
+
+        self.data_for_lidar_calibration = {
             "cam_poses": [],
             "lidar_poses": [],
             "ground_truth_poses": []
@@ -49,29 +55,47 @@ class CalibrationCamLidarNode:
                 self.last_data[topic_key] = data
             if topic_key == "lidar_poses":
                 with self.locks[topic_key]:
-                    self.data[topic_key].append(data)
+                    self.data_for_lidar_calibration[topic_key].append(data)
                 with self.locks["cam_poses"]:
-                    self.data["cam_poses"].append(self.last_data["cam_poses"])
+                    self.data_for_lidar_calibration["cam_poses"].append(self.last_data["cam_poses"])
                 with self.locks["ground_truth_poses"]:
-                    self.data["ground_truth_poses"].append(self.last_data["ground_truth_poses"])
+                    self.data_for_lidar_calibration["ground_truth_poses"].append(self.last_data["ground_truth_poses"])
+            elif topic_key == "cam_poses":
+                with self.locks[topic_key]:
+                    self.data_for_cam_calibration[topic_key].append(data)
+                with self.locks["lidar_poses"]:
+                    self.data_for_cam_calibration["lidar_poses"].append(self.last_data["lidar_poses"])
+                with self.locks["ground_truth_poses"]:
+                    self.data_for_cam_calibration["ground_truth_poses"].append(self.last_data["ground_truth_poses"])
         else:
             # Unregister to stop listening after the time limit
             self.subscribers[topic_key].unregister()
 
     def compute_calibration_matrices(self):
         # Process the data into numpy arrays for easier handling
-        processed_data = {key: self.convert_poses_to_np_array(poses) for key, poses in self.data.items()}
+        processed_data_for_lidar_calibration = {key: self.convert_poses_to_np_array(poses) for key, poses in self.data_for_lidar_calibration.items()}
+        processed_data_for_cam_calibration = {key: self.convert_poses_to_np_array(poses) for key, poses in self.data_for_cam_calibration.items()}
 
         # Calculate transformations
         # Assuming ground_truth_poses as the reference
-        if "ground_truth_poses" in processed_data:
-            ground_truth = processed_data["ground_truth_poses"]
-            for key in ["cam_poses", "lidar_poses"]:
-                if key in processed_data:
-                    transformation_matrix = self.calculate_transformation(ground_truth, processed_data[key])
+        if "ground_truth_poses" in processed_data_for_lidar_calibration:
+            ground_truth = processed_data_for_lidar_calibration["ground_truth_poses"]
+            for key in ["lidar_poses"]:
+                if key in processed_data_for_lidar_calibration:
+                    transformation_matrix = self.calculate_transformation(ground_truth, processed_data_for_lidar_calibration[key])
                     print(f"Transformation matrix for {key} to ground_truth:")
                     print(transformation_matrix)
-        transformation_matrix = self.calculate_transformation(processed_data["lidar_poses"], processed_data["cam_poses"])
+        
+        if "ground_truth_poses" in processed_data_for_cam_calibration:
+            ground_truth = processed_data_for_cam_calibration["ground_truth_poses"]
+            for key in ["cam_poses"]:
+                if key in processed_data_for_cam_calibration:
+                    transformation_matrix = self.calculate_transformation(ground_truth, processed_data_for_cam_calibration[key])
+                    print(f"Transformation matrix for {key} to ground_truth:")
+                    print(transformation_matrix)
+
+        transformation_matrix = self.calculate_transformation(processed_data_for_cam_calibration["lidar_poses"],
+                                                             processed_data_for_cam_calibration["cam_poses"])
         print(f"Transformation matrix for cam_poses to lidar_poses:")
         print(transformation_matrix)
 
