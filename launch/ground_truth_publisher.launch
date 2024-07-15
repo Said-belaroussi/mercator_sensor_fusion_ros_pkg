@@ -2,8 +2,8 @@
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="ground_truth_publisher" name="ground_truth_publisher" output="screen">
     <!-- Parameters -->
-    <param name="robot_names" value="['base_link_38']" />
-    <param name="reference_robot_name" value="base_link_0" />
+    <param name="robot_names" value="['base_link_23']" />
+    <param name="reference_robot_name" value="base_link_40" />
     
     <!-- Topic remappings -->
     <!-- <remap from="/tf" to="/input_tf" />
