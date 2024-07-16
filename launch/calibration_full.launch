@@ -1,8 +1,10 @@
 <launch>
+
+  <arg name="robot_names" default="['base_link_23', 'base_link_40']"/>
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="ground_truth_publisher" name="ground_truth_publisher" output="screen">
     <!-- Parameters -->
-    <param name="robot_names" value="['base_link_23']" />
+    <rosparam param="robot_names" subst_value="True">$(arg robot_names)</rosparam>
     <param name="reference_robot_name" value="base_link_40" />
     
     <!-- Topic remappings -->

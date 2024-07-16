@@ -73,6 +73,7 @@ class CalibrationCamLidarNode:
 
     def compute_calibration_matrices(self):
         # Process the data into numpy arrays for easier handling
+        rospy.loginfo(self.data_for_lidar_calibration.items())
         processed_data_for_lidar_calibration = {key: self.convert_poses_to_np_array(poses) for key, poses in self.data_for_lidar_calibration.items()}
         processed_data_for_cam_calibration = {key: self.convert_poses_to_np_array(poses) for key, poses in self.data_for_cam_calibration.items()}
 

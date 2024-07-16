@@ -14,6 +14,9 @@ class GroundTruthPublisherNode:
         robot_names = rospy.get_param('~robot_names', ["base_link_38"])
         reference_robot_name = rospy.get_param('~reference_robot_name', 'base_link_0')
 
+        rospy.loginfo(robot_names)
+        rospy.loginfo(reference_robot_name)
+
         if not robot_names or not reference_robot_name:
             rospy.logerr("Robot names or reference robot name not provided. Exiting...")
             return
@@ -29,6 +32,7 @@ class GroundTruthPublisherNode:
     def tf_callback(self, tf_msg):
         for transform in tf_msg.transforms:
             child_frame_id = transform.child_frame_id
+            
             if child_frame_id in self.robot_names:
                 translation = transform.transform.translation
                 rotation = transform.transform.rotation
@@ -36,9 +40,13 @@ class GroundTruthPublisherNode:
                 self.robot_poses[child_frame_id] = pose
 
         if set(self.robot_poses.keys()) == set(self.robot_names):
-            pose_array_msg = PoseArray()
+            
             ref_pose = self.robot_poses.get(self.reference_robot_name)
+            pose_array_msg = PoseArray()
+            pose_array_msg.header.frame_id = ref_pose
+            
             if ref_pose:
+                
                 ref_position = np.array([ref_pose.position.x, ref_pose.position.y, ref_pose.position.z, 1])
                 ref_orientation = np.array([ref_pose.orientation.x, ref_pose.orientation.y, ref_pose.orientation.z, ref_pose.orientation.w])
                 ref_matrix = transformations.quaternion_matrix(ref_orientation)
