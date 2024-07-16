@@ -50,6 +50,8 @@ class GroundTruthPublisherNode:
 
                 ref_position = np.array([ref_pose.position.x, ref_pose.position.y, ref_pose.position.z, 1])
                 ref_orientation = np.array([ref_pose.orientation.x, ref_pose.orientation.y, ref_pose.orientation.z, ref_pose.orientation.w])
+                # Add +90 degrees rotation around z-axis to align with the map
+                ref_orientation = transformations.quaternion_multiply(ref_orientation, transformations.quaternion_from_euler(0, 0, np.pi/2))
                 ref_matrix = transformations.quaternion_matrix(ref_orientation)
                 ref_matrix[0:3, 3] = ref_position[0:3]
 
