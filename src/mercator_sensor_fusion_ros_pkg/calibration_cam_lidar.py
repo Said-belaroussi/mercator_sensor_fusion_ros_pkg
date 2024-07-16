@@ -39,8 +39,9 @@ class CalibrationCamLidarNode:
             "ground_truth_poses": rospy.Subscriber("ground_truth_poses", PoseArray, self.callback, callback_args="ground_truth_poses")
         }
 
-        # Timing for 5 seconds collection
-        self.collect_time = rospy.get_param("~collect_time", 5.0)
+        # Timing for 60 seconds collection
+        self.collect_time = rospy.get_param("~collect_time", 60.0)
+        self.data_max_size = rospy.get_param("~data_max_size", 50)
         self.start_time = time()
 
         self.run()
@@ -48,7 +49,9 @@ class CalibrationCamLidarNode:
     def callback(self, data, args):
         topic_key = args
         current_time = time()
-        if current_time - self.start_time < self.collect_time:
+        if current_time - self.start_time < self.collect_time and
+            (len(self.data_for_cam_calibration["cam_poses"]) < self.data_max_size or 
+            len(self.data_for_lidar_calibration["lidar_poses"]) < self.data_max_size):
             with self.locks[topic_key]:
                 self.last_data[topic_key] = data
             if self.last_data["ground_truth_poses"] is None:
