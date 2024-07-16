@@ -42,11 +42,12 @@ class GroundTruthPublisherNode:
         if set(self.robot_poses.keys()) == set(self.robot_names):
             
             ref_pose = self.robot_poses.get(self.reference_robot_name)
-            pose_array_msg = PoseArray()
-            pose_array_msg.header.frame_id = ref_pose
             
             if ref_pose:
                 
+                pose_array_msg = PoseArray()
+                # pose_array_msg.header.frame_id = ref_pose
+
                 ref_position = np.array([ref_pose.position.x, ref_pose.position.y, ref_pose.position.z, 1])
                 ref_orientation = np.array([ref_pose.orientation.x, ref_pose.orientation.y, ref_pose.orientation.z, ref_pose.orientation.w])
                 ref_matrix = transformations.quaternion_matrix(ref_orientation)

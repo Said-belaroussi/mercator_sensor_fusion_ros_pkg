@@ -108,6 +108,8 @@ class CalibrationCamLidarNode:
         """Calculate transformation matrix to align data to reference."""
         assert len(reference) >= 2 and len(data) >= 2, "Need at least two points to calculate transformation"
         
+        rospy.loginfo(reference)
+        rospy.loginfo(data)
         # Compute centroids
         centroid_ref = np.mean(reference, axis=0)
         centroid_data = np.mean(data, axis=0)
