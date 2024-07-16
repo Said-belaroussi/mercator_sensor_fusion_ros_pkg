@@ -15,9 +15,10 @@ from visualization_msgs.msg import Marker
 import threading
 
 def polar_to_cartesian(range_data, angle_min, angle_increment):
-    """Convert polar coordinates from the LiDAR data to Cartesian coordinates."""
+    """Convert polar coordinates from the LiDAR data to Cartesian coordinates with 0 degrees at the Y axis."""
     angles = angle_min + np.arange(len(range_data)) * angle_increment
-    return np.vstack((range_data * np.cos(angles), range_data * np.sin(angles))).T
+    adjusted_angles = angles + np.pi / 2
+    return np.vstack((range_data * np.cos(adjusted_angles), range_data * np.sin(adjusted_angles))).T
 
 def euclidean_clustering(points, distance_threshold, min_points, max_points):
     """Cluster points based on Euclidean distance."""

@@ -16,7 +16,7 @@
   <node pkg="mercator_sensor_fusion_ros_pkg" type="calibration_cam_lidar" name="calibration_cam_lidar" output="screen">
     <!-- Parameters -->
     <param name="collect_time" value="60.0" />
-    <param name="data_max_size" value="50" />
+    <param name="data_max_size" value="1000" />
     
     <!-- Topic remappings -->
     <!-- <remap from="cam_poses" to="/input_cam_poses" />
