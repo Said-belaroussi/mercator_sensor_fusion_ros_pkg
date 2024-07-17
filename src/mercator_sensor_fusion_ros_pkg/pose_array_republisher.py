@@ -10,7 +10,7 @@ class PoseArrayRepublisherNode:
         rospy.init_node('pose_array_republisher_node', anonymous=True)
 
         # Read the transformation matrix from ROS parameters
-        self.transform_matrix = rospy.get_param('~transform_matrix', 
+        self.transform_matrix = rospy.get_param('~transform_matrix_cam', 
         "[[0.99675996, 0.08043372, -0.05389885], [-0.08043372, 0.99675996, 0.16321373], [0.0, 0.0, 1.0]]")
 
         # Convert the string to a numpy array
@@ -23,7 +23,7 @@ class PoseArrayRepublisherNode:
 
         self.run()
 
-    def string_to_2d_array(string):
+    def string_to_2d_array(self, string):
         """
         Converts a string representation of a 2D array to a NumPy array.
         Args:
