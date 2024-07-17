@@ -1,6 +1,13 @@
 <launch>
 
   <node pkg="mercator_sensor_fusion_ros_pkg" type="pose_array_republisher" name="pose_array_republisher" output="screen">
+      <!-- Set the transformation matrix parameter -->
+    <param name="transform_matrix_cam" value="[[0.99675996, 0.08043372, -0.05389885],
+                                              [-0.08043372, 0.99675996, 0.16321373], 
+                                              [0.0, 0.0, 1.0]]"/>
+    <param name="transform_matrix_lidar" value="[[0.98483877, 0.1734722, 0.02260684],
+                                                [-0.1734722, 0.98483877, 0.01221501],
+                                                [ 0.0, 0.0, 1.0]]"/>
   </node>
   <arg name="robot_names" default="['base_link_23', 'base_link_40']"/>
   <!-- Node launching -->

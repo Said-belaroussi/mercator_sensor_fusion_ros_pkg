@@ -11,9 +11,9 @@ class PoseArrayRepublisherNode:
 
         # Read the transformation matrix from ROS parameters
         self.transform_matrix_cam = rospy.get_param('~transform_matrix_cam', 
-        "[[0.99675996, 0.08043372, -0.05389885], [-0.08043372, 0.99675996, 0.16321373], [0.0, 0.0, 1.0]]")
+        "[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]")
         self.transform_matrix_lidar = rospy.get_param('~transform_matrix_lidar',
-         "[[0.98483877, 0.1734722, 0.02260684], [-0.1734722, 0.98483877, 0.01221501], [ 0.0, 0.0, 1.0]]")
+         "[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]]")
 
         self.frame_id = rospy.get_param('~frame_id', 'base_link_40')
 
