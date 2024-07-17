@@ -10,16 +10,23 @@ class PoseArrayRepublisherNode:
         rospy.init_node('pose_array_republisher_node', anonymous=True)
 
         # Read the transformation matrix from ROS parameters
-        self.transform_matrix = rospy.get_param('~transform_matrix_cam', 
+        self.transform_matrix_cam = rospy.get_param('~transform_matrix_cam', 
         "[[0.99675996, 0.08043372, -0.05389885], [-0.08043372, 0.99675996, 0.16321373], [0.0, 0.0, 1.0]]")
+        self.transform_matrix_lidar = rospy.get_param('~transform_matrix_lidar',
+         "[[0.98483877, 0.1734722, 0.02260684], [-0.1734722, 0.98483877, 0.01221501], [ 0.0, 0.0, 1.0]]")
+
+        self.frame_id = rospy.get_param('~frame_id', 'base_link_40')
 
         # Convert the string to a numpy array
-        self.transform_matrix = self.string_to_2d_array(self.transform_matrix)
+        self.transform_matrix_cam = self.string_to_2d_array(self.transform_matrix_cam)
+        self.transform_matrix_lidar = self.string_to_2d_array(self.transform_matrix_lidar)
         # Define the publisher
-        self.pub = rospy.Publisher('cam_poses_base_link', PoseArray, queue_size=10)
+        self.pub_cam = rospy.Publisher('cam_poses_transformed', PoseArray, queue_size=10)
+        self.pub_lidar = rospy.Publisher('lidar_poses_transformed', PoseArray, queue_size=10)
 
         # Define the subscriber and its callback
-        self.sub = rospy.Subscriber('cam_poses', PoseArray, self.callback)
+        self.sub_cam = rospy.Subscriber('cam_poses', PoseArray, self.callback_cam)
+        self.sub_lidar = rospy.Subscriber('lidar_poses', PoseArray, self.callback_lidar)
 
         self.run()
 
@@ -42,9 +49,19 @@ class PoseArrayRepublisherNode:
         # Convert the nested list to a NumPy array
         return np.array(array_list)
 
-    def callback(self, pose_array_msg):
+    def callback_cam(self, pose_array_msg):
+        transformed_pose_array_msg = self.transform_publish(pose_array_msg, self.transform_matrix_cam)
+        self.pub_cam.publish(transformed_pose_array_msg)
+
+
+    def callback_lidar(self, pose_array_msg):
+        transformed_pose_array_msg = self.transform_publish(pose_array_msg, self.transform_matrix_lidar)
+        self.pub_lidar.publish(transformed_pose_array_msg)
+
+
+    def transform_publish(self, pose_array_msg, transform_matrix):
         # Change the frame_id to "base_link_40"
-        pose_array_msg.header.frame_id = "base_link_40"
+        pose_array_msg.header.frame_id = self.frame_id
         
         # Transform each pose in the PoseArray
         for pose in pose_array_msg.poses:
@@ -56,15 +73,14 @@ class PoseArrayRepublisherNode:
             position_homogeneous = np.array([x, y, 1.0])
             
             # Apply the transformation
-            transformed_position = self.transform_matrix @ position_homogeneous
+            transformed_position = transform_matrix @ position_homogeneous
             
             # Update the pose with the transformed position
             pose.position.x = transformed_position[0]
             pose.position.y = transformed_position[1]
             # Z remains unchanged in this 2D transformation
             
-        # Publish the modified message
-        self.pub.publish(pose_array_msg)
+        return pose_array_msg
 
     def run(self):
         # Keep the node running
