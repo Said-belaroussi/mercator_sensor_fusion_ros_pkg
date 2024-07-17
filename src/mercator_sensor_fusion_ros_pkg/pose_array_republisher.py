@@ -13,10 +13,12 @@ class PoseArrayRepublisherNode:
 
         # Define the subscriber and its callback
         self.sub = rospy.Subscriber('cam_poses', PoseArray, self.callback)
+
+        self.run()
         
     def callback(self, pose_array_msg):
         # Change the frame_id to "base_link"
-        pose_array_msg.header.frame_id = "base_link"
+        pose_array_msg.header.frame_id = "base_link_40"
         
         # Publish the modified message
         self.pub.publish(pose_array_msg)

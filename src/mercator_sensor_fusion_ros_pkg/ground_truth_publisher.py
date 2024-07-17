@@ -56,7 +56,7 @@ class GroundTruthPublisherNode:
 
                 pose_array_msg = PoseArray()
                 pose_array_msg.header.stamp = rospy.Time.now()
-                pose_array_msg.header.frame_id = "base_link"
+                pose_array_msg.header.frame_id = "base_link_40"
 
                 for robot_name in self.robot_names:
                     if robot_name != self.reference_robot_name:

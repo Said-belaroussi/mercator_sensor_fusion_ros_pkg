@@ -102,7 +102,7 @@ class LidarDetectorNode:
         marker = Marker()
         marker.header = Header()
         marker.header.stamp = rospy.Time.now()
-        marker.header.frame_id = "base_link"
+        marker.header.frame_id = "base_link_40"
         marker.type = Marker.SPHERE_LIST
         marker.action = Marker.ADD
         marker.scale.x = 0.1
@@ -397,7 +397,7 @@ class LidarDetectorNode:
 
         positions = self.detect_robots(data)
         positions.header.stamp = rospy.Time.now()
-        positions.header.frame_id = "base_link"
+        positions.header.frame_id = "base_link_40"
         if positions is not None:
             self.publish_positions(positions)
 
