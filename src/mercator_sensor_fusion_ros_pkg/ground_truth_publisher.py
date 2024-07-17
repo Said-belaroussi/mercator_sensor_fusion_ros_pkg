@@ -44,9 +44,6 @@ class GroundTruthPublisherNode:
             ref_pose = self.robot_poses.get(self.reference_robot_name)
             
             if ref_pose:
-                
-                pose_array_msg = PoseArray()
-                # pose_array_msg.header.frame_id = ref_pose
 
                 ref_position = np.array([ref_pose.position.x, ref_pose.position.y, ref_pose.position.z, 1])
                 ref_orientation = np.array([ref_pose.orientation.x, ref_pose.orientation.y, ref_pose.orientation.z, ref_pose.orientation.w])
@@ -56,6 +53,10 @@ class GroundTruthPublisherNode:
                 ref_matrix[0:3, 3] = ref_position[0:3]
 
                 inverse_ref_matrix = np.linalg.inv(ref_matrix)
+
+                pose_array_msg = PoseArray()
+                pose_array_msg.header.stamp = rospy.Time.now()
+                pose_array_msg.header.frame_id = "base_link"
 
                 for robot_name in self.robot_names:
                     if robot_name != self.reference_robot_name:

@@ -396,7 +396,8 @@ class LidarDetectorNode:
     def scan_callback(self, data):
 
         positions = self.detect_robots(data)
-
+        positions.header.stamp = rospy.Time.now()
+        positions.header.frame_id = "base_link"
         if positions is not None:
             self.publish_positions(positions)
 

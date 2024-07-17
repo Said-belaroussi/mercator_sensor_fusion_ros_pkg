@@ -1,0 +1,5 @@
+<launch>
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="pose_array_republisher" name="pose_array_republisher" output="screen">
+  </node>
+</launch>
