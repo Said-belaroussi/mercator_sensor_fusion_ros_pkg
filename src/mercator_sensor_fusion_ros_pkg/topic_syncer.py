@@ -25,7 +25,7 @@ def extract_positions_from_tf(bag):
                 timestamps.append(t.to_sec())
     return np.array(positions), np.array(timestamps)
 
-def detect_significant_movement(positions, threshold=0.1):
+def detect_significant_movement(positions, threshold=0.03):
     diffs = np.linalg.norm(np.diff(positions, axis=0), axis=1)
     movement_indices = np.where(diffs > threshold)[0]
     if movement_indices.size == 0:
@@ -62,8 +62,8 @@ def sync_rosbags(bag1_path, bag2_path, output_bag1_path, output_bag2_path):
                 outbag2.write(topic, msg, t)
 
 if __name__ == "__main__":
-    bag1_path = 'robot.bag'
-    bag2_path = 'tracking_system.bag'
+    bag1_path = 'rvr_40_calib.bag'
+    bag2_path = 'rvr_40_tycho_calibration.bag'
     output_bag1_path = 'robot_synced.bag'
     output_bag2_path = 'tracking_system_synced.bag'
 
