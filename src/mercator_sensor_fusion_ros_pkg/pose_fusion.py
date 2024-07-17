@@ -257,15 +257,15 @@ class PoseFusionNode:
     def cam_callback(self, data):
         self.cam_poses = data
 
-        if sensors_number == 1 and sensors_topics[0] == 'cam_poses':
+        if self.sensors_number == 1 and self.sensors_topics[0] == 'cam_poses':
             self.single_sensor_tracking()
-        elif sensors_number == 2 and sensors_topics[0] == 'cam_poses':
+        elif self.sensors_number == 2 and self.sensors_topics[0] == 'cam_poses':
             self.match_and_fuse()
 
     def lidar_callback(self, data):
         self.lidar_poses = data
         
-        if sensors_number == 1 and sensors_topics[0] == 'lidar_poses':
+        if self.sensors_number == 1 and self.sensors_topics[0] == 'lidar_poses':
             self.single_sensor_tracking()
         # self.match_and_fuse()
 
@@ -297,7 +297,7 @@ class PoseFusionNode:
         cost_matrix = self.build_cost_matrix(poses_1_xy, poses_2_xy)
         poses_1_indices, poses_2_indices = linear_sum_assignment(cost_matrix)
 
-        return poses_indices, poses_2_indices
+        return poses_1_indices, poses_2_indices
 
     def delete_kalman_filters(self, kf_keys):
         kfs_to_delete = []
@@ -323,7 +323,7 @@ class PoseFusionNode:
         kf_keys_list = list(self.kalman_filters.keys())
         kf_poses_xy = np.array([self.kalman_filters[key].get_state() for key in kf_keys_list])
 
-        poses_indices, kf_indices = match_2_poses_arrays(poses_xy, kf_poses_xy)
+        poses_indices, kf_indices = self.match_2_poses_arrays(poses_xy, kf_poses_xy)
 
         corresponding_kf_ids = [0 for i in range(len(poses_xy))]
  
@@ -363,7 +363,9 @@ class PoseFusionNode:
         cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses.poses])
         lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses.poses])
 
-        cam_indices, lidar_indices = match_2_poses_arrays(cam_poses_xy, lidar_poses_xy)
+        rospy.loginfo(cam_poses_xy)
+        rospy.loginfo(lidar_poses_xy)
+        cam_indices, lidar_indices = self.match_2_poses_arrays(cam_poses_xy, lidar_poses_xy)
         
         # # Initialize Kalman filters if not already initialized
         # if not self.kalman_filters:
@@ -393,7 +395,7 @@ class PoseFusionNode:
             self.kalman_filters[corresponding_kf_ids[cam_idx]].predict()
             self.kalman_filters[corresponding_kf_ids[cam_idx]].update(measurements)
 
-            fused_pose = get_fused_pose(corresponding_kf_ids[cam_idx])
+            fused_pose = self.get_fused_pose(corresponding_kf_ids[cam_idx])
             fused_poses.poses.append(fused_pose)
 
         if self.sensors_trusts[0]:
@@ -409,7 +411,7 @@ class PoseFusionNode:
                 self.kalman_filters[corresponding_kf_ids[i]].predict()
                 self.kalman_filters[corresponding_kf_ids[i]].update(measurements)
 
-                fused_pose = get_fused_pose(corresponding_kf_ids[i])
+                fused_pose = self.get_fused_pose(corresponding_kf_ids[i])
                 fused_poses.poses.append(fused_pose)
 
         non_matched_kf_ids = [key for key in self.kalman_filters.keys() if key not in corresponding_kf_ids]
@@ -435,7 +437,7 @@ class PoseFusionNode:
                 self.kalman_filters[key].predict()
                 self.kalman_filters[key].update(measurements)
 
-                fused_pose = get_fused_pose(key)
+                fused_pose = self.get_fused_pose(key)
                 fused_poses.poses.append(fused_pose)
 
             for key in kfs_to_delete:

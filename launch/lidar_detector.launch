@@ -2,12 +2,12 @@
     <!-- Define parameters within the lidar_detector namespace -->
     <param name="lidar_detector/camera_fov_deg" value="95" />
     <param name="lidar_detector/camera_resolution" value="256" />
-    <param name="lidar_detector/detection_method" value="standalone_euclidean_clustering" />
+    <param name="lidar_detector/detection_method" value="fully_assisted_detection" />
     <param name="lidar_detector/visualize" value="true" />
     <param name="lidar_detector/clustering_distance_threshold" value="0.15" />
     <param name="lidar_detector/clustering_min_points" value="2" />
     <param name="lidar_detector/clustering_max_points" value="30" />
-    <param name="lidar_detector/camera_poses_topic" value="camera_poses" />
+    <param name="lidar_detector/camera_poses_topic" value="cam_poses_transformed" />
 
     <!-- Specify the node to be launched -->
     <node pkg="mercator_sensor_fusion_ros_pkg" type="lidar_detector" name="lidar_detector" output="screen">

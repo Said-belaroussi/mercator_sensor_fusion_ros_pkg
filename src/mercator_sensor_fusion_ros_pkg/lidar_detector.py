@@ -160,13 +160,15 @@ class LidarDetectorNode:
             return None
         
     def fully_assisted_detection(self, data):
+        
+        positions = PoseArray()
 
         with self.last_camera_poses_lock:
             camera_poses = self.last_camera_poses
 
         if camera_poses is None:
             rospy.logwarn("No camera poses received yet.")
-            return
+            return positions
                 
         ranges = np.array(data.ranges)
         angles = np.linspace(data.angle_min, data.angle_min + len(ranges) * data.angle_increment, num=len(ranges), endpoint=False)
@@ -175,8 +177,6 @@ class LidarDetectorNode:
         camera_polar = [(np.sqrt(pose.position.x**2 + pose.position.y**2),
                         np.arctan2(pose.position.y, pose.position.x) - np.pi/2) # - np.pi/2 to align with the Lidar frame
                         for pose in camera_poses.poses]
-
-        positions = PoseArray()
 
         # Define angular threshold for filtering (e.g., +/- 50 degrees)
         angle_threshold = np.radians(50)
