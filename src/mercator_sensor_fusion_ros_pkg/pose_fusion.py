@@ -9,7 +9,7 @@ from sensor_msgs.msg import LaserScan
 import numpy as np
 
 
-class KalmanFilter:
+class KalmanFilterClass:
     def __init__(self, id, sensors_number=2, inital_velocity=0.0, initial_position=(0.0, 0.0), frequency=25.0,
         process_noise_factor=0.0001, initial_sensors_variances=None, robot_average_radius=0.15):
 
@@ -160,7 +160,7 @@ class PoseFusionNode:
 
     def initialize_kalman_filter(self, id, sensors_number=2, inital_velocity=0.0, initial_position=(0.0, 0.0), frequency=25.0,
         process_noise_factor=0.0001, initial_sensors_variances=None, robot_average_radius=0.15):
-        return KalmanFilter(id, sensors_number=sensors_number, inital_velocity=inital_velocity, initial_position=initial_position,
+        return KalmanFilterClass(id, sensors_number=sensors_number, inital_velocity=inital_velocity, initial_position=initial_position,
                             frequency=frequency, process_noise_factor=process_noise_factor, initial_sensors_variances=initial_sensors_variances,
                             robot_average_radius=robot_average_radius)
 
@@ -215,7 +215,7 @@ class PoseFusionNode:
 
         return covariance_noise_matrix
 
-    def compute_measurement_covariance(self, measurements, sensor_type):
+    def compute_measurement_covariance_sensor_type(self, measurements, sensor_type):
         """
         Computes the measurement covariance based on the positions given by the specified sensor measurements.
         """
@@ -323,18 +323,21 @@ class PoseFusionNode:
         kf_keys_list = list(self.kalman_filters.keys())
         kf_poses_xy = np.array([self.kalman_filters[key].get_state() for key in kf_keys_list])
 
-        poses_indices, kf_indices = self.match_2_poses_arrays(poses_xy, kf_poses_xy)
-
         corresponding_kf_ids = [0 for i in range(len(poses_xy))]
- 
-        for pose_idx, kf_idx in zip(poses_indices, kf_indices):
-            corresponding_kf_ids[pose_idx] = kf_keys_list[kf_idx]
 
-        if (self.keep_tracking_with_only_lidar):
-            self.non_matched_kf_ids = [key for key in self.kalman_filters.keys() if key not in corresponding_kf_ids]
-            for key in self.non_matched_kf_ids:
-                # TODO
-                pass
+        if len(poses_xy) > 0 and len(kf_poses_xy):
+            poses_indices, kf_indices = self.match_2_poses_arrays(poses_xy, kf_poses_xy)
+ 
+            for pose_idx, kf_idx in zip(poses_indices, kf_indices):
+                corresponding_kf_ids[pose_idx] = kf_keys_list[kf_idx]
+
+            if (self.keep_tracking_with_only_lidar):
+                self.non_matched_kf_ids = [key for key in self.kalman_filters.keys() if key not in corresponding_kf_ids]
+                for key in self.non_matched_kf_ids:
+                    # TODO
+                    pass
+        else:
+            poses_indices = []
 
         unmatched_poses_indices = [i for i in range(len(poses_xy)) if i not in poses_indices]
         # Initialize new Kalman filters for the unmatched poses
@@ -359,10 +362,18 @@ class PoseFusionNode:
     def match_and_fuse(self):
         if self.cam_poses is None or self.lidar_poses is None:
             return
+        # Init fused poses
+        fused_poses = PoseArray()
+        fused_poses.header.stamp = rospy.Time.now()
+        fused_poses.header.frame_id = 'fused_frame'
+
         # Perform matching between poses using the Hungarian algorithm
         cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses.poses])
         lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses.poses])
 
+        # Match kf poses with cam poses
+        corresponding_kf_ids = self.match_kf_poses(cam_poses_xy)
+        
         if len(cam_poses_xy) > 0 and len(lidar_poses_xy) > 0:
             rospy.loginfo(cam_poses_xy)
             rospy.loginfo(lidar_poses_xy)
@@ -375,13 +386,6 @@ class PoseFusionNode:
             #         self.kalman_filters[new_id] = self.initialize_kalman_filter(new_id, 
             #                                     initial_position=(cam_poses.poses[i].position.x, cam_poses.poses[i].position.y)) 
 
-            # Match kf poses with cam poses
-            corresponding_kf_ids = self.match_kf_poses(cam_poses_xy)
-
-            # Publish fused poses
-            fused_poses = PoseArray()
-            fused_poses.header.stamp = rospy.Time.now()
-            fused_poses.header.frame_id = 'fused_frame'
 
             for cam_idx, lidar_idx in zip(cam_indices, lidar_indices):
                 cam_pose = self.cam_poses.poses[cam_idx]
@@ -398,6 +402,8 @@ class PoseFusionNode:
 
                 fused_pose = self.get_fused_pose(corresponding_kf_ids[cam_idx])
                 fused_poses.poses.append(fused_pose)
+        else:
+            cam_indices = []
 
         if self.sensors_trusts[0]:
             # Update Kalman filters with the remaining non matched cam poses
@@ -406,7 +412,7 @@ class PoseFusionNode:
 
                 # Update Kalman filter
                 measurements = np.array([cam_poses_xy[i][0], cam_poses_xy[i][1], cam_poses_xy[i][0], cam_poses_xy[i][1]])
-                measurement_covariance = self.compute_measurement_covariance(measurements, sensor_type='cam')
+                measurement_covariance = self.compute_measurement_covariance_sensor_type(measurements, sensor_type='cam')
                 self.kalman_filters[corresponding_kf_ids[i]].update_measurement_covariance(measurement_covariance)
 
                 self.kalman_filters[corresponding_kf_ids[i]].predict()
@@ -432,7 +438,7 @@ class PoseFusionNode:
                     self.kalman_filters[key].reset_diverged_only_lidar()
 
                 measurements = np.array([lidar_pose[0], lidar_pose[1], lidar_pose[0], lidar_pose[1]])
-                measurement_covariance = self.compute_measurement_covariance(measurements, sensor_type='lidar')
+                measurement_covariance = self.compute_measurement_covariance_sensor_type(measurements, sensor_type='lidar')
                 self.kalman_filters[key].update_measurement_covariance(measurement_covariance)
 
                 self.kalman_filters[key].predict()
