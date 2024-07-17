@@ -70,6 +70,8 @@ class LidarDetectorNode:
         self.clustering_max_points = rospy.get_param("~clustering_max_points", 30)  # Default clustering max points is 30
         
         self.camera_poses_topic = rospy.get_param("~camera_poses_topic", "camera_poses")  # Default camera poses topic is camera_poses
+        self.fully_assisted_detection_distance_threshold = rospy.get_param("~fully_assisted_detection_distance_threshold", 0.3)  # Default fully assisted detection distance threshold is 0.1 meters
+        
         # Variable to store last detections
         self.last_detections = None
         self.last_detections_lock = threading.Lock()
@@ -143,14 +145,14 @@ class LidarDetectorNode:
             return self.process_detection(data, self.partially_assisted_euclidean_clustering)
         elif self.detection_method == "partially_assisted_dbscan_clustering":
             return self.process_detection(data, self.partially_assisted_dbscan_clustering)
-        # elif self.detection_method == "max_strictly_below_median":
-        #     return self.process_detection(data, self.max_strictly_below_median_depth)
-        # elif self.detection_method == "split_from_background":
-        #     return self.process_detection(data, self.split_from_background_depth)
         elif self.detection_method == "minimum_distance_within_bbox":
             return self.process_detection(data, self.minimum_distance_within_bbox_depth)
         elif self.detection_method == "fully_assisted_detection":
             return self.fully_assisted_detection(data)
+        # elif self.detection_method == "max_strictly_below_median":
+        #     return self.process_detection(data, self.max_strictly_below_median_depth)
+        # elif self.detection_method == "split_from_background":
+        #     return self.process_detection(data, self.split_from_background_depth)
         else:
             rospy.loginfo("deeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
             rospy.loginfo(self.detection_method)
@@ -171,13 +173,13 @@ class LidarDetectorNode:
         
         # Camera poses in polar coordinates
         camera_polar = [(np.sqrt(pose.position.x**2 + pose.position.y**2),
-                        np.arctan2(pose.position.y, pose.position.x))
+                        np.arctan2(pose.position.y, pose.position.x) - np.pi/2) # - np.pi/2 to align with the Lidar frame
                         for pose in camera_poses.poses]
 
         positions = PoseArray()
 
-        # Define angular threshold for filtering (e.g., +/- 10 degrees)
-        angle_threshold = np.radians(10)
+        # Define angular threshold for filtering (e.g., +/- 50 degrees)
+        angle_threshold = np.radians(50)
 
         for radius, angle in camera_polar:
             # Filter LIDAR points based on angular proximity
@@ -194,6 +196,14 @@ class LidarDetectorNode:
 
             # Find the closest point within the filtered subset
             closest_point = relevant_points[np.argmin(np.linalg.norm(relevant_points - np.array([radius * np.cos(angle), radius * np.sin(angle)]), axis=1))]
+            
+            # Check if closest point is within the distance threshold
+            if np.linalg.norm(closest_point - np.array([radius * np.cos(angle), radius * np.sin(angle )])) > self.fully_assisted_detection_distance_threshold:
+                continue
+            
+            # Rotate closest point to Camera frame -90 degrees
+            closest_point = np.array([-closest_point[1], closest_point[0]])
+
             position = Pose()
             position.position = Point(closest_point[0], closest_point[1], 0)
             positions.poses.append(position)
