@@ -66,7 +66,7 @@ class CalibrationCamLidarNode:
                 rospy.loginfo("callback lidar_poses")
                 rospy.loginfo(len(self.data_for_lidar_calibration[topic_key]))
                 rospy.loginfo(len(self.data_for_lidar_calibration["ground_truth_poses"]))
-                if (check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
+                if (self.check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
                     with self.locks[topic_key]:
                         self.data_for_lidar_calibration[topic_key].append(data)
                     with self.locks["ground_truth_poses"]:
@@ -75,7 +75,7 @@ class CalibrationCamLidarNode:
                 rospy.loginfo("callback cam_poses")
                 rospy.loginfo(len(self.data_for_cam_calibration[topic_key]))
                 rospy.loginfo(len(self.data_for_cam_calibration["ground_truth_poses"]))
-                if (check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
+                if (self.check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
                     with self.locks[topic_key]:
                         self.data_for_cam_calibration[topic_key].append(data)
                     with self.locks["ground_truth_poses"]:
