@@ -1,5 +1,7 @@
 <launch>
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="pose_array_republisher" name="pose_array_republisher" output="screen">
+    <!-- Set the transformation matrix parameter -->
+    <param name="transform_matrix" value="[[0.99675996, 0.08043372, -0.05389885], [-0.08043372, 0.99675996, 0.16321373], [0.0, 0.0, 1.0]]"/>
   </node>
 </launch>
