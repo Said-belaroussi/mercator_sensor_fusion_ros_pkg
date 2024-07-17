@@ -46,6 +46,12 @@ class CalibrationCamLidarNode:
 
         self.run()
 
+    def compute_distance(self, pose1, pose2):
+        return np.linalg.norm([pose1.position.x - pose2.position.x, pose1.position.y - pose2.position.y])
+
+    def check_distance(self, pose1, pose2, threshold=0.3):
+        return self.compute_distance(pose1, pose2) < threshold
+
     def callback(self, data, args):
         topic_key = args
         current_time = time()
@@ -60,18 +66,20 @@ class CalibrationCamLidarNode:
                 rospy.loginfo("callback lidar_poses")
                 rospy.loginfo(len(self.data_for_lidar_calibration[topic_key]))
                 rospy.loginfo(len(self.data_for_lidar_calibration["ground_truth_poses"]))
-                with self.locks[topic_key]:
-                    self.data_for_lidar_calibration[topic_key].append(data)
-                with self.locks["ground_truth_poses"]:
-                    self.data_for_lidar_calibration["ground_truth_poses"].append(self.last_data["ground_truth_poses"])
+                if (check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
+                    with self.locks[topic_key]:
+                        self.data_for_lidar_calibration[topic_key].append(data)
+                    with self.locks["ground_truth_poses"]:
+                        self.data_for_lidar_calibration["ground_truth_poses"].append(self.last_data["ground_truth_poses"])
             elif topic_key == "cam_poses" and len(self.data_for_cam_calibration["cam_poses"]) < self.data_max_size:
                 rospy.loginfo("callback cam_poses")
                 rospy.loginfo(len(self.data_for_cam_calibration[topic_key]))
                 rospy.loginfo(len(self.data_for_cam_calibration["ground_truth_poses"]))
-                with self.locks[topic_key]:
-                    self.data_for_cam_calibration[topic_key].append(data)
-                with self.locks["ground_truth_poses"]:
-                    self.data_for_cam_calibration["ground_truth_poses"].append(self.last_data["ground_truth_poses"])
+                if (check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
+                    with self.locks[topic_key]:
+                        self.data_for_cam_calibration[topic_key].append(data)
+                    with self.locks["ground_truth_poses"]:
+                        self.data_for_cam_calibration["ground_truth_poses"].append(self.last_data["ground_truth_poses"])
         else:
             # Unregister to stop listening after the time limit
             self.subscribers[topic_key].unregister()
