@@ -27,20 +27,26 @@
         <remap from="~detected_robots" to="~detected_robots" />
     </node>
 
-    <arg name="sensors_topics" default="['cam_poses']"/>
+    <arg name="sensors_topics" default="['cam_poses_transformed']"/>
+    <arg name="sensors_trusts" default="[true, false]"/>
+    <arg name="initial_sensors_variances" default="[0.0256]"/>
 
     <!-- Node to run the pose_fusion_node -->
     <node pkg="mercator_sensor_fusion_ros_pkg" type="pose_fusion" name="pose_fusion" output="screen">
         <!-- Parameters for the node -->
         <rosparam param="sensors_topics" subst_value="True">$(arg sensors_topics)</rosparam>
-        <param name="sensors_trusts" value="[true, false]"/>
+        <rosparam param="sensors_trusts" subst_value="True">$(arg sensors_trusts)</rosparam>
+        <rosparam param="initial_sensors_variances" subst_value="True">$(arg initial_sensors_variances)</rosparam>
         <param name="keep_tracking_with_only_lidar" value="false"/>
         <param name="sensors_number" value="1"/>
         <param name="process_noise_factor" value="0.0001"/>
         <param name="frequency" value="30.0"/>
-        <param name="initial_sensors_variances" value="[0.0256]"/>
         <param name="robot_average_radius" value="0.15"/>
         <param name="initial_velocity" value="0.0"/>
         <param name="initial_position" value="0.0"/>
+
+        <remap from="cam_poses" to="cam_poses_transformed" />
+        <remap from="lidar_poses" to="lidar_poses" />
+
     </node>
 </launch>

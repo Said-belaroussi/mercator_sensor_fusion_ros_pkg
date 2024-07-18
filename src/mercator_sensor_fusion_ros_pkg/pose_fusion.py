@@ -125,10 +125,6 @@ class PoseFusionNode:
         self.lock_cam_poses = threading.Lock()
         self.lock_lidar_poses = threading.Lock()
 
-        self.cam_sub = rospy.Subscriber('cam_poses', PoseArray, self.cam_callback)
-        self.lidar_sub = rospy.Subscriber('lidar_poses', PoseArray, self.lidar_callback)
-        self.fused_pub = rospy.Publisher('fused_poses', PoseArray, queue_size=10)
-
         self.sensors_topics = rospy.get_param('~sensors_topics', ['cam_poses', 'lidar_poses'])
         self.sensors_trusts = rospy.get_param('~sensors_trusts', [True, False])
         self.keep_tracking_with_only_lidar = rospy.get_param('~keep_tracking_with_only_lidar', False)
@@ -147,6 +143,10 @@ class PoseFusionNode:
             rospy.loginfo(len(self.sensors_topics))
             rospy.loginfo(type(self.sensors_topics))
             raise ValueError("The number of sensors topics should be equal to the number of sensors")
+        
+        self.cam_sub = rospy.Subscriber('cam_poses', PoseArray, self.cam_callback)
+        self.lidar_sub = rospy.Subscriber('lidar_poses', PoseArray, self.lidar_callback)
+        self.fused_pub = rospy.Publisher('fused_poses', PoseArray, queue_size=10)
 
         self.lidar_scan_sub = rospy.Subscriber('scan', LaserScan, self.lidar_scan_callback)
         self.lidar_scan = None
@@ -164,9 +164,9 @@ class PoseFusionNode:
 
     def initialize_kalman_filter(self, id, sensors_number=2, inital_velocity=0.0, initial_position=(0.0, 0.0), frequency=30.0,
         process_noise_factor=0.0001, initial_sensors_variances=None, robot_average_radius=0.15):
-        return KalmanFilterClass(id, sensors_number=sensors_number, inital_velocity=inital_velocity, initial_position=initial_position,
-                            frequency=frequency, process_noise_factor=process_noise_factor, initial_sensors_variances=initial_sensors_variances,
-                            robot_average_radius=robot_average_radius)
+        return KalmanFilterClass(id, sensors_number=self.sensors_number, inital_velocity=inital_velocity, initial_position=initial_position,
+                            frequency=self.frequency, process_noise_factor=self.process_noise_factor, initial_sensors_variances=self.initial_sensors_variances,
+                            robot_average_radius=self.robot_average_radius)
 
     def cam_absolute_error(self, x, y):
         """
@@ -243,12 +243,12 @@ class PoseFusionNode:
         """
         Computes the measurement covariance based on the positions given by only one sensor measurements.
         """
-        if 'cam' in sensors_topics[0]:
+        if 'cam' in self.sensors_topics[0]:
             cam_absolute_error = self.cam_absolute_error(measurements[0], measurements[1])
             cam_variance = cam_absolute_error**2
             covariance_noise_matrix = np.array([[cam_variance, 0],
                                                 [0, cam_variance]])
-        elif 'lidar' in sensors_topics[0]:
+        elif 'lidar' in self.sensors_topics[0]:
             lidar_absolute_error = self.lidar_absolute_error(measurements[0], measurements[1])
             lidar_variance = lidar_absolute_error**2
             covariance_noise_matrix = np.array([[lidar_variance, 0],
@@ -462,15 +462,15 @@ class PoseFusionNode:
         
 
     def single_sensor_tracking(self):
-        if len(sensors_topics) != 1:
+        if len(self.sensors_topics) != 1:
             raise ValueError("The number of sensors topics should be equal to 1"
             "when using the single sensor tracking mode")
         
         poses = None
-        if 'cam' in sensors_topics[0]:
+        if 'cam' in self.sensors_topics[0]:
             with self.lock_cam_poses:
                 poses = self.cam_poses
-        elif 'lidar' in sensors_topics[0]:
+        elif 'lidar' in self.sensors_topics[0]:
             with self.lock_lidar_poses:
                 poses = self.lidar_poses
         else:
@@ -487,10 +487,10 @@ class PoseFusionNode:
         fused_poses = self.init_fused_poses_array()
 
         for i in range(len(poses_xy)):
-            pose = poses.poses[i]
+            pose = poses_xy[i]
 
             # Update Kalman filter
-            measurements = np.array([poses_xy[0], poses_xy[1]])
+            measurements = np.array([pose[0], pose[1]])
 
             measurement_covariance = self.compute_measurement_covariance_single_sensor(measurements)
 
