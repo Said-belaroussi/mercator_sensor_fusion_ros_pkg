@@ -376,6 +376,21 @@ class PoseFusionNode:
 
         return fused_poses
 
+    def filter_edges_poses(self, poses_xy):
+        start_filtering_angle = 50 # in degrees
+        end_filtering_angle = 130 # in degrees
+
+        start_filtering_angle = np.deg2rad(start_filtering_angle)
+        end_filtering_angle = np.deg2rad(end_filtering_angle)
+
+        filtered_poses = []
+        for pose in poses_xy:
+            angle = np.arctan2(pose[1], pose[0])
+            if angle > start_filtering_angle and angle < end_filtering_angle:
+                filtered_poses.append(pose)
+
+        return np.array(filtered_poses)
+
     def match_and_fuse(self):
         if self.cam_poses is None or self.lidar_poses is None:
             return
@@ -387,6 +402,7 @@ class PoseFusionNode:
         with self.lock_lidar_poses:
             lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses.poses])
 
+        cam_poses_xy = self.filter_edges_poses(cam_poses_xy)
         # Match kf poses with cam poses
         corresponding_kf_ids = self.match_kf_poses(cam_poses_xy)
         
