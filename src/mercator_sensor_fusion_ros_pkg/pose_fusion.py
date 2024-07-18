@@ -287,7 +287,8 @@ class PoseFusionNode:
         min_idx = -1
         min_lidar_pose = None
         for i, angle in enumerate(self.lidar_scan.angle_min + np.arange(len(self.lidar_scan.ranges)) * self.lidar_scan.angle_increment):
-            lidar_pose = np.array([self.lidar_scan.ranges[i] * np.cos(angle), self.lidar_scan.ranges[i] * np.sin(angle)])
+            adjusted_angle = angle + np.pi/2 # Adjust the angle to be in the same frame as the camera/robot
+            lidar_pose = np.array([self.lidar_scan.ranges[i] * np.cos(adjusted_angle), self.lidar_scan.ranges[i] * np.sin(adjusted_angle)])
             distance = np.linalg.norm(np.array([pose.position.x, pose.position.y]) - lidar_pose)
             if distance < min_distance:
                 min_distance = distance
@@ -323,7 +324,8 @@ class PoseFusionNode:
 
     def match_kf_poses(self, poses_xy):        
         corresponding_kf_ids = self.get_corresponding_kf_ids(poses_xy)
-        self.delete_kalman_filters(corresponding_kf_ids)
+        if not self.keep_tracking_with_only_lidar:
+            self.delete_kalman_filters(corresponding_kf_ids)
 
         return corresponding_kf_ids
 
@@ -339,11 +341,11 @@ class PoseFusionNode:
             for pose_idx, kf_idx in zip(poses_indices, kf_indices):
                 corresponding_kf_ids[pose_idx] = kf_keys_list[kf_idx]
 
-            if (self.keep_tracking_with_only_lidar):
-                self.non_matched_kf_ids = [key for key in self.kalman_filters.keys() if key not in corresponding_kf_ids]
-                for key in self.non_matched_kf_ids:
-                    # TODO
-                    pass
+            # if (self.keep_tracking_with_only_lidar):
+            #     self.non_matched_kf_ids = [key for key in self.kalman_filters.keys() if key not in corresponding_kf_ids]
+            #     for key in self.non_matched_kf_ids:
+            #         # TODO
+            #         pass
         else:
             poses_indices = []
 
