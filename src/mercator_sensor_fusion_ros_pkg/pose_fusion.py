@@ -137,6 +137,8 @@ class PoseFusionNode:
         self.initial_velocity = rospy.get_param('~initial_velocity', 0.0)
         self.initial_position = rospy.get_param('~initial_position', 0.0)
 
+        self.sensor_fusion_simple_weighted_average = rospy.get_param('~sensor_fusion_simple_weighted_average', False)
+
         if self.sensors_number != len(self.sensors_topics):
             rospy.loginfo(self.sensors_number)
             rospy.loginfo(self.sensors_topics)
@@ -266,7 +268,10 @@ class PoseFusionNode:
         if self.sensors_number == 1 and 'cam' in self.sensors_topics[0]:
             self.single_sensor_tracking()
         elif self.sensors_number == 2 and 'cam' in self.sensors_topics[0]:
-            self.match_and_fuse()
+            if self.sensor_fusion_simple_weighted_average:
+                self.match_and_fuse_weighted_average()
+            else:
+                self.match_and_fuse()
 
     def lidar_callback(self, data):
 
@@ -390,6 +395,54 @@ class PoseFusionNode:
                 filtered_poses.append(pose)
 
         return np.array(filtered_poses)
+
+
+    def match_and_fuse_weighted_average(self):
+        """
+        Match the poses from the camera and lidar sensors and fuse them without using Kalman filters.
+        Simply by matching the poses first and then averaging each pair of poses weighted on their variances.
+        """
+        if self.cam_poses is None or self.lidar_poses is None:
+            return
+
+        # Init fused poses
+        fused_poses = self.init_fused_poses_array()
+
+        with self.lock_cam_poses:
+            cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses.poses])
+        with self.lock_lidar_poses:
+            lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses.poses])
+
+        # Perform matching between poses using the Hungarian algorithm
+        cam_indices, lidar_indices = self.match_2_poses_arrays(cam_poses_xy, lidar_poses_xy)
+
+        for cam_idx, lidar_idx in zip(cam_indices, lidar_indices):
+            cam_pose = cam_poses_xy[cam_idx]
+            lidar_pose = lidar_poses_xy[lidar_idx]
+
+            # Compute the variances of the poses
+            cam_absolute_error = self.cam_absolute_error(cam_pose, cam_pose)
+            lidar_absolute_error = self.lidar_absolute_error(lidar_pose, lidar_pose)
+
+            cam_variance = cam_absolute_error**2
+            lidar_variance = lidar_absolute_error**2
+
+            # Compute the weights of the poses
+            cam_weight = 1/cam_variance
+            lidar_weight = 1/lidar_variance
+
+            # Compute the fused pose
+            fused_pose = (cam_weight*cam_pose + lidar_weight*lidar_pose)/(cam_weight + lidar_weight)
+
+            # Create Pose message
+            pose_msg = Pose()
+            pose_msg.position.x = fused_pose[0]
+            pose_msg.position.y = fused_pose[1]
+
+            fused_poses.poses.append(pose_msg)
+
+        self.fused_pub.publish(fused_poses)
+
 
     def match_and_fuse(self):
         if self.cam_poses is None or self.lidar_poses is None:

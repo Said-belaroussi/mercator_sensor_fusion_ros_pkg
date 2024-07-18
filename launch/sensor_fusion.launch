@@ -44,6 +44,8 @@
         <param name="robot_average_radius" value="0.15"/>
         <param name="initial_velocity" value="0.0"/>
         <param name="initial_position" value="0.0"/>
+        <param name="sensor_fusion_simple_weighted_average" value="True"/>
+
         <remap from="cam_poses" to="cam_poses_transformed" />
         <remap from="lidar_poses" to="lidar_poses_transformed" />
     </node>
