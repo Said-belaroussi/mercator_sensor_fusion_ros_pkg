@@ -82,10 +82,10 @@ class KalmanFilterClass:
         self.kf.R = measurement_covariance
 
     def get_state(self):
-        print("self.kf.x\n", self.kf.x)
-        print("self.kf.Q\n", self.kf.Q)
-        print("self.kf.R\n", self.kf.R)
-        print("self.kf.P\n", self.kf.P)
+        # print("self.kf.x\n", self.kf.x)
+        # print("self.kf.Q\n", self.kf.Q)
+        # print("self.kf.R\n", self.kf.R)
+        # print("self.kf.P\n", self.kf.P)
         return [self.kf.x[0][0], self.kf.x[1][0]]
 
     def get_id(self):
