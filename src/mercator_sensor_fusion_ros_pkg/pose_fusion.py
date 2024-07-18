@@ -7,6 +7,7 @@ from scipy.optimize import linear_sum_assignment
 from filterpy.kalman import KalmanFilter
 from sensor_msgs.msg import LaserScan
 import numpy as np
+import threading
 
 
 class KalmanFilterClass:
@@ -372,7 +373,7 @@ class PoseFusionNode:
         # Init fused poses
         fused_poses = PoseArray()
         fused_poses.header.stamp = rospy.Time.now()
-        fused_poses.header.frame_id = 'fused_frame'
+        fused_poses.header.frame_id = 'base_link_40'
 
         # Perform matching between poses using the Hungarian algorithm
         with self.lock_cam_poses:
