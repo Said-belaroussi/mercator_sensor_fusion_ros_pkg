@@ -389,18 +389,8 @@ class PoseFusionNode:
             rospy.loginfo(lidar_poses_xy)
             cam_indices, lidar_indices = self.match_2_poses_arrays(cam_poses_xy, lidar_poses_xy)
             
-            # # Initialize Kalman filters if not already initialized
-            # if not self.kalman_filters:
-            #     for i in range(len(self.cam_poses.poses)):
-            #         new_id = self.generate_new_id()
-            #         self.kalman_filters[new_id] = self.initialize_kalman_filter(new_id, 
-            #                                     initial_position=(cam_poses.poses[i].position.x, cam_poses.poses[i].position.y)) 
-
-
             for cam_idx, lidar_idx in zip(cam_indices, lidar_indices):
-                # cam_pose = self.cam_poses.poses[cam_idx]
                 cam_pose = cam_poses_xy[cam_idx]
-                # lidar_pose = self.lidar_poses.poses[lidar_idx]
                 lidar_pose = lidar_poses_xy[lidar_idx]
 
                 # Update Kalman filter
