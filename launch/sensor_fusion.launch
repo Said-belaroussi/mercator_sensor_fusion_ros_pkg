@@ -37,7 +37,7 @@
         <rosparam param="sensors_topics" subst_value="True">$(arg sensors_topics)</rosparam>
         <rosparam param="sensors_trusts" subst_value="True">$(arg sensors_trusts)</rosparam>
         <rosparam param="initial_sensors_variances" subst_value="True">$(arg initial_sensors_variances)</rosparam>
-        <param name="keep_tracking_with_only_lidar" value="false"/>
+        <param name="keep_tracking_with_only_lidar" value="True"/>
         <param name="sensors_number" value="2"/>
         <param name="process_noise_factor" value="0.0001"/>
         <param name="frequency" value="30.0"/>

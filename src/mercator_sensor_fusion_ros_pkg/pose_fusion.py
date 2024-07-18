@@ -133,7 +133,7 @@ class PoseFusionNode:
         self.frequency = rospy.get_param('~frequency', 30.0)
         self.initial_sensors_variances = rospy.get_param('~initial_sensors_variances', [0.0256, 0.0196])
         self.robot_average_radius = rospy.get_param('~robot_average_radius', 0.15) # in meters
-        self.divergence_only_lidar_threshold = self.robot_average_radius*2
+        self.divergence_only_lidar_threshold = self.robot_average_radius*4
         self.initial_velocity = rospy.get_param('~initial_velocity', 0.0)
         self.initial_position = rospy.get_param('~initial_position', 0.0)
 
@@ -289,7 +289,7 @@ class PoseFusionNode:
         for i, angle in enumerate(self.lidar_scan.angle_min + np.arange(len(self.lidar_scan.ranges)) * self.lidar_scan.angle_increment):
             adjusted_angle = angle + np.pi/2 # Adjust the angle to be in the same frame as the camera/robot
             lidar_pose = np.array([self.lidar_scan.ranges[i] * np.cos(adjusted_angle), self.lidar_scan.ranges[i] * np.sin(adjusted_angle)])
-            distance = np.linalg.norm(np.array([pose.position.x, pose.position.y]) - lidar_pose)
+            distance = np.linalg.norm(np.array([pose[0], pose[1]]) - lidar_pose)
             if distance < min_distance:
                 min_distance = distance
                 min_idx = i
