@@ -1,0 +1,43 @@
+<launch>
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="camera_detector" name="camera_detector" output="screen">
+    <!-- Parameters -->
+    <param name="blob_file_path" value="$(find mercator_sensor_fusion_ros_pkg)\src\mercator_sensor_fusion_ros_pkg\models\rvr_256_rota.blob" />
+    <param name="json_file_path" value="$(find mercator_sensor_fusion_ros_pkg)\src\mercator_sensor_fusion_ros_pkg\models\rvr_256_rota.json" />
+    <param name="visualize" value="false" />
+    <param name="publish_frames" value="false" />
+
+    <!-- Topic remappings -->
+    <!-- <remap from="oak" to="/output_oak" />
+    <remap from="oak_frames" to="/output_oak_frames" />
+    <remap from="cam_poses" to="/output_cam_poses" /> -->
+  </node>
+
+      <!-- Node launching -->
+    <node pkg="mercator_sensor_fusion_ros_pkg" type="pose_array_republisher" name="pose_array_republisher" output="screen">
+        <!-- Set the transformation matrix parameter -->
+        <param name="transform_matrix_cam" value="[[0.99675996, 0.08043372, -0.05389885],
+                                                [-0.08043372, 0.99675996, 0.16321373], 
+                                                [0.0, 0.0, 1.0]]"/>
+        <param name="transform_matrix_lidar" value="[[0.98483877, 0.1734722, 0.02260684],
+                                                    [-0.1734722, 0.98483877, 0.01221501],
+                                                    [ 0.0, 0.0, 1.0]]"/>
+    </node>
+    <!-- Specify the node to be launched -->
+    <node pkg="mercator_sensor_fusion_ros_pkg" type="lidar_detector" name="lidar_detector" output="screen">
+        <param name="camera_fov_deg" value="95" />
+        <param name="camera_resolution" value="256" />
+        <param name="detection_method" value="fully_assisted_detection" />
+        <param name="visualize" value="true" />
+        <param name="clustering_distance_threshold" value="0.15" />
+        <param name="clustering_min_points" value="2" />
+        <param name="clustering_max_points" value="30" />
+        <param name="camera_poses_topic" value="cam_poses_transformed" />
+        <param name="fully_assisted_detection_distance_threshold" value="0.3" />
+        <!-- Remap topics if necessary -->
+        <remap from="oak" to="oak" />
+        <remap from="scan" to="scan" />
+        <remap from="lidar_poses" to="lidar_poses" />
+        <remap from="~detected_robots" to="~detected_robots" />
+    </node>
+</launch>
