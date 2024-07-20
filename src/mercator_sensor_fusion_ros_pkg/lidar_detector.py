@@ -70,7 +70,6 @@ class LidarDetectorNode:
         self.clustering_min_points = rospy.get_param("~clustering_min_points", 2)  # Default clustering min points is 2
         self.clustering_max_points = rospy.get_param("~clustering_max_points", 30)  # Default clustering max points is 30
         
-        self.camera_poses_topic = rospy.get_param("~camera_poses_topic", "camera_poses")  # Default camera poses topic is camera_poses
         self.fully_assisted_detection_distance_threshold = rospy.get_param("~fully_assisted_detection_distance_threshold", 0.3)  # Default fully assisted detection distance threshold is 0.1 meters
         
         # Variable to store last detections
@@ -91,7 +90,7 @@ class LidarDetectorNode:
 
         if self.detection_method == "fully_assisted_detection":
             # Fully assisted detection requires the position from the camera in the LiDAR frame of the object
-            self.camera_sub = rospy.Subscriber(self.camera_poses_topic, PoseArray, self.camera_callback)
+            self.camera_sub = rospy.Subscriber('cam_poses', PoseArray, self.camera_callback)
 
         # Publisher
         self.positions_pub = rospy.Publisher('lidar_poses', PoseArray, queue_size=10)
@@ -265,12 +264,13 @@ class LidarDetectorNode:
         with self.last_detections_lock:
             last_detections_copy = self.last_detections
 
-        if last_detections_copy is None:
-            rospy.logwarn("No detections received yet.")
-            return
-        
         # Initialize an array to store the positions
         positions = PoseArray()
+
+        if last_detections_copy is None:
+            rospy.logwarn("No detections received yet.")
+            return positions
+
         positions.header.frame_id = last_detections_copy.header.frame_id
 
         for detection in last_detections_copy.detections:
