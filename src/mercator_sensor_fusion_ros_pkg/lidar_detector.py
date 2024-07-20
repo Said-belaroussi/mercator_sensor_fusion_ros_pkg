@@ -59,6 +59,7 @@ class LidarDetectorNode:
         rospy.init_node('object_depth_finder_node', anonymous=True)
 
         # Parameters
+        self.robot_name = rospy.get_param("~robot_name", "robot")  # Default robot name is robot
         self.camera_fov_deg = rospy.get_param("~camera_fov_deg", 95)  # Default camera FOV is 95 degrees
         self.camera_resolution = rospy.get_param("~camera_resolution", 256)  # Default camera resolution is 256 pixels
         self.detection_method = rospy.get_param("~detection_method", "max_strictly_below_median")  # Default detection method is max_strictly_below_median
@@ -104,7 +105,7 @@ class LidarDetectorNode:
         marker = Marker()
         marker.header = Header()
         marker.header.stamp = rospy.Time.now()
-        marker.header.frame_id = "base_link_40"
+        marker.header.frame_id = self.robot_name
         marker.type = Marker.SPHERE_LIST
         marker.action = Marker.ADD
         marker.scale.x = 0.1
@@ -165,11 +166,12 @@ class LidarDetectorNode:
 
         with self.last_camera_poses_lock:
             camera_poses = self.last_camera_poses
-
+        
         if camera_poses is None:
             rospy.logwarn("No camera poses received yet.")
             return positions
-                
+
+        positions.header.frame_id = camera_poses.header.frame_id 
         ranges = np.array(data.ranges)
         angles = np.linspace(data.angle_min, data.angle_min + len(ranges) * data.angle_increment, num=len(ranges), endpoint=False)
         
@@ -224,6 +226,7 @@ class LidarDetectorNode:
                     self.clustering_min_points, self.clustering_max_points)
 
         positions = PoseArray()
+        positions.header.frame_id = data.header.frame_id
         for cluster in clusters:
             center = np.mean(cluster, axis=0)
             position = Pose()
@@ -245,6 +248,7 @@ class LidarDetectorNode:
         clusters = dbscan_clustering(points, self.clustering_distance_threshold, self.clustering_min_points)
 
         positions = PoseArray()
+        positions.header.frame_id = data.header.frame_id
         for cluster in clusters:
             center = np.mean(cluster, axis=0)
             position = Pose()
@@ -264,8 +268,10 @@ class LidarDetectorNode:
         if last_detections_copy is None:
             rospy.logwarn("No detections received yet.")
             return
+        
         # Initialize an array to store the positions
         positions = PoseArray()
+        positions.header.frame_id = last_detections_copy.header.frame_id
 
         for detection in last_detections_copy.detections:
             bbox = detection.bbox
@@ -407,7 +413,7 @@ class LidarDetectorNode:
 
         positions = self.detect_robots(data)
         positions.header.stamp = rospy.Time.now()
-        positions.header.frame_id = "base_link_40"
+        # positions.header.frame_id = self.robot_name
         if positions is not None:
             self.publish_positions(positions)
 
