@@ -119,8 +119,8 @@ class PoseFusionNode:
     def __init__(self):
         rospy.init_node('pose_fusion_node', anonymous=True)
 
-        self.cam_poses = None
-        self.lidar_poses = None
+        self.cam_poses = dict()
+        self.lidar_poses = dict()
 
         self.lock_cam_poses = threading.Lock()
         self.lock_lidar_poses = threading.Lock()
@@ -138,6 +138,12 @@ class PoseFusionNode:
         self.initial_position = rospy.get_param('~initial_position', 0.0)
 
         self.sensor_fusion_simple_weighted_average = rospy.get_param('~sensor_fusion_simple_weighted_average', False)
+
+        # self.track_obstacles = rospy.get_param('~track_obstacles', False)
+
+        self.robot_name = rospy.get_param('~robot_name', 'base_link_40')
+
+        # tracked_obstacles = dict() # {frame_id: [[pose, timestamp], [pose, timestamp], ...]}
 
         if self.sensors_number != len(self.sensors_topics):
             rospy.loginfo(self.sensors_number)
@@ -261,25 +267,42 @@ class PoseFusionNode:
         return covariance_noise_matrix
             
     def cam_callback(self, data):
-
+        cam_poses_frame_id = data.header.frame_id
         with self.lock_cam_poses:
-            self.cam_poses = data
-
+            self.cam_poses[cam_poses_frame_id] = data
+        
         if self.sensors_number == 1 and 'cam' in self.sensors_topics[0]:
-            self.single_sensor_tracking()
+            self.single_sensor_tracking(cam_poses_frame_id)
         elif self.sensors_number == 2 and 'cam' in self.sensors_topics[0]:
             if self.sensor_fusion_simple_weighted_average:
-                self.match_and_fuse_weighted_average()
+                self.match_and_fuse_weighted_average(cam_poses_frame_id)
             else:
-                self.match_and_fuse()
+                self.match_and_fuse(cam_poses_frame_id)
 
+    # def add_timestamps_to_obstacles(self, obstacles_poses):
+    #     return [[pose, rospy.Time.now()] for pose in obstacles_poses]
+
+    # def match_and_track_obstacles(self):
+        
+    #     with self.lock_cam_poses:
+    #         cam_poses = self.cam_poses
+
+    #     obstacles_poses_to_publish = PoseArray()
+    #     obstacles_poses_to_publish.header.stamp = rospy.Time.now()
+    #     obstacles_poses_to_publish.header.frame_id = cam_poses.header.frame_id
+
+    #     if cam_poses.header.frame_id not in tracked_obstacles.keys():
+    #         obstacles_poses = np.array([[pose.position.x, pose.position.y] for pose in cam_poses.poses])
+    #         tracked_obstacles[cam_poses.header.frame_id] = self.add_timestamps_to_obstacles(obstacles_poses)
+    #         obstacles
+        
     def lidar_callback(self, data):
-
+        lidar_poses_frame_id = data.header.frame_id
         with self.lock_lidar_poses:
-            self.lidar_poses = data
+            self.lidar_poses[lidar_poses_frame_id] = data
         
         if self.sensors_number == 1 and 'lidar' in self.sensors_topics[0]:
-            self.single_sensor_tracking()
+            self.single_sensor_tracking(lidar_poses_frame_id)
         # self.match_and_fuse()
 
     def lidar_scan_callback(self, data):
@@ -313,19 +336,19 @@ class PoseFusionNode:
 
         return poses_1_indices, poses_2_indices
 
-    def delete_kalman_filters(self, kf_keys):
+    def delete_kalman_filters(self, kf_keys, kf_frame_id):
         kfs_to_delete = []
 
-        for key in self.kalman_filters.keys():
+        for key in self.kalman_filters[kf_frame_id].keys():
             if key not in kf_keys:
-                self.kalman_filters[key].increment_no_update()
-                if self.kalman_filters[key].get_no_update_threshold_reached():
+                self.kalman_filters[kf_frame_id][key].increment_no_update()
+                if self.kalman_filters[kf_frame_id][key].get_no_update_threshold_reached():
                     kfs_to_delete.append(key)
             else:
-                self.kalman_filters[key].reset_no_update()
+                self.kalman_filters[kf_frame_id][key].reset_no_update()
         
         for key in kfs_to_delete:
-            del self.kalman_filters[key]
+            del self.kalman_filters[kf_frame_id][key]
 
     def match_kf_poses(self, poses_xy):        
         corresponding_kf_ids = self.get_corresponding_kf_ids(poses_xy)
@@ -334,9 +357,9 @@ class PoseFusionNode:
 
         return corresponding_kf_ids
 
-    def get_corresponding_kf_ids(self, poses_xy):
-        kf_keys_list = list(self.kalman_filters.keys())
-        kf_poses_xy = np.array([self.kalman_filters[key].get_state() for key in kf_keys_list])
+    def get_corresponding_kf_ids(self, poses_xy, kf_frame_id):
+        kf_keys_list = list(self.kalman_filters[kf_frame_id].keys())
+        kf_poses_xy = np.array([self.kalman_filters[kf_frame_id][key].get_state() for key in kf_keys_list])
 
         corresponding_kf_ids = [0 for i in range(len(poses_xy))]
 
@@ -358,14 +381,14 @@ class PoseFusionNode:
         # Initialize new Kalman filters for the unmatched poses
         for i in unmatched_poses_indices:
             new_id = self.generate_new_id()
-            self.kalman_filters[new_id] = self.initialize_kalman_filter(new_id, initial_position=(poses_xy[i][0], poses_xy[i][1]))
+            self.kalman_filters[kf_frame_id][new_id] = self.initialize_kalman_filter(new_id, initial_position=(poses_xy[i][0], poses_xy[i][1]))
             corresponding_kf_ids[i] = new_id
         
         return corresponding_kf_ids
 
-    def get_fused_pose(self, kf_id):
+    def get_fused_pose(self, kf_id, kf_frame_id):
         # Get fused pose
-        fused_pose = self.kalman_filters[kf_id].get_state()
+        fused_pose = self.kalman_filters[kf_frame_id][kf_id].get_state()
 
         # Create Pose message
         pose_msg = Pose()
@@ -397,7 +420,7 @@ class PoseFusionNode:
         return np.array(filtered_poses)
 
 
-    def match_and_fuse_weighted_average(self):
+    def match_and_fuse_weighted_average(self, kf_frame_id):
         """
         Match the poses from the camera and lidar sensors and fuse them without using Kalman filters.
         Simply by matching the poses first and then averaging each pair of poses weighted on their variances.
@@ -409,9 +432,9 @@ class PoseFusionNode:
         fused_poses = self.init_fused_poses_array()
 
         with self.lock_cam_poses:
-            cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses.poses])
+            cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses[kf_frame_id].poses])
         with self.lock_lidar_poses:
-            lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses.poses])
+            lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
 
         if len(cam_poses_xy) > 0 and len(lidar_poses_xy) > 0:
             rospy.loginfo(cam_poses_xy)
@@ -461,16 +484,16 @@ class PoseFusionNode:
         self.fused_pub.publish(fused_poses)
 
 
-    def match_and_fuse(self):
+    def match_and_fuse(self, kf_frame_id):
         if self.cam_poses is None or self.lidar_poses is None:
             return
         # Init fused poses
         fused_poses = self.init_fused_poses_array()
 
         with self.lock_cam_poses:
-            cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses.poses])
+            cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses[kf_frame_id].poses])
         with self.lock_lidar_poses:
-            lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses.poses])
+            lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
 
         # cam_poses_xy = self.filter_edges_poses(cam_poses_xy)
         # Match kf poses with cam poses
@@ -491,10 +514,10 @@ class PoseFusionNode:
                 measurements = np.array([cam_pose[0], cam_pose[1], lidar_pose[0], lidar_pose[1]])
                 measurement_covariance = self.compute_measurement_covariance(measurements)
 
-                self.kalman_filters[corresponding_kf_ids[cam_idx]].update_measurement_covariance(measurement_covariance)
+                self.kalman_filters[kf_frame_id][corresponding_kf_ids[cam_idx]].update_measurement_covariance(measurement_covariance)
 
-                self.kalman_filters[corresponding_kf_ids[cam_idx]].predict()
-                self.kalman_filters[corresponding_kf_ids[cam_idx]].update(measurements)
+                self.kalman_filters[kf_frame_id][corresponding_kf_ids[cam_idx]].predict()
+                self.kalman_filters[kf_frame_id][corresponding_kf_ids[cam_idx]].update(measurements)
 
                 fused_pose = self.get_fused_pose(corresponding_kf_ids[cam_idx])
                 fused_poses.poses.append(fused_pose)
@@ -509,47 +532,47 @@ class PoseFusionNode:
                 # Update Kalman filter
                 measurements = np.array([cam_poses_xy[i][0], cam_poses_xy[i][1], cam_poses_xy[i][0], cam_poses_xy[i][1]])
                 measurement_covariance = self.compute_measurement_covariance_sensor_type(measurements, sensor_type='cam')
-                self.kalman_filters[corresponding_kf_ids[i]].update_measurement_covariance(measurement_covariance)
+                self.kalman_filters[kf_frame_id][corresponding_kf_ids[i]].update_measurement_covariance(measurement_covariance)
 
-                self.kalman_filters[corresponding_kf_ids[i]].predict()
-                self.kalman_filters[corresponding_kf_ids[i]].update(measurements)
+                self.kalman_filters[kf_frame_id][corresponding_kf_ids[i]].predict()
+                self.kalman_filters[kf_frame_id][corresponding_kf_ids[i]].update(measurements)
 
                 fused_pose = self.get_fused_pose(corresponding_kf_ids[i])
                 fused_poses.poses.append(fused_pose)
 
-        non_matched_kf_ids = [key for key in self.kalman_filters.keys() if key not in corresponding_kf_ids]
+        non_matched_kf_ids = [key for key in self.kalman_filters[kf_frame_id].keys() if key not in corresponding_kf_ids]
         if(self.keep_tracking_with_only_lidar):
             kfs_to_delete = []
             for key in non_matched_kf_ids:
-                lidar_pose, distance = self.search_for_closest_lidar_scan(self.kalman_filters[key].get_state())
+                lidar_pose, distance = self.search_for_closest_lidar_scan(self.kalman_filters[kf_frame_id][key].get_state())
 
                 if lidar_pose is None:
                     continue
 
                 if distance > self.divergence_only_lidar_threshold:
-                    self.kalman_filters[key].increment_diverged_only_lidar()
-                    if self.kalman_filters[key].get_diverged_only_lidar():
+                    self.kalman_filters[kf_frame_id][key].increment_diverged_only_lidar()
+                    if self.kalman_filters[kf_frame_id][key].get_diverged_only_lidar():
                         kfs_to_delete.append(key)
                 else:
                     self.kalman_filters[key].reset_diverged_only_lidar()
 
                 measurements = np.array([lidar_pose[0], lidar_pose[1], lidar_pose[0], lidar_pose[1]])
                 measurement_covariance = self.compute_measurement_covariance_sensor_type(measurements, sensor_type='lidar')
-                self.kalman_filters[key].update_measurement_covariance(measurement_covariance)
+                self.kalman_filters[kf_frame_id][key].update_measurement_covariance(measurement_covariance)
 
-                self.kalman_filters[key].predict()
-                self.kalman_filters[key].update(measurements)
+                self.kalman_filters[kf_frame_id][key].predict()
+                self.kalman_filters[kf_frame_id][key].update(measurements)
 
                 fused_pose = self.get_fused_pose(key)
                 fused_poses.poses.append(fused_pose)
 
             for key in kfs_to_delete:
-                del self.kalman_filters[key]
+                del self.kalman_filters[kf_frame_id][key]
 
         self.fused_pub.publish(fused_poses)
         
 
-    def single_sensor_tracking(self):
+    def single_sensor_tracking(self, kf_frame_id):
         if len(self.sensors_topics) != 1:
             raise ValueError("The number of sensors topics should be equal to 1"
             "when using the single sensor tracking mode")
@@ -557,10 +580,10 @@ class PoseFusionNode:
         poses = None
         if 'cam' in self.sensors_topics[0]:
             with self.lock_cam_poses:
-                poses = self.cam_poses
+                poses = self.cam_poses[kf_frame_id]
         elif 'lidar' in self.sensors_topics[0]:
             with self.lock_lidar_poses:
-                poses = self.lidar_poses
+                poses = self.lidar_poses[kf_frame_id]
         else:
             raise ValueError("The sensor topic is not recognized")
 
@@ -582,10 +605,10 @@ class PoseFusionNode:
 
             measurement_covariance = self.compute_measurement_covariance_single_sensor(measurements)
 
-            self.kalman_filters[corresponding_kf_ids[i]].update_measurement_covariance(measurement_covariance)
+            self.kalman_filters[kf_frame_id][corresponding_kf_ids[i]].update_measurement_covariance(measurement_covariance)
 
-            self.kalman_filters[corresponding_kf_ids[i]].predict()
-            self.kalman_filters[corresponding_kf_ids[i]].update(measurements)
+            self.kalman_filters[kf_frame_id][corresponding_kf_ids[i]].predict()
+            self.kalman_filters[kf_frame_id][corresponding_kf_ids[i]].update(measurements)
 
             # Get fused pose
             fused_pose = self.get_fused_pose(corresponding_kf_ids[i])
