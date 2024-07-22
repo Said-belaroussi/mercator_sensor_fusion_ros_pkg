@@ -350,15 +350,18 @@ class PoseFusionNode:
         for key in kfs_to_delete:
             del self.kalman_filters[kf_frame_id][key]
 
-    def match_kf_poses(self, poses_xy):        
-        corresponding_kf_ids = self.get_corresponding_kf_ids(poses_xy)
+    def match_kf_poses(self, poses_xy, kf_frame_id):        
+        corresponding_kf_ids = self.get_corresponding_kf_ids(poses_xy, kf_frame_id)
         if not self.keep_tracking_with_only_lidar:
             self.delete_kalman_filters(corresponding_kf_ids)
 
         return corresponding_kf_ids
 
     def get_corresponding_kf_ids(self, poses_xy, kf_frame_id):
-        kf_keys_list = list(self.kalman_filters[kf_frame_id].keys())
+        if kf_frame_id in self.kalman_filters.keys():
+            kf_keys_list = list(self.kalman_filters[kf_frame_id].keys())
+        else:
+            kf_keys_list = []
         kf_poses_xy = np.array([self.kalman_filters[kf_frame_id][key].get_state() for key in kf_keys_list])
 
         corresponding_kf_ids = [0 for i in range(len(poses_xy))]
@@ -381,6 +384,7 @@ class PoseFusionNode:
         # Initialize new Kalman filters for the unmatched poses
         for i in unmatched_poses_indices:
             new_id = self.generate_new_id()
+            self.kalman_filters[kf_frame_id] = dict()
             self.kalman_filters[kf_frame_id][new_id] = self.initialize_kalman_filter(new_id, initial_position=(poses_xy[i][0], poses_xy[i][1]))
             corresponding_kf_ids[i] = new_id
         
@@ -502,7 +506,7 @@ class PoseFusionNode:
 
         # cam_poses_xy = self.filter_edges_poses(cam_poses_xy)
         # Match kf poses with cam poses
-        corresponding_kf_ids = self.match_kf_poses(cam_poses_xy)
+        corresponding_kf_ids = self.match_kf_poses(cam_poses_xy, kf_frame_id)
         
         if len(cam_poses_xy) > 0 and len(lidar_poses_xy) > 0:
             rospy.loginfo(cam_poses_xy)
@@ -524,7 +528,7 @@ class PoseFusionNode:
                 self.kalman_filters[kf_frame_id][corresponding_kf_ids[cam_idx]].predict()
                 self.kalman_filters[kf_frame_id][corresponding_kf_ids[cam_idx]].update(measurements)
 
-                fused_pose = self.get_fused_pose(corresponding_kf_ids[cam_idx])
+                fused_pose = self.get_fused_pose(corresponding_kf_ids[cam_idx], kf_frame_id)
                 fused_poses.poses.append(fused_pose)
         else:
             cam_indices = []
@@ -542,10 +546,13 @@ class PoseFusionNode:
                 self.kalman_filters[kf_frame_id][corresponding_kf_ids[i]].predict()
                 self.kalman_filters[kf_frame_id][corresponding_kf_ids[i]].update(measurements)
 
-                fused_pose = self.get_fused_pose(corresponding_kf_ids[i])
+                fused_pose = self.get_fused_pose(corresponding_kf_ids[i], kf_frame_id)
                 fused_poses.poses.append(fused_pose)
 
-        non_matched_kf_ids = [key for key in self.kalman_filters[kf_frame_id].keys() if key not in corresponding_kf_ids]
+        if kf_frame_id in self.kalman_filters.keys():
+            non_matched_kf_ids = [key for key in self.kalman_filters[kf_frame_id].keys() if key not in corresponding_kf_ids]
+        else:
+            non_matched_kf_ids = []
         if(self.keep_tracking_with_only_lidar):
             kfs_to_delete = []
             for key in non_matched_kf_ids:
@@ -559,7 +566,7 @@ class PoseFusionNode:
                     if self.kalman_filters[kf_frame_id][key].get_diverged_only_lidar():
                         kfs_to_delete.append(key)
                 else:
-                    self.kalman_filters[key].reset_diverged_only_lidar()
+                    self.kalman_filters[kf_frame_id][key].reset_diverged_only_lidar()
 
                 measurements = np.array([lidar_pose[0], lidar_pose[1], lidar_pose[0], lidar_pose[1]])
                 measurement_covariance = self.compute_measurement_covariance_sensor_type(measurements, sensor_type='lidar')
@@ -568,7 +575,7 @@ class PoseFusionNode:
                 self.kalman_filters[kf_frame_id][key].predict()
                 self.kalman_filters[kf_frame_id][key].update(measurements)
 
-                fused_pose = self.get_fused_pose(key)
+                fused_pose = self.get_fused_pose(key, kf_frame_id)
                 fused_poses.poses.append(fused_pose)
 
             for key in kfs_to_delete:
@@ -602,7 +609,7 @@ class PoseFusionNode:
             return
 
         # Match kf poses with poses
-        corresponding_kf_ids = self.match_kf_poses(poses_xy)
+        corresponding_kf_ids = self.match_kf_poses(poses_xy, kf_frame_id)
 
         # Publish fused poses
         fused_poses = self.init_fused_poses_array()
@@ -621,7 +628,7 @@ class PoseFusionNode:
             self.kalman_filters[kf_frame_id][corresponding_kf_ids[i]].update(measurements)
 
             # Get fused pose
-            fused_pose = self.get_fused_pose(corresponding_kf_ids[i])
+            fused_pose = self.get_fused_pose(corresponding_kf_ids[i], kf_frame_id)
             fused_poses.poses.append(fused_pose)
 
         self.fused_pub.publish(fused_poses)
