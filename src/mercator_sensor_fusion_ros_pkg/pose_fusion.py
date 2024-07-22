@@ -419,22 +419,25 @@ class PoseFusionNode:
 
         return np.array(filtered_poses)
 
-
     def match_and_fuse_weighted_average(self, kf_frame_id):
         """
         Match the poses from the camera and lidar sensors and fuse them without using Kalman filters.
         Simply by matching the poses first and then averaging each pair of poses weighted on their variances.
         """
-        if self.cam_poses is None or self.lidar_poses is None:
-            return
 
         # Init fused poses
         fused_poses = self.init_fused_poses_array()
 
         with self.lock_cam_poses:
-            cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses[kf_frame_id].poses])
+            if kf_frame_id in self.cam_poses:
+                cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses[kf_frame_id].poses])
+            else:
+                cam_poses_xy = []       
         with self.lock_lidar_poses:
-            lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
+            if kf_frame_id in self.lidar_poses:
+                lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
+            else:
+                lidar_poses_xy = []
 
         if len(cam_poses_xy) > 0 and len(lidar_poses_xy) > 0:
             rospy.loginfo(cam_poses_xy)
