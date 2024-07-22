@@ -419,15 +419,7 @@ class PoseFusionNode:
 
         return np.array(filtered_poses)
 
-    def match_and_fuse_weighted_average(self, kf_frame_id):
-        """
-        Match the poses from the camera and lidar sensors and fuse them without using Kalman filters.
-        Simply by matching the poses first and then averaging each pair of poses weighted on their variances.
-        """
-
-        # Init fused poses
-        fused_poses = self.init_fused_poses_array()
-
+    def extract_cam_lidar_poses(self, kf_frame_id):
         with self.lock_cam_poses:
             if kf_frame_id in self.cam_poses:
                 cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses[kf_frame_id].poses])
@@ -438,6 +430,19 @@ class PoseFusionNode:
                 lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
             else:
                 lidar_poses_xy = []
+
+        return cam_poses_xy, lidar_poses_xy
+
+    def match_and_fuse_weighted_average(self, kf_frame_id):
+        """
+        Match the poses from the camera and lidar sensors and fuse them without using Kalman filters.
+        Simply by matching the poses first and then averaging each pair of poses weighted on their variances.
+        """
+
+        # Init fused poses
+        fused_poses = self.init_fused_poses_array()
+
+        cam_poses_xy, lidar_poses_xy = self.extract_cam_lidar_poses(kf_frame_id)
 
         if len(cam_poses_xy) > 0 and len(lidar_poses_xy) > 0:
             rospy.loginfo(cam_poses_xy)
@@ -493,10 +498,7 @@ class PoseFusionNode:
         # Init fused poses
         fused_poses = self.init_fused_poses_array()
 
-        with self.lock_cam_poses:
-            cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses[kf_frame_id].poses])
-        with self.lock_lidar_poses:
-            lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
+        cam_poses_xy, lidar_poses_xy = self.extract_cam_lidar_poses(kf_frame_id)
 
         # cam_poses_xy = self.filter_edges_poses(cam_poses_xy)
         # Match kf poses with cam poses
@@ -583,17 +585,22 @@ class PoseFusionNode:
         poses = None
         if 'cam' in self.sensors_topics[0]:
             with self.lock_cam_poses:
-                poses = self.cam_poses[kf_frame_id]
+                if kf_frame_id in self.cam_poses:
+                    poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses[kf_frame_id].poses])
+                else:
+                    poses_xy = []
         elif 'lidar' in self.sensors_topics[0]:
             with self.lock_lidar_poses:
-                poses = self.lidar_poses[kf_frame_id]
+                if kf_frame_id in self.lidar_poses:
+                    poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
+                else:
+                    poses_xy = []
         else:
             raise ValueError("The sensor topic is not recognized")
 
         if poses is None:
             return
 
-        poses_xy = np.array([[pose.position.x, pose.position.y] for pose in poses.poses])
         # Match kf poses with poses
         corresponding_kf_ids = self.match_kf_poses(poses_xy)
 
