@@ -13,6 +13,14 @@
     <remap from="cam_poses" to="/output_cam_poses" /> -->
   </node>
 
+      <!-- Launch the RotateLaserScanNode with a specific rotation angle -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="rotate_laser_scan" name="rotate_laser_scan" output="screen">
+        <!-- Set the parameter for rotation angle in radians -->
+        <param name="rotation_angle_in_radians" value="3.14159"/>
+
+        <remap from="/rotated_scan" to="/corrected_scan"/>
+    </node>
+
   <!-- Argument definitions -->
   <!-- <arg name="blob_file_path" default="$(find your_package_name)/path/to/blob_file.blob" />
   <arg name="json_file_path" default="$(find your_package_name)/path/to/config.json" />
