@@ -20,7 +20,7 @@ Y = -3.07
 
 rospy.init_node('publisher', anonymous=True)
 last_time = rospy.Time.now()
-config_pub = rospy.Publisher('/scan', LaserScan, queue_size=1000)
+config_pub = rospy.Publisher('/corrected_scan', LaserScan, queue_size=1000)
 pub = rospy.Publisher('/rvr/wheels_speed', Float32MultiArray, queue_size=1000)
 odom_pub = rospy.Publisher('odom', Odometry, queue_size=1000)
 

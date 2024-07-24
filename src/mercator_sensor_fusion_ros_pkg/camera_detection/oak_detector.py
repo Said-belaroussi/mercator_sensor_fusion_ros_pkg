@@ -69,13 +69,14 @@ class OakDetectorNode:
 
         self.start_oak_camera(self.blob_filename, self.json_filename, self.visualize, self.publish_frames)
         
-    def publisher_bbox(self, bbox_data_list):
+    def publisher_bbox(self, bbox_data_list, labelMap):
         """
         Function to publish the bounding box information as a Detection2DArray message
         """
         msg = Detection2DArray()
         header = Header()
         header.stamp = rospy.Time.now()
+        header.frame_id = labelMap[0]
         msg.header = header
         detection_2d_list = []
 
@@ -263,6 +264,8 @@ class OakDetectorNode:
                 height, width = frame.shape[0], frame.shape[1]
 
                 detections_position = PoseArray()
+                detections_position.header.stamp = rospy.Time.now()
+                detections_position.header.frame_id = labelMap[0]
                 bbox_data_list = []
                 for detection in detections:
                     bbox_data = dict()
@@ -298,6 +301,9 @@ class OakDetectorNode:
                     self.publisher_images_post_proc(frame)
                 # Publish the position data of each detection in a PoseArray message to the cam_poses topic    
                 self.pub_poses.publish(detections_position)
+
+                # Publish the bounding box data
+                self.publisher_bbox(bbox_data_list, labelMap)
                 if visualize == True:
                     cv2.putText(frame, f"FPS: {int(fps)}", (0, frame.shape[0] - 5), cv2.FONT_HERSHEY_SIMPLEX,
                             0.5, (0, 0, 0))  # Draw the FPS on the frame

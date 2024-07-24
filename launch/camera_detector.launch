@@ -2,8 +2,8 @@
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="camera_detector" name="camera_detector" output="screen">
     <!-- Parameters -->
-    <param name="blob_file_path" value="$(find mercator_sensor_fusion_ros_pkg)\src\mercator_sensor_fusion_ros_pkg\models\rvr_stretched_1.blob" />
-    <param name="json_file_path" value="$(find mercator_sensor_fusion_ros_pkg)\src\mercator_sensor_fusion_ros_pkg\models\rvr_stretched_1.json" />
+    <param name="blob_file_path" value="$(find mercator_sensor_fusion_ros_pkg)\src\mercator_sensor_fusion_ros_pkg\models\rvr_256_rota.blob" />
+    <param name="json_file_path" value="$(find mercator_sensor_fusion_ros_pkg)\src\mercator_sensor_fusion_ros_pkg\models\rvr_256_rota.json" />
     <param name="visualize" value="false" />
     <param name="publish_frames" value="false" />
 
