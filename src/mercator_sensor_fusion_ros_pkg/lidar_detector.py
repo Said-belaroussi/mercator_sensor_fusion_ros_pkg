@@ -81,7 +81,7 @@ class LidarDetectorNode:
         self.last_camera_poses_lock = threading.Lock()
 
         # Calculate the start angle of the Lidar scan based on camera FOV
-        self.start_angle = -(self.camera_fov_deg / 2) * (math.pi / 180) + (math.pi/2) # TODO: remove the hardcoded 90 degrees one robot is finished
+        self.start_angle = -(self.camera_fov_deg / 2) * (math.pi / 180) # TODO: remove the hardcoded 90 degrees one robot is finished
 
         # Subscribers
         self.oak_sub = rospy.Subscriber('oak', Detection2DArray, self.oak_callback)
