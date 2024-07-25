@@ -1,5 +1,5 @@
 <launch>  
-  <include file="$(find mercator_sensor_fusion_ros_pkg)/base_launch_files/lidar_detector.launch">
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/lidar_detector.launch">
     <!-- Optionally override arguments here -->
     <arg name="camera_fov_deg" value="90"/>
     <arg name="camera_resolution" value="512"/>
@@ -16,7 +16,7 @@
     <arg name="detected_robots" value="custom_detected_robots"/>
   </include>
 
-  <include file="$(find mercator_sensor_fusion_ros_pkg)/base_launch_files/pose_array_republisher.launch">
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_array_republisher.launch">
     <!-- Optionally override arguments here -->
     <arg name="transform_matrix_cam" value="[[0.995, 0.085, -0.055],[-0.085, 0.995, 0.160],[0.0, 0.0, 1.0]]"/>
     <arg name="transform_matrix_lidar" value="[[0.986, 0.170, 0.025],[-0.170, 0.986, 0.015],[0.0, 0.0, 1.0]]"/>
@@ -27,7 +27,7 @@
     <arg name="lidar_poses_transformed" value="/custom_lidar_poses_transformed"/>
   </include>
 
-  <include file="$(find mercator_sensor_fusion_ros_pkg)/base_launch_files/pose_fusion.launch">
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_fusion.launch">
     <!-- Optionally override arguments here -->
     <arg name="sensors_topics" value="['cam_poses_transformed', 'lidar_poses_transformed']"/>
     <arg name="sensors_trusts" value="[true, false]"/>
