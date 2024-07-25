@@ -12,7 +12,7 @@
   <arg name="oak" default="oak"/>
   <arg name="scan" default="scan"/>
   <arg name="lidar_poses" default="lidar_poses"/>
-  <arg name="detected_robots" default="~detected_robots"/>
+  <arg name="detected_robots" default="detected_robots"/>
 
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="lidar_detector" name="lidar_detector" output="screen">
@@ -31,7 +31,7 @@
     <remap from="oak" to="$(arg oak)" />
     <remap from="scan" to="$(arg scan)" />
     <remap from="lidar_poses" to="$(arg lidar_poses)" />
-    <remap from="~detected_robots" to="$(arg detected_robots)" />
+    <remap from="detected_robots" to="$(arg detected_robots)" />
   </node>
 </launch>
 

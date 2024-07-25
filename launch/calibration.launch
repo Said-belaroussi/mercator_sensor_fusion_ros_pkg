@@ -1,0 +1,37 @@
+<launch>
+    <!-- TODO: Must rethink a bit about this calibration launchfile since this time there is more robots-->
+  <!-- Including the base launch file -->
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/base_launch_files/ground_truth_publisher.launch">
+    <!-- You can pass arguments here if needed, or override them -->
+    <arg name="robot_names" value="['base_link_23', 'base_link_31', 'base_link_40']"/>
+    <arg name="reference_robot_name" value="base_link_40"/>
+    <arg name="tf" value="/custom_tf"/>
+    <arg name="ground_truth_poses" value="/custom_ground_truth_poses"/>
+  </include>
+
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/base_launch_files/calibration_cam_lidar.launch">
+    <!-- Optionally override arguments here -->
+    <arg name="collect_time" value="120.0"/>
+    <arg name="data_max_size" value="2000"/>
+    <arg name="cam_poses" value="/custom_cam_poses"/>
+    <arg name="lidar_poses" value="/custom_lidar_poses"/>
+    <arg name="ground_truth_poses" value="/custom_ground_truth_poses"/>
+  </include>
+
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/base_launch_files/lidar_detector.launch">
+    <!-- Optionally override arguments here -->
+    <arg name="camera_fov_deg" value="90"/>
+    <arg name="camera_resolution" value="512"/>
+    <arg name="detection_method" value="partially_assisted_detection"/>
+    <arg name="visualize" value="false"/>
+    <arg name="clustering_distance_threshold" value="0.2"/>
+    <arg name="clustering_min_points" value="3"/>
+    <arg name="clustering_max_points" value="25"/>
+    <arg name="camera_poses_topic" value="custom_cam_poses"/>
+    <arg name="fully_assisted_detection_distance_threshold" value="0.4"/>
+    <arg name="oak" value="custom_oak"/>
+    <arg name="scan" value="custom_scan"/>
+    <arg name="lidar_poses" value="custom_lidar_poses"/>
+    <arg name="detected_robots" value="custom_detected_robots"/>
+  </include>
+</launch>
