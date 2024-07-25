@@ -156,8 +156,7 @@ class LidarDetectorNode:
         else:
             rospy.loginfo("deeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
             rospy.loginfo(self.detection_method)
-            # raise ValueError("Invalid detection method")
-            return None
+            raise ValueError("Invalid detection method")
         
     def fully_assisted_detection(self, data):
         
@@ -264,6 +263,8 @@ class LidarDetectorNode:
         with self.last_detections_lock:
             last_detections_copy = self.last_detections
 
+            # self.last_detections = None
+
         # Initialize an array to store the positions
         positions = PoseArray()
 
@@ -296,31 +297,40 @@ class LidarDetectorNode:
             
             positions.poses.append(position)
             
-            rospy.loginfo("Depth of object: %f" % depth)
-
         return positions
 
     def closest_position(self, positions):
         """
         Return the position closest to the Lidar
         """
-        distances = [math.sqrt(position[0]**2 + position[1]**2) for position in positions]
-        return positions[distances.index(min(distances))]
+
+        if len(positions) > 0:
+            distances = [math.sqrt(position[0]**2 + position[1]**2) for position in positions]
+            min_position = positions[distances.index(min(distances))]
+        else:
+            min_position = (0.0, 0.0)
+
+        return min_position
+
 
     def partially_assisted_euclidean_clustering(self, data):
         # Filter out 0 values
         data = [pair for pair in data if pair[0] != 0]
 
-        # Convert the data to Cartesian coordinates
-        points = [self.depth_angle_to_two_d(depth, angle) for depth, angle in data]
+        if len(data) == 0:
+            closest_position = (0.0, 0.0)
+        else:
+            # Convert the data to Cartesian coordinates
+            points = [self.depth_angle_to_two_d(depth, angle) for depth, angle in data]
 
-        # Cluster the points
-        clusters = euclidean_clustering(points, self.clustering_distance_threshold, 
-                    self.clustering_min_points, self.clustering_max_points)
+            rospy.loginfo(points)
+            # Cluster the points
+            clusters = euclidean_clustering(points, self.clustering_distance_threshold, 
+                        self.clustering_min_points, self.clustering_max_points)
 
-        positions = [np.mean(cluster, axis=0) for cluster in clusters]
+            positions = [np.mean(cluster, axis=0) for cluster in clusters]
 
-        closest_position = self.closest_position(positions)
+            closest_position = self.closest_position(positions)
 
         return closest_position
 
