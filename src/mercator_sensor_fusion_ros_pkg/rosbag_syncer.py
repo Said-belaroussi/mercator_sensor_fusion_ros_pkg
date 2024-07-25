@@ -3,9 +3,11 @@ import numpy as np
 from geometry_msgs.msg import PoseArray
 from tf2_msgs.msg import TFMessage
 import os
+import rospy
 
 class RosbagSyncerNode:
     def __init__(self):
+        rospy.init_node('rosbag_syncer', anonymous=True)
         self.bag1_path = rospy.get_param('~bag1_path', 'rvr_40_calib.bag')
         self.bag2_path = rospy.get_param('~bag2_path', 'rvr_40_tycho_calibration.bag')
         self.bag1_topic = rospy.get_param('~bag1_topic', '/cam_poses')
@@ -73,6 +75,6 @@ class RosbagSyncerNode:
         rospy.loginfo("Rosbags have been synced and saved")
 
 if __name__ == "__main__":
-    syncer = RosbagSyncer()
+    syncer = RosbagSyncerNode()
     syncer.sync_rosbags()
     print("Rosbags have been synced and saved as robot_synced.bag and tracking_system_synced.bag")
