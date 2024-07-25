@@ -15,6 +15,8 @@ class RosbagSyncerNode:
         self.output_bag1_path = self.bag1_path.replace('.bag', '_synced.bag')
         self.output_bag2_path = self.bag2_path.replace('.bag', '_synced.bag')
 
+        self.run()
+
     def extract_positions_from_cam_poses(self, bag):
         positions = []
         timestamps = []
