@@ -19,15 +19,38 @@ class RosbagSyncerNode:
 
         self.run()
 
+    def extract_and_print_topics(self, bag):
+        for topic, msg, t in bag.read_messages():
+            rospy.loginfo(topic)
+
     def extract_positions_from_cam_poses(self, bag):
         positions = []
         timestamps = []
         rospy.loginfo(self.bag1_topic)
+        
+        prev_position = None
+
         for topic, msg, t in bag.read_messages(topics=[self.bag1_topic]):
+            min_dist = float('inf')
+            selected_position = None
+
             for pose in msg.poses:
                 position = (pose.position.x, pose.position.y, pose.position.z)
-                positions.append(position)
+                
+                if prev_position is not None:
+                    dist = np.linalg.norm(np.array(position) - np.array(prev_position))
+                else:
+                    dist = 0  # First message, select any pose
+
+                if dist < min_dist:
+                    min_dist = dist
+                    selected_position = position
+
+            if selected_position is not None:
+                positions.append(selected_position)
                 timestamps.append(t.to_sec())
+                prev_position = selected_position
+
         return np.array(positions), np.array(timestamps)
 
     def extract_positions_from_tf(self, bag):
@@ -51,6 +74,11 @@ class RosbagSyncerNode:
 
     def sync_rosbags(self):
         with rosbag.Bag(self.bag1_path) as bag1, rosbag.Bag(self.bag2_path) as bag2:
+            rospy.loginfo("Extracting topics from bags")
+            rospy.loginfo(self.bag1_path)
+            self.extract_and_print_topics(bag1)
+            rospy.loginfo(self.bag2_path)
+            self.extract_and_print_topics(bag2)
             positions1, timestamps1 = self.extract_positions_from_cam_poses(bag1)
             positions2, timestamps2 = self.extract_positions_from_tf(bag2)
 
