@@ -21,7 +21,7 @@ class GroundTruthPublisherNode:
             rospy.logerr("Robot names or reference robot name not provided. Exiting...")
             return
 
-        self.robot_names = string_to_list(robot_names)
+        self.robot_names = self.string_to_list(robot_names)
         self.reference_robot_name = reference_robot_name
         self.robot_poses = {}
         self.ground_truth_pub = rospy.Publisher('/ground_truth_poses', PoseArray, queue_size=10)
