@@ -12,7 +12,7 @@
     <param name="reference_robot_name" value="$(arg reference_robot_name)" />
     
     <!-- Topic remappings -->
-    <remap from="/tf" to="$(arg tf)" />
+    <remap from="tf" to="$(arg tf)" />
     <remap from="ground_truth_poses" to="$(arg ground_truth_poses)" />
   </node>
 </launch>

@@ -1,30 +1,38 @@
 <launch>  
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/ground_truth_publisher.launch">
+    <!-- You can pass arguments here if needed, or override them -->
+    <arg name="robot_names" value="['base_link_23', 'base_link_31', 'base_link_40']"/>
+    <arg name="reference_robot_name" value="base_link_40"/>
+    <arg name="tf" value="tf"/>
+    <arg name="ground_truth_poses" value="/ground_truth_poses"/>
+  </include>
+  
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/lidar_detector.launch">
     <!-- Optionally override arguments here -->
-    <arg name="camera_fov_deg" value="90"/>
-    <arg name="camera_resolution" value="512"/>
-    <arg name="detection_method" value="partially_assisted_detection"/>
+    <arg name="camera_fov_deg" value="95"/>
+    <arg name="camera_resolution" value="256"/>
+    <arg name="detection_method" value="partially_assisted_euclidean_clustering"/>
     <arg name="visualize" value="false"/>
-    <arg name="clustering_distance_threshold" value="0.2"/>
-    <arg name="clustering_min_points" value="3"/>
-    <arg name="clustering_max_points" value="25"/>
+    <arg name="clustering_distance_threshold" value="0.15"/>
+    <arg name="clustering_min_points" value="2"/>
+    <arg name="clustering_max_points" value="30"/>
     <arg name="camera_poses_topic" value="custom_cam_poses"/>
-    <arg name="fully_assisted_detection_distance_threshold" value="0.4"/>
-    <arg name="oak" value="custom_oak"/>
-    <arg name="scan" value="custom_scan"/>
-    <arg name="lidar_poses" value="custom_lidar_poses"/>
-    <arg name="detected_robots" value="custom_detected_robots"/>
+    <arg name="fully_assisted_detection_distance_threshold" value="0.3"/>
+    <arg name="oak" value="/oak"/>
+    <arg name="scan" value="/scan"/>
+    <arg name="lidar_poses" value="/lidar_poses"/>
+    <arg name="detected_robots" value="/detected_robots"/>
   </include>
 
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_array_republisher.launch">
     <!-- Optionally override arguments here -->
-    <arg name="transform_matrix_cam" value="[[0.995, 0.085, -0.055],[-0.085, 0.995, 0.160],[0.0, 0.0, 1.0]]"/>
-    <arg name="transform_matrix_lidar" value="[[0.986, 0.170, 0.025],[-0.170, 0.986, 0.015],[0.0, 0.0, 1.0]]"/>
-    <arg name="frame_id" value="base_link_50"/>
-    <arg name="cam_poses" value="/custom_cam_poses"/>
-    <arg name="lidar_poses" value="/custom_lidar_poses"/>
-    <arg name="cam_poses_transformed" value="/custom_cam_poses_transformed"/>
-    <arg name="lidar_poses_transformed" value="/custom_lidar_poses_transformed"/>
+    <arg name="transform_matrix_cam" value="[[0.99675996, 0.08043372, -0.05389885],[-0.08043372, 0.99675996, 0.16321373],[0.0, 0.0, 1.0]]"/>
+    <arg name="transform_matrix_lidar" value="[[0.98483877, 0.1734722, 0.02260684],[-0.1734722, 0.98483877, 0.01221501],[0.0, 0.0, 1.0]]"/>
+    <arg name="frame_id" value="base_link_40"/>
+    <arg name="cam_poses" value="/cam_poses"/>
+    <arg name="lidar_poses" value="/lidar_poses"/>
+    <arg name="cam_poses_transformed" value="/cam_poses_transformed"/>
+    <arg name="lidar_poses_transformed" value="/lidar_poses_transformed"/>
   </include>
 
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_fusion.launch">
@@ -34,11 +42,11 @@
     <arg name="initial_sensors_variances" value="[0.0256, 0.0196]"/>
     <arg name="keep_tracking_with_only_lidar" value="False"/>
     <arg name="sensors_number" value="2"/>
-    <arg name="process_noise_factor" value="0.0005"/>
-    <arg name="frequency" value="25.0"/>
-    <arg name="robot_average_radius" value="0.20"/>
-    <arg name="initial_velocity" value="0.1"/>
-    <arg name="initial_position" value="0.1"/>
+    <arg name="process_noise_factor" value="0.0001"/>
+    <arg name="frequency" value="30.0"/>
+    <arg name="robot_average_radius" value="0.15"/>
+    <arg name="initial_velocity" value="0.0"/>
+    <arg name="initial_position" value="0.0"/>
     <arg name="sensor_fusion_simple_weighted_average" value="True"/>
     <arg name="cam_poses" value="cam_poses_transformed"/>
     <arg name="lidar_poses" value="lidar_poses_transformed"/>
