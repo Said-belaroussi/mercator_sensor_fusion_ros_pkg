@@ -21,13 +21,22 @@ class GroundTruthPublisherNode:
             rospy.logerr("Robot names or reference robot name not provided. Exiting...")
             return
 
-        self.robot_names = robot_names
+        self.robot_names = string_to_list(robot_names)
         self.reference_robot_name = reference_robot_name
         self.robot_poses = {}
         self.ground_truth_pub = rospy.Publisher('/ground_truth_poses', PoseArray, queue_size=10)
         self.tf_sub = rospy.Subscriber('tf', TFMessage, self.tf_callback)
 
         self.run()
+
+    def string_to_list(self, string):
+        try:
+            # Use eval to convert the string to a list
+            list = eval(string)
+        except (NameError, SyntaxError):
+            raise ValueError("Invalid string format. Please use proper list of lists syntax.")
+
+        return list
 
     def tf_callback(self, tf_msg):
         for transform in tf_msg.transforms:
