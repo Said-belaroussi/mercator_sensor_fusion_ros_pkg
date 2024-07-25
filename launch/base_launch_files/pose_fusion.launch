@@ -1,0 +1,36 @@
+<launch>
+    <!-- Arguments -->
+    <arg name="sensors_topics" default="['cam_poses_transformed', 'lidar_poses_transformed']"/>
+    <arg name="sensors_trusts" default="[true, false]"/>
+    <arg name="initial_sensors_variances" default="[0.0256, 0.0196]"/>
+    <arg name="keep_tracking_with_only_lidar" default="True"/>
+    <arg name="sensors_number" default="2"/>
+    <arg name="process_noise_factor" default="0.0001"/>
+    <arg name="frequency" default="30.0"/>
+    <arg name="robot_average_radius" default="0.15"/>
+    <arg name="initial_velocity" default="0.0"/>
+    <arg name="initial_position" default="0.0"/>
+    <arg name="sensor_fusion_simple_weighted_average" default="False"/>
+    <arg name="cam_poses" default="cam_poses_transformed"/>
+    <arg name="lidar_poses" default="lidar_poses_transformed"/>
+
+    <!-- Node launching -->
+    <node pkg="mercator_sensor_fusion_ros_pkg" type="pose_fusion" name="pose_fusion" output="screen">
+        <!-- Parameters for the node -->
+        <rosparam param="sensors_topics" subst_value="True">$(arg sensors_topics)</rosparam>
+        <rosparam param="sensors_trusts" subst_value="True">$(arg sensors_trusts)</rosparam>
+        <rosparam param="initial_sensors_variances" subst_value="True">$(arg initial_sensors_variances)</rosparam>
+        <param name="keep_tracking_with_only_lidar" value="$(arg keep_tracking_with_only_lidar)"/>
+        <param name="sensors_number" value="$(arg sensors_number)"/>
+        <param name="process_noise_factor" value="$(arg process_noise_factor)"/>
+        <param name="frequency" value="$(arg frequency)"/>
+        <param name="robot_average_radius" value="$(arg robot_average_radius)"/>
+        <param name="initial_velocity" value="$(arg initial_velocity)"/>
+        <param name="initial_position" value="$(arg initial_position)"/>
+        <param name="sensor_fusion_simple_weighted_average" value="$(arg sensor_fusion_simple_weighted_average)"/>
+
+        <!-- Topic remappings -->
+        <remap from="cam_poses" to="$(arg cam_poses)" />
+        <remap from="lidar_poses" to="$(arg lidar_poses)" />
+    </node>
+</launch>

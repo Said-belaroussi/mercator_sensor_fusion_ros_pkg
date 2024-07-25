@@ -21,8 +21,6 @@ class PoseTransformerNode:
         self.lidar_poses_pub = rospy.Publisher('lidar_poses_odom', PoseArray, queue_size=10)
 
         self.transform = None
-        self.transformation_matrix_cam = rospy.get_param("~transformation_matrix_cam", None)
-        self.transformation_matrix_lidar = rospy.get_param("~transformation_matrix_lidar", None)
 
         self.run()
 

@@ -1,0 +1,24 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="blob_file_path" default="$(find mercator_sensor_fusion_ros_pkg)/src/mercator_sensor_fusion_ros_pkg/models/rvr_256_rota.blob"/>
+  <arg name="json_file_path" default="$(find mercator_sensor_fusion_ros_pkg)/src/mercator_sensor_fusion_ros_pkg/models/rvr_256_rota.json"/>
+  <arg name="visualize" default="false"/>
+  <arg name="publish_frames" default="false"/>
+  <arg name="oak" default="/oak"/>
+  <arg name="oak_frames" default="/oak_frames"/>
+  <arg name="cam_poses" default="/cam_poses"/>
+
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="camera_detector" name="camera_detector" output="screen">
+    <!-- Parameters -->
+    <param name="blob_file_path" value="$(arg blob_file_path)" />
+    <param name="json_file_path" value="$(arg json_file_path)" />
+    <param name="visualize" value="$(arg visualize)" />
+    <param name="publish_frames" value="$(arg publish_frames)" />
+
+    <!-- Topic remappings -->
+    <remap from="oak" to="$(arg oak)" />
+    <remap from="oak_frames" to="$(arg oak_frames)" />
+    <remap from="cam_poses" to="$(arg cam_poses)" />
+  </node>
+</launch>

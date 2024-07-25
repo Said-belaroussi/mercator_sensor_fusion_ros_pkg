@@ -1,0 +1,57 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="camera_fov_deg" default="95"/>
+  <arg name="camera_resolution" default="256"/>
+  <arg name="detection_method" default="fully_assisted_detection"/>
+  <arg name="visualize" default="true"/>
+  <arg name="clustering_distance_threshold" default="0.15"/>
+  <arg name="clustering_min_points" default="2"/>
+  <arg name="clustering_max_points" default="30"/>
+  <arg name="camera_poses_topic" default="cam_poses_transformed"/>
+  <arg name="fully_assisted_detection_distance_threshold" default="0.3"/>
+  <arg name="oak" default="oak"/>
+  <arg name="scan" default="scan"/>
+  <arg name="lidar_poses" default="lidar_poses"/>
+  <arg name="detected_robots" default="~detected_robots"/>
+
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="lidar_detector" name="lidar_detector" output="screen">
+    <!-- Parameters -->
+    <param name="camera_fov_deg" value="$(arg camera_fov_deg)" />
+    <param name="camera_resolution" value="$(arg camera_resolution)" />
+    <param name="detection_method" value="$(arg detection_method)" />
+    <param name="visualize" value="$(arg visualize)" />
+    <param name="clustering_distance_threshold" value="$(arg clustering_distance_threshold)" />
+    <param name="clustering_min_points" value="$(arg clustering_min_points)" />
+    <param name="clustering_max_points" value="$(arg clustering_max_points)" />
+    <param name="camera_poses_topic" value="$(arg camera_poses_topic)" />
+    <param name="fully_assisted_detection_distance_threshold" value="$(arg fully_assisted_detection_distance_threshold)" />
+    
+    <!-- Remap topics -->
+    <remap from="oak" to="$(arg oak)" />
+    <remap from="scan" to="$(arg scan)" />
+    <remap from="lidar_poses" to="$(arg lidar_poses)" />
+    <remap from="~detected_robots" to="$(arg detected_robots)" />
+  </node>
+</launch>
+
+
+<!-- <launch>
+    <group ns="lidar_detector">
+        <param name="camera_fov_deg" value="95" />
+        <param name="camera_resolution" value="256" />
+        <param name="detection_method" value="standalone_euclidean_clustering" />
+        <param name="visualize" value="true" />
+        <param name="clustering_distance_threshold" value="0.15" />
+        <param name="clustering_min_points" value="2" />
+        <param name="clustering_max_points" value="30" />
+        <param name="camera_poses_topic" value="camera_poses" />
+
+        <node pkg="mercator_sensor_fusion_ros_pkg" type="lidar_detector" name="lidar_detector" output="screen">
+            <remap from="oak" to="oak" />
+            <remap from="scan" to="scan" />
+            <remap from="lidar_poses" to="lidar_poses" />
+            <remap from="~detected_robots" to="~detected_robots" />
+        </node>
+    </group>
+</launch> -->

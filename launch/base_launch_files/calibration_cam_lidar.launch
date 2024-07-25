@@ -1,0 +1,20 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="collect_time" default="60.0"/>
+  <arg name="data_max_size" default="1000"/>
+  <arg name="cam_poses" default="/cam_poses"/>
+  <arg name="lidar_poses" default="/lidar_poses"/>
+  <arg name="ground_truth_poses" default="/ground_truth_poses"/>
+
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="calibration_cam_lidar" name="calibration_cam_lidar" output="screen">
+    <!-- Parameters -->
+    <param name="collect_time" value="$(arg collect_time)" />
+    <param name="data_max_size" value="$(arg data_max_size)" />
+    
+    <!-- Topic remappings -->
+    <remap from="cam_poses" to="$(arg cam_poses)" />
+    <remap from="lidar_poses" to="$(arg lidar_poses)" />
+    <remap from="ground_truth_poses" to="$(arg ground_truth_poses)" />
+  </node>
+</launch>

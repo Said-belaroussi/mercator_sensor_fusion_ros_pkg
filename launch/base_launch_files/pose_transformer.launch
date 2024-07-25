@@ -1,0 +1,16 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="cam_poses" default="cam_poses"/>
+  <arg name="lidar_poses" default="lidar_poses"/>
+  <arg name="cam_poses_odom" default="cam_poses_odom"/>
+  <arg name="lidar_poses_odom" default="lidar_poses_odom"/>
+
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="pose_transformer" name="pose_transformer" output="screen">
+    <!-- Topic remappings -->
+    <remap from="cam_poses" to="$(arg cam_poses)" />
+    <remap from="lidar_poses" to="$(arg lidar_poses)" />
+    <remap from="cam_poses_odom" to="$(arg cam_poses_odom)" />
+    <remap from="lidar_poses_odom" to="$(arg lidar_poses_odom)" />
+  </node>
+</launch>

@@ -1,0 +1,16 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="rvr_imu" default="rvr/imu"/>
+  <arg name="imu" default="/imu"/>
+  <arg name="rvr_odom" default="/rvr/odom"/>
+  <arg name="rvr_odom_correct" default="/rvr/odom/correct"/>
+
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="odometry_corrector" name="odometry_corrector" output="screen">
+    <!-- Topic remappings -->
+    <remap from="rvr/imu" to="$(arg rvr_imu)" />
+    <remap from="/imu" to="$(arg imu)" />
+    <remap from="/rvr/odom" to="$(arg rvr_odom)" />
+    <remap from="/rvr/odom/correct" to="$(arg rvr_odom_correct)" />
+  </node>
+</launch>

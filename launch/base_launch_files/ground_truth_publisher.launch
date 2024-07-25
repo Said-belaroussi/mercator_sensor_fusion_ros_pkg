@@ -1,0 +1,19 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="robot_names" default="['base_link_23']"/>
+  <arg name="reference_robot_name" default="base_link_40"/>
+  <arg name="tf" default="/tf"/>
+  <arg name="ground_truth_poses" default="/ground_truth_poses"/>
+
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="ground_truth_publisher" name="ground_truth_publisher" output="screen">
+    <!-- Parameters -->
+    <param name="robot_names" value="$(arg robot_names)" />
+    <param name="reference_robot_name" value="$(arg reference_robot_name)" />
+    
+    <!-- Topic remappings -->
+    <remap from="/tf" to="$(arg tf)" />
+    <remap from="ground_truth_poses" to="$(arg ground_truth_poses)" />
+  </node>
+</launch>
+
