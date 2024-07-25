@@ -1,15 +1,13 @@
 <launch>
   <!-- Define arguments with default values -->
-  <arg name="bag1_path" default="rvr40_400p2407_7allmoving.bag" />
-  <arg name="bag2_path" default="tychoallrvrrecord2407.b_7ag.bag" />
   <arg name="bag1_topic" default="/cam_poses" />
   <arg name="bag2_topic" default="/tf" />
   <arg name="frame_id" default="base_link_40" />
 
   <!-- Pass arguments as parameters to the node -->
-  <node pkg="mercator_sensor_fusion_ros_pkg" type="rosbag_syncer" name="rosbag_syncer" output="screen">
-    <param name="bag1_path" value="$(arg bag1_path)" />
-    <param name="bag2_path" value="$(arg bag2_path)" />
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="rosbag_syncer" name="rosbag_syncer" output="screen", args="-bag1 -bag2">
+    <param name="bag1_path" value="$(arg bag1)" />
+    <param name="bag2_path" value="$(arg bag2)" />
     <param name="bag1_topic" value="$(arg bag1_topic)" />
     <param name="bag2_topic" value="$(arg bag2_topic)" />
     <param name="frame_id" value="$(arg frame_id)" />
