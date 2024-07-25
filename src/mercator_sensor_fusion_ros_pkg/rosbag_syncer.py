@@ -22,6 +22,7 @@ class RosbagSyncerNode:
     def extract_positions_from_cam_poses(self, bag):
         positions = []
         timestamps = []
+        rospy.loginfo(self.bag1_topic)
         for topic, msg, t in bag.read_messages(topics=[self.bag1_topic]):
             for pose in msg.poses:
                 position = (pose.position.x, pose.position.y, pose.position.z)
@@ -32,6 +33,7 @@ class RosbagSyncerNode:
     def extract_positions_from_tf(self, bag):
         positions = []
         timestamps = []
+        rospy.loginfo(self.bag2_topic)
         for topic, msg, t in bag.read_messages(topics=[self.bag2_topic]):
             for transform in msg.transforms:
                 if transform.child_frame_id == self.frame_id:
@@ -52,6 +54,8 @@ class RosbagSyncerNode:
             positions1, timestamps1 = self.extract_positions_from_cam_poses(bag1)
             positions2, timestamps2 = self.extract_positions_from_tf(bag2)
 
+            rospy.loginfo(positions1)
+            rospy.loginfo(positions2)
             move_index1 = self.detect_significant_movement(positions1)
             move_index2 = self.detect_significant_movement(positions2)
 
