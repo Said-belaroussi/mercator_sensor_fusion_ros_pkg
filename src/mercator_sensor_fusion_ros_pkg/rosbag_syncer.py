@@ -20,8 +20,8 @@ class RosbagSyncerNode:
         self.run()
 
     def extract_and_print_topics(self, bag):
-        for topic, msg, t in bag.read_messages():
-            rospy.loginfo(topic)
+        rospy.loginfo("Topics in bag:")
+        rospy.loginfo(bag.get_type_and_topic_info())
 
     def extract_positions_from_cam_poses(self, bag):
         positions = []
