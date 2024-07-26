@@ -30,19 +30,18 @@ class PoseTransformerNode:
                 self.transform = transform
 
     def cam_poses_callback(self, msg):
-        self.publish_transformed_poses(msg, self.cam_poses_pub, self.transformation_matrix_ground_truth)
+        self.publish_transformed_poses(msg, self.cam_poses_pub)
 
     def lidar_poses_callback(self, msg):
-        self.publish_transformed_poses(msg, self.lidar_poses_pub, self.transformation_matrix_ground_truth)
+        self.publish_transformed_poses(msg, self.lidar_poses_pub)
 
-    def publish_transformed_poses(self, msg, publisher, transformation_matrix):
+    def publish_transformed_poses(self, msg, publisher):
         if self.transform is None:
             rospy.logwarn("Transform from odom to base_link not yet received")
             return
 
         transformed_poses = PoseArray()
-        transformed_poses.header = msg.header
-        transformed_poses.header.frame_id = "odom"
+        transformed_poses.header = msg.header # Keep the same frame_id and timestamp
 
         for pose in msg.poses:
             pose_stamped = PoseStamped()
@@ -52,21 +51,6 @@ class PoseTransformerNode:
             try:
                 # Transform using tf
                 transformed_pose = do_transform_pose(pose_stamped, self.transform)
-
-                if transformation_matrix is not None:
-                    # Transform using additional transformation matrix
-                    pose_np = np.array([transformed_pose.pose.position.x,
-                                        transformed_pose.pose.position.y,
-                                        1.0])  # Homogeneous coordinates
-
-                    transformed_pose_np = transformation_matrix @ pose_np
-                else:
-                    transformed_pose_np = np.array([transformed_pose.pose.position.x,
-                                                    transformed_pose.pose.position.y])
-
-                transformed_pose.pose.position.x = transformed_pose_np[0]
-                transformed_pose.pose.position.y = transformed_pose_np[1]
-
                 transformed_poses.poses.append(transformed_pose.pose)
             except Exception as e:
                 rospy.logerr(f"Error transforming pose: {e}")
