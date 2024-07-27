@@ -13,6 +13,9 @@ class PoseTransformerNode:
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer)
 
+        self.frame_id = rospy.get_param('~frame_id', 'odom')
+        self.child_frame_id = rospy.get_param('~child_frame_id', 'base_link')
+
         self.cam_poses_sub = rospy.Subscriber('cam_poses', PoseArray, self.cam_poses_callback)
         self.lidar_poses_sub = rospy.Subscriber('lidar_poses', PoseArray, self.lidar_poses_callback)
         self.tf_sub = rospy.Subscriber('tf', TFMessage, self.tf_callback)
@@ -26,7 +29,7 @@ class PoseTransformerNode:
 
     def tf_callback(self, msg):
         for transform in msg.transforms:
-            if transform.child_frame_id == "base_link" and transform.header.frame_id == "odom":
+            if transform.child_frame_id == self.child_frame_id and transform.header.frame_id == self.frame_id:
                 self.transform = transform
 
     def cam_poses_callback(self, msg):
