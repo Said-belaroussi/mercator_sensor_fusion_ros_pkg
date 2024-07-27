@@ -1,0 +1,12 @@
+<launch>
+    <!-- Arguments for remapping topics -->
+    <arg name="experiment_topic" default="/experiment_poses" />
+    <arg name="ground_truth_topic" default="/ground_truth_poses" />
+
+    <!-- Node to calculate cost between poses -->
+    <node name="cost_between_poses_node" pkg="your_package_name" type="your_node_file.py" output="screen">
+        <!-- Remapping topics -->
+        <remap from="experiment_poses" to="$(arg experiment_topic)" />
+        <remap from="ground_truth_poses" to="$(arg ground_truth_topic)" />
+    </node>
+</launch>
