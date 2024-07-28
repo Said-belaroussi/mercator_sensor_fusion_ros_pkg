@@ -1,0 +1,16 @@
+<launch>
+  <!-- Argument definitions with default values -->
+  <arg name="frame_id" default="odom" />
+  <arg name="child_frame_ids" default="['base_link_23', 'base_link_31']" />
+  <arg name="pose_topic" default="arena_poses" />
+
+  <!-- Node definition with parameter passing and topic remapping -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="arena_poses_publisher" name="arena_poses_publisher" output="screen">
+    <!-- Pass parameters -->
+    <param name="frame_id" value="$(arg frame_id)" />
+    <param name="child_frame_ids" value="$(arg child_frame_ids)" />
+
+    <!-- Remap topics -->
+    <remap from="arena_poses" to="$(arg pose_topic)" />
+  </node>
+</launch>
