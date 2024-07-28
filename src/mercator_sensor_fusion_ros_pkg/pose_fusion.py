@@ -404,7 +404,7 @@ class PoseFusionNode:
     def init_fused_poses_array(self):
         fused_poses = PoseArray()
         fused_poses.header.stamp = rospy.Time.now()
-        fused_poses.header.frame_id = 'base_link_40'
+        fused_poses.header.frame_id = self.robot_name
 
         return fused_poses
 
