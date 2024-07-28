@@ -25,7 +25,7 @@
   </include>
 
   <!-- Including the base launch file with parameters -->
-  <include file="$(find mercator_sensor_fusion_ros_pkg)/base_launch_files/odometry_corrector.launch">
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch//base_launch_files/odometry_corrector.launch">
     <arg name="frame_id" value="odom"/>
     <arg name="child_frame_id" value="base_link"/>
     <arg name="rvr_imu" value="/rvr/imu"/>
@@ -46,7 +46,7 @@
   </include>
 
   <!-- Including the base launch file with parameters -->
-  <include file="$(find mercator_sensor_fusion_ros_pkg)/base_launch_files/pose_transformer.launch">
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch//base_launch_files/pose_transformer.launch">
     <arg name="frame_id" value="odom"/>
     <arg name="child_frame_id" value="base_link"/>
     <arg name="cam_poses" value="/cam_poses_transformed"/>
