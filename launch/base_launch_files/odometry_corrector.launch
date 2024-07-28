@@ -1,5 +1,7 @@
 <launch>
   <!-- Arguments -->
+  <arg name="frame_id" default="odom"/>
+  <arg name="child_frame_id" default="base_link"/>
   <arg name="rvr_imu" default="rvr/imu"/>
   <arg name="imu" default="/imu"/>
   <arg name="rvr_odom" default="/rvr/odom"/>
@@ -7,6 +9,9 @@
 
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="odometry_corrector" name="odometry_corrector" output="screen">
+    <!-- Parameters-->
+    <param name="frame_id" type="string" value="$(arg frame_id)" />
+    <param name="child_frame_id" type="string" value="$(arg child_frame_id)" />
     <!-- Topic remappings -->
     <remap from="rvr/imu" to="$(arg rvr_imu)" />
     <remap from="/imu" to="$(arg imu)" />
