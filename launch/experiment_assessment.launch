@@ -1,12 +1,13 @@
+<launch>    
   <!-- Including the base launch file with parameters -->
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/arena_poses_publisher.launch">
     <arg name="frame_id" value="odom"/>
     <arg name="child_frame_ids" value="['base_link_23', 'base_link_31']"/>
-    <arg name="pose_topic" value="arena_poses"/>
+    <arg name="pose_topic" value="/arena_poses"/>
   </include>
 
     <!-- Including the base launch file with parameters -->
-  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch//base_launch_files/pose_transformer.launch">
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_transformer_assess.launch">
     <arg name="new_poses_frame_id" value="odom"/>
     <arg name="frame_id" value="odom"/>
     <arg name="child_frame_id" value="base_link_40"/>
@@ -22,3 +23,4 @@
     <arg name="experiment_topic" value="/fused_poses_arena"/>
     <arg name="ground_truth_topic" value="/arena_poses"/>
   </include>
+</launch>

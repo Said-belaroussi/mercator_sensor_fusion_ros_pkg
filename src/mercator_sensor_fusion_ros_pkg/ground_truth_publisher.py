@@ -41,7 +41,7 @@ class GroundTruthPublisherNode:
     def tf_callback(self, tf_msg):
         for transform in tf_msg.transforms:
             child_frame_id = transform.child_frame_id
-            rospy.loginfo(child_frame_id)
+            # rospy.loginfo(child_frame_id)
             
             if child_frame_id in self.robot_names:
                 translation = transform.transform.translation
@@ -56,7 +56,7 @@ class GroundTruthPublisherNode:
             ref_pose = self.robot_poses.get(self.reference_robot_name)
             
             if ref_pose:
-                rospy.loginfo("ref_pose")
+                # rospy.loginfo("ref_pose")
                 ref_position = np.array([ref_pose.position.x, ref_pose.position.y, ref_pose.position.z, 1])
                 ref_orientation = np.array([ref_pose.orientation.x, ref_pose.orientation.y, ref_pose.orientation.z, ref_pose.orientation.w])
                 # Add +90 degrees rotation around z-axis to align with the map

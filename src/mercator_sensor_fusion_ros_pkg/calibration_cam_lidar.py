@@ -63,18 +63,18 @@ class CalibrationCamLidarNode:
             if self.last_data["ground_truth_poses"] is None:
                 return
             if topic_key == "lidar_poses" and len(self.data_for_lidar_calibration["lidar_poses"]) < self.data_max_size:
-                rospy.loginfo("callback lidar_poses")
-                rospy.loginfo(len(self.data_for_lidar_calibration[topic_key]))
-                rospy.loginfo(len(self.data_for_lidar_calibration["ground_truth_poses"]))
+                # rospy.loginfo("callback lidar_poses")
+                # rospy.loginfo(len(self.data_for_lidar_calibration[topic_key]))
+                # rospy.loginfo(len(self.data_for_lidar_calibration["ground_truth_poses"]))
                 if (self.check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
                     with self.locks[topic_key]:
                         self.data_for_lidar_calibration[topic_key].append(data)
                     with self.locks["ground_truth_poses"]:
                         self.data_for_lidar_calibration["ground_truth_poses"].append(self.last_data["ground_truth_poses"])
             elif topic_key == "cam_poses" and len(self.data_for_cam_calibration["cam_poses"]) < self.data_max_size:
-                rospy.loginfo("callback cam_poses")
-                rospy.loginfo(len(self.data_for_cam_calibration[topic_key]))
-                rospy.loginfo(len(self.data_for_cam_calibration["ground_truth_poses"]))
+                # rospy.loginfo("callback cam_poses")
+                # rospy.loginfo(len(self.data_for_cam_calibration[topic_key]))
+                # rospy.loginfo(len(self.data_for_cam_calibration["ground_truth_poses"]))
                 if (self.check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
                     with self.locks[topic_key]:
                         self.data_for_cam_calibration[topic_key].append(data)
@@ -86,15 +86,15 @@ class CalibrationCamLidarNode:
 
     def compute_calibration_matrices(self):
         # Process the data into numpy arrays for easier handling
-        rospy.loginfo(self.data_for_lidar_calibration.items())
+        # rospy.loginfo(self.data_for_lidar_calibration.items())
         processed_data_for_lidar_calibration = {key: self.convert_poses_to_np_array(poses) for key, poses in self.data_for_lidar_calibration.items()}
         processed_data_for_cam_calibration = {key: self.convert_poses_to_np_array(poses) for key, poses in self.data_for_cam_calibration.items()}
-        rospy.loginfo("length of processed data lidar_poses")
-        rospy.loginfo(processed_data_for_lidar_calibration["lidar_poses"])
-        rospy.loginfo(processed_data_for_lidar_calibration["ground_truth_poses"])
-        rospy.loginfo("length of processed data cam_poses")
-        rospy.loginfo(processed_data_for_cam_calibration["cam_poses"])
-        rospy.loginfo(processed_data_for_cam_calibration["ground_truth_poses"])
+        # rospy.loginfo("length of processed data lidar_poses")
+        # rospy.loginfo(processed_data_for_lidar_calibration["lidar_poses"])
+        # rospy.loginfo(processed_data_for_lidar_calibration["ground_truth_poses"])
+        # rospy.loginfo("length of processed data cam_poses")
+        # rospy.loginfo(processed_data_for_cam_calibration["cam_poses"])
+        # rospy.loginfo(processed_data_for_cam_calibration["ground_truth_poses"])
 
         # Calculate transformations
         # Assuming ground_truth_poses as the reference
@@ -130,8 +130,8 @@ class CalibrationCamLidarNode:
 
     def calculate_transformation(self, reference, data):
         """Calculate transformation matrix to align data to reference."""
-        rospy.loginfo(len(reference))
-        rospy.loginfo(len(data))
+        # rospy.loginfo(len(reference))
+        # rospy.loginfo(len(data))
         assert len(reference) >= 2 and len(data) >= 2, "Need at least two points to calculate transformation"
         
         # Compute centroids

@@ -9,6 +9,17 @@
     <arg name="ground_truth_poses" value="/ground_truth_poses"/>
   </include>
 
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_array_republisher.launch">
+    <!-- Optionally override arguments here -->
+    <arg name="transform_matrix_cam" value="[[0.99675996, 0.08043372, -0.05389885],[-0.08043372, 0.99675996, 0.16321373],[0.0, 0.0, 1.0]]"/>
+    <arg name="transform_matrix_lidar" value="[[0.98483877, 0.1734722, 0.02260684],[-0.1734722, 0.98483877, 0.01221501],[0.0, 0.0, 1.0]]"/>
+    <arg name="frame_id" value="base_link_40"/>
+    <arg name="cam_poses" value="/cam_poses"/>
+    <arg name="lidar_poses" value="/lidar_poses"/>
+    <arg name="cam_poses_transformed" value="/cam_poses_transformed"/>
+    <arg name="lidar_poses_transformed" value="/lidar_poses_transformed"/>
+  </include>
+
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/calibration_cam_lidar.launch">
     <!-- Optionally override arguments here -->
     <arg name="collect_time" value="60.0"/>
@@ -22,7 +33,7 @@
     <!-- Optionally override arguments here -->
     <arg name="camera_fov_deg" value="95"/>
     <arg name="camera_resolution" value="256"/>
-    <arg name="detection_method" value="partially_assisted_euclidean_clustering"/>
+    <arg name="detection_method" value="fully_assisted_detection"/>
     <arg name="visualize" value="false"/>
     <arg name="clustering_distance_threshold" value="0.15"/>
     <arg name="clustering_min_points" value="2"/>

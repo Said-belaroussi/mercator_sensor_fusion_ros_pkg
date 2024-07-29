@@ -1,0 +1,25 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="new_poses_frame_id" default="odom"/>
+  <arg name="frame_id" default="odom"/>
+  <arg name="child_frame_id" default="base_link"/>
+  <arg name="cam_poses" default="cam_poses"/>
+  <arg name="lidar_poses" default="lidar_poses"/>
+  <arg name="cam_poses_odom" default="cam_poses_odom"/>
+  <arg name="lidar_poses_odom" default="lidar_poses_odom"/>
+  <arg name="tf" default="tf"/>
+
+  <!-- Node launching -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="pose_transformer" name="pose_transformer_assess" output="screen">
+    <!-- Parameters-->
+    <param name="new_poses_frame_id" type="string" value="$(arg new_poses_frame_id)" />
+    <param name="frame_id" type="string" value="$(arg frame_id)" />
+    <param name="child_frame_id" type="string" value="$(arg child_frame_id)" />
+    <!-- Topic remappings -->
+    <remap from="cam_poses" to="$(arg cam_poses)" />
+    <remap from="lidar_poses" to="$(arg lidar_poses)" />
+    <remap from="cam_poses_odom" to="$(arg cam_poses_odom)" />
+    <remap from="lidar_poses_odom" to="$(arg lidar_poses_odom)" />
+    <remap from="tf" to="$(arg tf)" />
+  </node>
+</launch>
