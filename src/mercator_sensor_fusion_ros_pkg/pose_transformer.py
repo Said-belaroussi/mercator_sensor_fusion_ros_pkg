@@ -46,6 +46,7 @@ class PoseTransformerNode:
 
         transformed_poses = PoseArray()
         transformed_poses.header = msg.header # Keep the same frame_id and timestamp
+        transformed_poses.header.timestamp = rospy.Time.now()
         transformed_poses.header.frame_id = self.new_poses_frame_id
 
         for pose in msg.poses:
