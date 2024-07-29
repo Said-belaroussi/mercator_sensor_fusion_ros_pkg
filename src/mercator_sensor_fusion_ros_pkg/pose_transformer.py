@@ -15,6 +15,7 @@ class PoseTransformerNode:
 
         self.frame_id = rospy.get_param('~frame_id', 'odom')
         self.child_frame_id = rospy.get_param('~child_frame_id', 'base_link')
+        self.new_poses_frame_id = rospy.get_param('~new_poses_frame_id', 'odom')
 
         self.cam_poses_sub = rospy.Subscriber('cam_poses', PoseArray, self.cam_poses_callback)
         self.lidar_poses_sub = rospy.Subscriber('lidar_poses', PoseArray, self.lidar_poses_callback)
@@ -45,6 +46,7 @@ class PoseTransformerNode:
 
         transformed_poses = PoseArray()
         transformed_poses.header = msg.header # Keep the same frame_id and timestamp
+        transformed_poses.header.frame_id = self.new_poses_frame_id
 
         for pose in msg.poses:
             pose_stamped = PoseStamped()

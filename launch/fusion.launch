@@ -40,6 +40,7 @@
 
   <!-- Including the base launch file with parameters -->
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_transformer.launch">
+    <arg name="new_poses_frame_id" value="base_link_40"/>
     <arg name="frame_id" value="odom"/>
     <arg name="child_frame_id" value="base_link_40"/>
     <arg name="cam_poses" value="/cam_poses_transformed"/>
