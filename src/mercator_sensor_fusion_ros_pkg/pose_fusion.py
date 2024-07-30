@@ -353,7 +353,7 @@ class PoseFusionNode:
     def match_kf_poses(self, poses_xy, kf_frame_id):        
         corresponding_kf_ids = self.get_corresponding_kf_ids(poses_xy, kf_frame_id)
         if not self.keep_tracking_with_only_lidar:
-            self.delete_kalman_filters(corresponding_kf_ids)
+            self.delete_kalman_filters(corresponding_kf_ids, kf_frame_id)
 
         return corresponding_kf_ids
 
@@ -384,7 +384,8 @@ class PoseFusionNode:
         # Initialize new Kalman filters for the unmatched poses
         for i in unmatched_poses_indices:
             new_id = self.generate_new_id()
-            self.kalman_filters[kf_frame_id] = dict()
+            if kf_frame_id not in self.kalman_filters.keys():
+                self.kalman_filters[kf_frame_id] = dict()
             self.kalman_filters[kf_frame_id][new_id] = self.initialize_kalman_filter(new_id, initial_position=(poses_xy[i][0], poses_xy[i][1]))
             corresponding_kf_ids[i] = new_id
         
@@ -528,7 +529,6 @@ class PoseFusionNode:
                 # Update Kalman filter
                 measurements = np.array([cam_pose[0], cam_pose[1], lidar_pose[0], lidar_pose[1]])
                 measurement_covariance = self.compute_measurement_covariance(measurements)
-
                 self.kalman_filters[kf_frame_id][corresponding_kf_ids[cam_idx]].update_measurement_covariance(measurement_covariance)
 
                 self.kalman_filters[kf_frame_id][corresponding_kf_ids[cam_idx]].predict()

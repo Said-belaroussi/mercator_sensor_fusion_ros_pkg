@@ -69,7 +69,7 @@
     <arg name="robot_average_radius" value="0.15"/>
     <arg name="initial_velocity" value="0.0"/>
     <arg name="initial_position" value="0.0"/>
-    <arg name="sensor_fusion_simple_weighted_average" value="True"/>
+    <arg name="sensor_fusion_simple_weighted_average" value="False"/>
     <arg name="cam_poses" value="/cam_poses_odom"/>
     <arg name="lidar_poses" value="/lidar_poses_odom"/>
   </include>
