@@ -472,6 +472,7 @@ class PoseFusionNode:
 
                 # Compute the fused pose
                 fused_pose = (cam_weight*cam_pose + lidar_weight*lidar_pose)/(cam_weight + lidar_weight)
+                rospy.loginfo("fused_pose: {}".format(fused_pose))
 
                 # Create Pose message
                 pose_msg = Pose()
