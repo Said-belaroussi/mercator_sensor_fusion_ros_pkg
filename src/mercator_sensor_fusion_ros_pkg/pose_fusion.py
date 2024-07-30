@@ -458,6 +458,8 @@ class PoseFusionNode:
             for cam_idx, lidar_idx in zip(cam_indices, lidar_indices):
                 cam_pose = cam_poses_xy[cam_idx]
                 lidar_pose = lidar_poses_xy[lidar_idx]
+                rospy.loginfo("cam_pose: {}".format(cam_pose))
+                rospy.loginfo("lidar_pose: {}".format(lidar_pose))
 
                 # Compute the variances of the poses
                 cam_absolute_error = self.cam_absolute_error(cam_pose, cam_pose)
