@@ -471,7 +471,8 @@ class PoseFusionNode:
                 # Compute the weights of the poses
                 cam_weight = 1/cam_variance
                 lidar_weight = 1/lidar_variance
-
+                rospy.loginfo("cam_weight: {}".format(cam_weight))
+                rospy.loginfo("lidar_weight: {}".format(lidar_weight))
                 # Compute the fused pose
                 fused_pose = [(cam_weight*cam_pose[0] + lidar_weight*lidar_pose[0])/ (cam_weight + lidar_weight),
                              (cam_weight*cam_pose[1] + lidar_weight*lidar_pose[1])/ (cam_weight + lidar_weight)]
