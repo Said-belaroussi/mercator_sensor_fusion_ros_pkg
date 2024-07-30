@@ -33,7 +33,7 @@
     <!-- Optionally override arguments here -->
     <arg name="camera_fov_deg" value="95"/>
     <arg name="camera_resolution" value="256"/>
-    <arg name="detection_method" value="fully_assisted_detection"/>
+    <arg name="detection_method" value="standalone_euclidean_clustering"/>
     <arg name="visualize" value="false"/>
     <arg name="clustering_distance_threshold" value="0.15"/>
     <arg name="clustering_min_points" value="2"/>
