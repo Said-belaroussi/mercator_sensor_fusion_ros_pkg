@@ -3,9 +3,9 @@
   <!-- Including the base launch file -->
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/ground_truth_publisher.launch">
     <!-- You can pass arguments here if needed, or override them -->
-    <arg name="robot_names" value="['base_link_23', 'base_link_31', 'base_link_40']"/>
-    <arg name="reference_robot_name" value="base_link_40"/>
-    <arg name="tf" value="tf"/>
+    <arg name="robot_names" value="['base_link_23', 'base_link_31', 'base_link_22']"/>
+    <arg name="reference_robot_name" value="base_link_22"/>
+    <arg name="tf" value="/tf"/>
     <arg name="ground_truth_poses" value="/ground_truth_poses"/>
   </include>
 
@@ -13,7 +13,7 @@
     <!-- Optionally override arguments here -->
     <arg name="transform_matrix_cam" value="[[0.99675996, 0.08043372, -0.05389885],[-0.08043372, 0.99675996, 0.16321373],[0.0, 0.0, 1.0]]"/>
     <arg name="transform_matrix_lidar" value="[[0.98483877, 0.1734722, 0.02260684],[-0.1734722, 0.98483877, 0.01221501],[0.0, 0.0, 1.0]]"/>
-    <arg name="frame_id" value="base_link_40"/>
+    <arg name="frame_id" value="base_link_22"/>
     <arg name="cam_poses" value="/cam_poses"/>
     <arg name="lidar_poses" value="/lidar_poses"/>
     <arg name="cam_poses_transformed" value="/cam_poses_transformed"/>

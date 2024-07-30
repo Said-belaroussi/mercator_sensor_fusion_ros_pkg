@@ -59,8 +59,8 @@ class GroundTruthPublisherNode:
                 # rospy.loginfo("ref_pose")
                 ref_position = np.array([ref_pose.position.x, ref_pose.position.y, ref_pose.position.z, 1])
                 ref_orientation = np.array([ref_pose.orientation.x, ref_pose.orientation.y, ref_pose.orientation.z, ref_pose.orientation.w])
-                # Add +90 degrees rotation around z-axis to align with the map
-                ref_orientation = transformations.quaternion_multiply(ref_orientation, transformations.quaternion_from_euler(0, 0, np.pi/2))
+                # Add +180 degrees rotation around z-axis to align with the map
+                ref_orientation = transformations.quaternion_multiply(ref_orientation, transformations.quaternion_from_euler(0, 0, 0))
                 ref_matrix = transformations.quaternion_matrix(ref_orientation)
                 ref_matrix[0:3, 3] = ref_position[0:3]
 
@@ -68,7 +68,7 @@ class GroundTruthPublisherNode:
 
                 pose_array_msg = PoseArray()
                 pose_array_msg.header.stamp = rospy.Time.now()
-                pose_array_msg.header.frame_id = "base_link_40"
+                pose_array_msg.header.frame_id = self.reference_robot_name
 
                 for robot_name in self.robot_names:
                     if robot_name != self.reference_robot_name:
