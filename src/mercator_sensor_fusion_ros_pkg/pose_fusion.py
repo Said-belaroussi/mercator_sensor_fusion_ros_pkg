@@ -182,7 +182,7 @@ class PoseFusionNode:
         from the object.
         https://docs.luxonis.com/projects/hardware/en/latest/pages/BW1098OAK/#stereo-depth-perception
         """
-        distance = np.linalg.norm(x - y)
+        distance = np.sqrt(x**2 + y**2)
         relative_error = None
         if distance < 4:
             relative_error = 0.02
@@ -199,7 +199,7 @@ class PoseFusionNode:
         from the object.
         https://www.ydlidar.com/dowfile.html?cid=5&type=1
         """
-        distance = np.linalg.norm(x - y)
+        distance = np.sqrt(x**2 + y**2)
 
         absolute_error = None
 
@@ -462,8 +462,8 @@ class PoseFusionNode:
                 rospy.loginfo("lidar_pose: {}".format(lidar_pose))
 
                 # Compute the variances of the poses
-                cam_absolute_error = self.cam_absolute_error(cam_pose, cam_pose)
-                lidar_absolute_error = self.lidar_absolute_error(lidar_pose, lidar_pose)
+                cam_absolute_error = self.cam_absolute_error(cam_pose[0], cam_pose[1])
+                lidar_absolute_error = self.lidar_absolute_error(lidar_pose[0], lidar_pose[1])
 
                 cam_variance = cam_absolute_error**2
                 lidar_variance = lidar_absolute_error**2
