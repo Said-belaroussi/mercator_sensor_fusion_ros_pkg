@@ -1,4 +1,5 @@
 <launch>  
+  <arg name="robot_frame_id_name" default="robot"/>
 
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/rotate_laser_scan.launch">
     <arg name="rotation_angle_in_radians" value="3.14159"/>
@@ -25,7 +26,7 @@
   <!-- Including the base launch file with parameters -->
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/odometry_corrector.launch">
     <arg name="frame_id" value="odom"/>
-    <arg name="child_frame_id" value="base_link_40"/>
+    <arg name="child_frame_id" value="$(arg robot_frame_id_name)"/>
     <arg name="rvr_imu" value="/rvr/imu"/>
     <arg name="imu" value="/imu"/>
     <arg name="rvr_odom" value="/rvr/odom"/>
@@ -36,7 +37,7 @@
     <!-- Optionally override arguments here -->
     <arg name="transform_matrix_cam" value="[[0.99675996, 0.08043372, -0.05389885],[-0.08043372, 0.99675996, 0.16321373],[0.0, 0.0, 1.0]]"/>
     <arg name="transform_matrix_lidar" value="[[0.98483877, 0.1734722, 0.02260684],[-0.1734722, 0.98483877, 0.01221501],[0.0, 0.0, 1.0]]"/>
-    <arg name="frame_id" value="base_link_40"/>
+    <arg name="frame_id" value="$(arg robot_frame_id_name)"/>
     <arg name="cam_poses" value="/cam_poses"/>
     <arg name="lidar_poses" value="/lidar_poses"/>
     <arg name="cam_poses_transformed" value="/cam_poses_transformed"/>
@@ -45,9 +46,9 @@
 
   <!-- Including the base launch file with parameters -->
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_transformer.launch">
-    <arg name="new_poses_frame_id" value="base_link_40"/>
+    <arg name="new_poses_frame_id" value="$(arg robot_frame_id_name)"/>
     <arg name="frame_id" value="odom"/>
-    <arg name="child_frame_id" value="base_link_40"/>
+    <arg name="child_frame_id" value="$(arg robot_frame_id_name)"/>
     <arg name="cam_poses" value="/cam_poses_transformed"/>
     <arg name="lidar_poses" value="/lidar_poses_transformed"/>
     <arg name="cam_poses_odom" value="/cam_poses_odom"/>
@@ -57,6 +58,7 @@
 
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_fusion.launch">
     <!-- Optionally override arguments here -->
+    <arg name="robot_name" value= "$(arg robot_frame_id_name)"/>
     <arg name="sensors_topics" value="['cam_poses_odom', 'lidar_poses_odom']"/>
     <arg name="sensors_trusts" value="[true, false]"/>
     <arg name="initial_sensors_variances" value="[0.0256, 0.0196]"/>

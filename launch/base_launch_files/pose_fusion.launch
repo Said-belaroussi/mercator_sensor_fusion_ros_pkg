@@ -1,5 +1,6 @@
 <launch>
     <!-- Arguments -->
+    <arg name="robot_name" default= "base_link"/>
     <arg name="sensors_topics" default="['cam_poses_transformed', 'lidar_poses_transformed']"/>
     <arg name="sensors_trusts" default="[true, false]"/>
     <arg name="initial_sensors_variances" default="[0.0256, 0.0196]"/>
@@ -20,6 +21,7 @@
         <rosparam param="sensors_topics" subst_value="True">$(arg sensors_topics)</rosparam>
         <rosparam param="sensors_trusts" subst_value="True">$(arg sensors_trusts)</rosparam>
         <rosparam param="initial_sensors_variances" subst_value="True">$(arg initial_sensors_variances)</rosparam>
+        <param name="robot_name" value="$(arg robot_name)"/>
         <param name="keep_tracking_with_only_lidar" value="$(arg keep_tracking_with_only_lidar)"/>
         <param name="sensors_number" value="$(arg sensors_number)"/>
         <param name="process_noise_factor" value="$(arg process_noise_factor)"/>

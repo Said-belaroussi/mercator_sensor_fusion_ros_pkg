@@ -30,6 +30,7 @@ class CostBetweenPosesNode:
         ground_truth_poses = np.array([[pose.position.x, pose.position.y] for pose in self.ground_truth_poses])
 
         cost_matrix = np.linalg.norm(experiment_poses[:, np.newaxis] - ground_truth_poses, axis=2)
+        rospy.loginfo(cost_matrix)
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
         total_cost = cost_matrix[row_ind, col_ind].sum()
         self.average_cost = (self.average_cost * self.iterations + total_cost) / (self.iterations + 1)

@@ -40,9 +40,36 @@ class OdometryCorrectorNode:
 
     def odom_callback(self, odom_msg):
         if self.initial_orientation is not None:
+            if self.initial_yaw is None:
+                if self.initial_x is None and self.initial_y is None:
+                    self.initial_x = odom_msg.pose.pose.position.x
+                    self.initial_y = odom_msg.pose.pose.position.y
+                else:
+                    delta_x = odom_msg.pose.pose.position.x - self.initial_x
+                    delta_y = odom_msg.pose.pose.position.y - self.initial_y
+                    yaw1 = atan2(delta_y, delta_x)
+                    (roll, pitch, yaw) = euler_from_quaternion([
+                    self.initial_orientation.x,
+                    self.initial_orientation.y,
+                    self.initial_orientation.z,
+                    self.initial_orientation.w
+                    ])
+                    print("yaw1 : ", yaw1)
+                    print("yaw : ", yaw)
+                    if (delta_x != 0 and delta_y != 0): 
+                        self.initial_yaw = yaw - yaw1
+            else:
+                # Calculate new x, y positions based on initial orientation
+                x = odom_msg.pose.pose.position.x
+                y = odom_msg.pose.pose.position.y
+                new_x = x * cos(self.initial_yaw) - y * sin(self.initial_yaw)
+                new_y = x * sin(self.initial_yaw) + y * cos(self.initial_yaw)
                 # Modify the frame_id and child_frame_id fields
                 odom_msg.header.frame_id = self.frame_id
                 odom_msg.child_frame_id = self.child_frame_id
+                # Update the x, y positions
+                odom_msg.pose.pose.position.x = new_x
+                odom_msg.pose.pose.position.y = new_y
                 # Publish the modified odometry message
                 # Publish the odometry message with IMU orientation mixed in
                 odom_msg.pose.pose.orientation = self.last_orientation
@@ -50,7 +77,7 @@ class OdometryCorrectorNode:
 
                 # Broadcast the transform
                 self.tf_broadcaster.sendTransform(
-                    (odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y, 0),
+                    (new_x, new_y, 0),
                     (
                         self.last_orientation.x,
                         self.last_orientation.y,
