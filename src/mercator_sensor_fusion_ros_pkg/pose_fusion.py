@@ -449,8 +449,8 @@ class PoseFusionNode:
         cam_poses_xy, lidar_poses_xy = self.extract_cam_lidar_poses(kf_frame_id)
 
         if len(cam_poses_xy) > 0 and len(lidar_poses_xy) > 0:
-            rospy.loginfo(cam_poses_xy)
-            rospy.loginfo(lidar_poses_xy)
+            rospy.loginfo("cam_poses_xy: {}".format(cam_poses_xy))
+            rospy.loginfo("lidar_poses_xy: {}".format(lidar_poses_xy))
 
             # Perform matching between poses using the Hungarian algorithm
             cam_indices, lidar_indices = self.match_2_poses_arrays(cam_poses_xy, lidar_poses_xy)
