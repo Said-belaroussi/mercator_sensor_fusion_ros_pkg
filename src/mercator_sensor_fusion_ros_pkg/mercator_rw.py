@@ -79,6 +79,8 @@ class MercatorRwNode:
         self.obstacle_avoidance(min_idx, min_dist)
     
     def obstacle_avoidance(self, idx, dist):
+        data_to_send = Float32MultiArray()
+
         if dist > self.min_dist_threshold:
             left, right = self.go_straight()
         else:
