@@ -76,6 +76,8 @@ class MercatorRwNode:
                     min_dist = range_msg.range
                     min_idx = i
         
+        rospy.loginfo("Min dist: %f", min_dist)
+        rospy.loginfo("Min idx: %d", min_idx)
         self.obstacle_avoidance(min_idx, min_dist)
     
     def obstacle_avoidance(self, idx, dist):
