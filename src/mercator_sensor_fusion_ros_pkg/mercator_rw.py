@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import rospy
+import random
+import time
 from sensor_msgs.msg import Range
 from teraranger_array.msg import RangeArray
 from std_msgs.msg import Float32MultiArray
@@ -36,13 +38,6 @@ class MercatorRwNode:
 
     def callback(self, data):
         ranges = data.ranges
-        # min_dist = float('inf')
-        # min_idx = 0
-
-        # for i, range_msg in enumerate(data.ranges):
-        #     if range_msg.range < min_dist and range_msg.range > 0:
-        #         min_dist = range_msg.range
-        #         min_idx = i
         self.obstacle_detection(ranges)
 
     def go_straight(self):
@@ -64,8 +59,6 @@ class MercatorRwNode:
         return left, right
 
     def obstacle_detection(self, ranges):
-        data_to_send = Float32MultiArray()
-
         min_dist = float('inf')
         min_idx = 0
 
@@ -78,19 +71,55 @@ class MercatorRwNode:
         
         rospy.loginfo("Min dist: %f", min_dist)
         rospy.loginfo("Min idx: %d", min_idx)
-        self.obstacle_avoidance(min_idx, min_dist)
+        self.obstacle_avoidance(ranges, min_idx, min_dist)
     
-    def obstacle_avoidance(self, idx, dist):
+    def obstacle_avoidance(self, ranges, idx, dist):
         data_to_send = Float32MultiArray()
 
         if dist > self.min_dist_threshold:
             left, right = self.go_straight()
         else:
-            angle = self.sensor_angles[idx]
-            if -self.dodge_angle_range <= angle <= 0:
+            # Check all ranges for specific angle conditions
+            left_turn = False
+            right_turn = False
+
+            for i, range_msg in enumerate(ranges):
+                angle = self.sensor_angles[i]
+                if range_msg.range < self.min_dist_threshold:
+                    if 45 <= angle <= 90:
+                        left_turn = True
+                    elif -90 <= angle <= -45:
+                        right_turn = True
+
+            if left_turn:
+                left, right = self.go_left()
+            elif right_turn:
                 left, right = self.go_right()
             else:
-                left, right = self.go_left()
+                # Randomly choose left or right
+                if random.choice([True, False]):
+                    left, right = self.go_left()
+                else:
+                    left, right = self.go_right()
+            
+            # Randomly choose a time duration between 0 and 1 second
+            duration = random.uniform(0, 1)
+            rospy.loginfo("Avoiding obstacle: Turning for %f seconds", duration)
+            
+            # Send the chosen direction
+            data_to_send.data = [left, right]
+            data_to_send.layout.dim.append(MultiArrayDimension())
+            data_to_send.layout.dim[0].label = 'wheel_vel'
+            data_to_send.layout.dim[0].size = 2
+            data_to_send.layout.dim[0].stride = 1
+            data_to_send.layout.data_offset = 0
+            self.pub.publish(data_to_send)
+
+            # Sleep for the duration
+            time.sleep(duration)
+            
+            # Stop after the duration
+            left, right = 0, 0
 
         data_to_send.data = [left, right]
         data_to_send.layout.dim.append(MultiArrayDimension())
