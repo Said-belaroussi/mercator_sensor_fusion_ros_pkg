@@ -2,6 +2,7 @@
 
 import rospy
 from sensor_msgs.msg import Range
+from teraranger_array.msg import RangeArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import MultiArrayDimension
 
@@ -17,7 +18,7 @@ class MercatorRwNode:
         self.dodge_angle_range = rospy.get_param('~dodge_angle_range', 45)  # range of angles to dodge an obstacle
 
         self.pub = rospy.Publisher('/rvr/wheels_speed', Float32MultiArray, queue_size=1000)
-        rospy.Subscriber("/ranges", teraranger_array/RangeArray, self.callback)
+        rospy.Subscriber("/ranges", RangeArray, self.callback)
 
         self.run()
 
