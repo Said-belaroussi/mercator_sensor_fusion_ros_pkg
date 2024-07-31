@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from mercator_sensor_fusion_ros_pkg import MercatorRwNode
+from mercator_sensor_fusion_ros_pkg.mercator_rw import MercatorRwNode
 from mercator_sensor_fusion_ros_pkg.util import config_utils
 
 
