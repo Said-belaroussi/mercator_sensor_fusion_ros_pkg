@@ -7,6 +7,7 @@ from sensor_msgs.msg import Range
 from teraranger_array.msg import RangeArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import MultiArrayDimension
+import threading
 
 class MercatorRwNode:
     def __init__(self):
@@ -21,6 +22,8 @@ class MercatorRwNode:
 
         self.pub = rospy.Publisher('/rvr/wheels_speed', Float32MultiArray, queue_size=1)
         rospy.Subscriber("/ranges", RangeArray, self.callback, queue_size=1)
+
+        lock = threading.Lock()
 
         self.run()
 
@@ -38,7 +41,9 @@ class MercatorRwNode:
 
     def callback(self, data):
         ranges = data.ranges
+        lock.acquire()
         self.obstacle_detection(ranges)
+        lock.release()
 
     def go_straight(self):
         left = self.speed
