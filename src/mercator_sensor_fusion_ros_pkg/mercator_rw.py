@@ -69,18 +69,25 @@ class MercatorRwNode:
 
     def obstacle_detection(self, ranges):
         min_dist = float('inf')
+        second_min_dist = float('inf')
         min_idx = 0
+        second_min_idx = 0
 
         for i, range_msg in enumerate(ranges):
             angle = self.sensor_angles[i]
             if -self.dodge_angle_range <= angle <= self.dodge_angle_range:
-                if range_msg.range < min_dist and range_msg.range > 0:
+                if 0 < range_msg.range < min_dist:
+                    second_min_dist = min_dist
+                    second_min_idx = min_idx
                     min_dist = range_msg.range
                     min_idx = i
+                elif min_dist < range_msg.range < second_min_dist:
+                    second_min_dist = range_msg.range
+                    second_min_idx = i
         
-        rospy.loginfo("Min dist: %f", min_dist)
-        rospy.loginfo("Min idx: %d", min_idx)
-        self.obstacle_avoidance(ranges, min_idx, min_dist)
+        rospy.loginfo("Second min dist: %f", second_min_dist)
+        rospy.loginfo("Second min idx: %d", second_min_idx)
+        self.obstacle_avoidance(ranges, second_min_idx, second_min_dist)
     
     def obstacle_avoidance(self, ranges, idx, dist):
         data_to_send = Float32MultiArray()
