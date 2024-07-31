@@ -119,7 +119,7 @@ class MercatorRwNode:
                     left, right = self.go_right()
             
             # Randomly choose a time duration between 0 and 1 second
-            duration = random.uniform(1, 1)
+            duration = random.uniform(2, 2)
             rospy.loginfo("Avoiding obstacle: Turning for %f seconds", duration)
             
             # Send the chosen direction
