@@ -10,8 +10,8 @@ class MercatorRwNode:
         rospy.init_node('mercator_rw_node', anonymous=True)
 
         # Retrieve parameters from the parameter server
-        self.speed = rospy.get_param('~speed', 0.5)
-        self.min_dist_threshold = rospy.get_param('~min_dist_threshold', 0.9)
+        self.speed = rospy.get_param('~speed', 0.25)
+        self.min_dist_threshold = rospy.get_param('~min_dist_threshold', 0.5)
         self.sensor_angles = rospy.get_param('~sensor_angles', "[-150, -80, -20, -10, 10, 20, 80, 150]")
         self.sensor_angles = self.string_to_list(self.sensor_angles)
         self.dodge_angle_range = rospy.get_param('~dodge_angle_range', 45)  # range of angles to dodge an obstacle
