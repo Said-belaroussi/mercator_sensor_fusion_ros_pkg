@@ -23,7 +23,7 @@ class MercatorRwNode:
         self.pub = rospy.Publisher('/rvr/wheels_speed', Float32MultiArray, queue_size=1)
         rospy.Subscriber("/ranges", RangeArray, self.callback, queue_size=1)
 
-        lock = threading.Lock()
+        self.lock = threading.Lock()
 
         self.run()
 
@@ -41,9 +41,9 @@ class MercatorRwNode:
 
     def callback(self, data):
         ranges = data.ranges
-        lock.acquire()
+        self.lock.acquire()
         self.obstacle_detection(ranges)
-        lock.release()
+        self.lock.release()
 
     def go_straight(self):
         left = self.speed
