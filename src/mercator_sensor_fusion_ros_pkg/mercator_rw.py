@@ -19,8 +19,8 @@ class MercatorRwNode:
         self.sensor_angles = self.string_to_list(self.sensor_angles)
         self.dodge_angle_range = rospy.get_param('~dodge_angle_range', 45)  # range of angles to dodge an obstacle
 
-        self.pub = rospy.Publisher('/rvr/wheels_speed', Float32MultiArray, queue_size=1000)
-        rospy.Subscriber("/ranges", RangeArray, self.callback)
+        self.pub = rospy.Publisher('/rvr/wheels_speed', Float32MultiArray, queue_size=1)
+        rospy.Subscriber("/ranges", RangeArray, self.callback, queue_size=1
 
         self.run()
 
