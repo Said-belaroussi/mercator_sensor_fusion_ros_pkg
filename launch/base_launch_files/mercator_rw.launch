@@ -1,8 +1,8 @@
 <launch>
     <!-- Define arguments with default values -->
-    <arg name="speed" default="0.5" />
-    <arg name="min_dist_threshold" default="0.9" />
-    <arg name="sensor_angles" default="[0, 45, 90, 135, 180, 225, 270, 315]" />
+    <arg name="speed" default="0.25" />
+    <arg name="min_dist_threshold" default="0.5" />
+    <arg name="sensor_angles" default="[-150, -80, -20, -10, 10, 20, 80, 150]" />
     <arg name="dodge_angle_range" default="45" />
 
     <!-- Launch the mercator_rw_node with the specified parameters -->
