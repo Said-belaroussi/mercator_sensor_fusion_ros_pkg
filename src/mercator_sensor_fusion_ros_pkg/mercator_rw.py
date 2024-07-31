@@ -41,9 +41,7 @@ class MercatorRwNode:
 
     def callback(self, data):
         ranges = data.ranges
-        self.lock.acquire()
         self.obstacle_detection(ranges)
-        self.lock.release()
 
     def go_straight(self):
         left = self.speed
@@ -108,7 +106,7 @@ class MercatorRwNode:
                     left, right = self.go_right()
             
             # Randomly choose a time duration between 0 and 1 second
-            duration = random.uniform(0, 10)
+            duration = random.uniform(0.5, 10)
             rospy.loginfo("Avoiding obstacle: Turning for %f seconds", duration)
             
             # Send the chosen direction
