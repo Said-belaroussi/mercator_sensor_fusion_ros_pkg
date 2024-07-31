@@ -99,5 +99,4 @@ class MercatorRwNode:
         rospy.spin()
 
 if __name__ == '__main__':
-    node = PublisherNode()
-    node.run()
+    node = MercatorRwNode()
