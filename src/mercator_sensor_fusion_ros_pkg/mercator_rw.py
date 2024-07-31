@@ -7,7 +7,6 @@ from sensor_msgs.msg import Range
 from teraranger_array.msg import RangeArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import MultiArrayDimension
-import threading
 
 class MercatorRwNode:
     def __init__(self):
@@ -23,7 +22,7 @@ class MercatorRwNode:
         self.pub = rospy.Publisher('/rvr/wheels_speed', Float32MultiArray, queue_size=1)
         rospy.Subscriber("/ranges", RangeArray, self.callback, queue_size=1)
 
-        self.lock = threading.Lock()
+        self.message_counter = 0  # Counter to track messages
 
         self.run()
 
@@ -40,6 +39,13 @@ class MercatorRwNode:
         return (-self.dodge_angle_range <= angle <= self.dodge_angle_range)
 
     def callback(self, data):
+        self.message_counter += 1
+
+        # Ignore every other message
+        if self.message_counter % 2 == 0:
+            rospy.loginfo("Message ignored")
+            return
+
         ranges = data.ranges
         self.obstacle_detection(ranges)
 
@@ -106,7 +112,7 @@ class MercatorRwNode:
                     left, right = self.go_right()
             
             # Randomly choose a time duration between 0 and 1 second
-            duration = random.uniform(0.5, 10)
+            duration = random.uniform(0.5, 1)
             rospy.loginfo("Avoiding obstacle: Turning for %f seconds", duration)
             
             # Send the chosen direction
