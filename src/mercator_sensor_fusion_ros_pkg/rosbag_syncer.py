@@ -88,6 +88,8 @@ class RosbagSyncerNode:
             move_index2 = self.detect_significant_movement(positions2)
 
             if move_index1 is None or move_index2 is None:
+                rospy.loginfo(f"move_index1: {move_index1}")
+                rospy.loginfo(f"move_index2: {move_index2}")
                 raise Exception("No significant movement detected in one of the bags")
 
             start_time1 = timestamps1[move_index1]
