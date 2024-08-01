@@ -60,7 +60,7 @@ class RobotToArenaPosesTransformerNode:
             try:
                 # Lookup transform from robot_odom to robot and invert it
                 robot_odom_to_robot_transform = self.tf_buffer.lookup_transform(self.robot_odom_fram_id, self.robot_frame_id, rospy.Time(0))
-                robot_to_robot_odom_transform = tf2.inverse_transform(robot_odom_to_robot_transform)
+                robot_to_robot_odom_transform = self.invert_transform(robot_odom_to_robot_transform)
 
                 # Apply the inverted transform first
                 transformed_pose = do_transform_pose(pose_stamped, robot_to_robot_odom_transform)
@@ -75,6 +75,25 @@ class RobotToArenaPosesTransformerNode:
                 rospy.logerr(f"Error transforming pose: {e}")
 
         publisher.publish(transformed_poses)
+
+    def invert_transform(self, transform):
+        inverted_transform = TransformStamped()
+
+        inverted_transform.header = transform.header
+        inverted_transform.child_frame_id = transform.child_frame_id
+
+        # Invert translation
+        inverted_transform.transform.translation.x = -transform.transform.translation.x
+        inverted_transform.transform.translation.y = -transform.transform.translation.y
+        inverted_transform.transform.translation.z = -transform.transform.translation.z
+
+        # Invert rotation (quaternion)
+        inverted_transform.transform.rotation.x = -transform.transform.rotation.x
+        inverted_transform.transform.rotation.y = -transform.transform.rotation.y
+        inverted_transform.transform.rotation.z = -transform.transform.rotation.z
+        inverted_transform.transform.rotation.w = transform.transform.rotation.w
+
+        return inverted_transform
 
     def run(self):
         rospy.spin()
