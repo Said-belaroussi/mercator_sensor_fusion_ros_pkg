@@ -13,7 +13,8 @@ class CostBetweenPosesNode:
         self.ground_truth_buffer = []
         self.latest_experiment_poses = None
         self.buffer_duration = rospy.get_param('~buffer_duration', 10)  # Buffer duration in seconds
-        self.max_shift_messages = rospy.get_param('~max_shift_messages', 3)  # Max shift in number of messages
+        self.max_shift_messages = rospy.get_param('~max_shift_messages', 50)  # Max shift in number of messages
+        self.shift_step = rospy.get_param('~shift_step', 10)
         self.timer = rospy.Timer(rospy.Duration(self.buffer_duration), self.compute_costs)
 
         self.experiment_sub = rospy.Subscriber('experiment_poses', PoseArray, self.experiment_callback)
@@ -42,7 +43,7 @@ class CostBetweenPosesNode:
         min_average_cost = float('inf')
         optimal_shift = 0
 
-        for shift in range(-self.max_shift_messages, self.max_shift_messages + 1):
+        for shift in range(-self.max_shift_messages, self.max_shift_messages + 1, self.shift_step):
             if shift < 0:
                 shifted_experiment_buffer = self.experiment_buffer[-shift:]
                 shifted_ground_truth_buffer = self.ground_truth_buffer[:shift]
