@@ -79,7 +79,9 @@ class CostBetweenPosesNode:
 
         cost_matrix = np.linalg.norm(experiment_poses[:, np.newaxis] - ground_truth_poses, axis=2)
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
-        total_cost = cost_matrix[row_ind, col_ind].sum()
+
+        # Compute the average cost
+        total_cost = cost_matrix[row_ind, col_ind].sum() / len(row_ind)
 
         return total_cost
 
