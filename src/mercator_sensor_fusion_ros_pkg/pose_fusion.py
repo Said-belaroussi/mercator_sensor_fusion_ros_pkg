@@ -339,6 +339,9 @@ class PoseFusionNode:
     def delete_kalman_filters(self, kf_keys, kf_frame_id):
         kfs_to_delete = []
 
+        if kf_frame_id not in self.kalman_filters.keys():
+            return
+            
         for key in self.kalman_filters[kf_frame_id].keys():
             if key not in kf_keys:
                 self.kalman_filters[kf_frame_id][key].increment_no_update()
