@@ -54,10 +54,11 @@ class CalibrationCamLidarNode:
 
     def callback(self, data, args):
         topic_key = args
+        rospy.loginfo(topic_key)
         current_time = time()
         if current_time - self.start_time < self.collect_time:
-            if len(data.poses) != 1:
-                return
+            if len(data.poses) < 1:
+                 return
             with self.locks[topic_key]:
                 self.last_data[topic_key] = data
             if self.last_data["ground_truth_poses"] is None:
