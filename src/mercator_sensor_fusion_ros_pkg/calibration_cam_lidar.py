@@ -63,18 +63,18 @@ class CalibrationCamLidarNode:
             if self.last_data["ground_truth_poses"] is None:
                 return
             if topic_key == "lidar_poses" and len(self.data_for_lidar_calibration["lidar_poses"]) < self.data_max_size:
-                # rospy.loginfo("callback lidar_poses")
-                # rospy.loginfo(len(self.data_for_lidar_calibration[topic_key]))
-                # rospy.loginfo(len(self.data_for_lidar_calibration["ground_truth_poses"]))
+                rospy.loginfo("callback lidar_poses")
+                rospy.loginfo(len(self.data_for_lidar_calibration[topic_key]))
+                rospy.loginfo(len(self.data_for_lidar_calibration["ground_truth_poses"]))
                 if (self.check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
                     with self.locks[topic_key]:
                         self.data_for_lidar_calibration[topic_key].append(data)
                     with self.locks["ground_truth_poses"]:
                         self.data_for_lidar_calibration["ground_truth_poses"].append(self.last_data["ground_truth_poses"])
             elif topic_key == "cam_poses" and len(self.data_for_cam_calibration["cam_poses"]) < self.data_max_size:
-                # rospy.loginfo("callback cam_poses")
-                # rospy.loginfo(len(self.data_for_cam_calibration[topic_key]))
-                # rospy.loginfo(len(self.data_for_cam_calibration["ground_truth_poses"]))
+                rospy.loginfo("callback cam_poses")
+                rospy.loginfo(len(self.data_for_cam_calibration[topic_key]))
+                rospy.loginfo(len(self.data_for_cam_calibration["ground_truth_poses"]))
                 if (self.check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
                     with self.locks[topic_key]:
                         self.data_for_cam_calibration[topic_key].append(data)
@@ -87,8 +87,22 @@ class CalibrationCamLidarNode:
     def compute_calibration_matrices(self):
         # Process the data into numpy arrays for easier handling
         # rospy.loginfo(self.data_for_lidar_calibration.items())
-        processed_data_for_lidar_calibration = {key: self.convert_poses_to_np_array(poses) for key, poses in self.data_for_lidar_calibration.items()}
-        processed_data_for_cam_calibration = {key: self.convert_poses_to_np_array(poses) for key, poses in self.data_for_cam_calibration.items()}
+        processed_data_for_lidar_calibration = {}
+        processed_data_for_cam_calibration = {}
+        matched_lidar_poses, matched_lidar_ground_truth_poses = self.match_poses_arrays(
+            [self.convert_poses_to_np_array(self.data_for_lidar_calibration["lidar_poses"])],
+            [self.convert_poses_to_np_array(self.data_for_lidar_calibration["ground_truth_poses"])]
+        )
+        matched_cam_poses, matched_cam_ground_truth_poses = self.match_poses_arrays(
+            [self.convert_poses_to_np_array(self.data_for_cam_calibration["cam_poses"])],
+            [self.convert_poses_to_np_array(self.data_for_cam_calibration["ground_truth_poses"])]
+        )
+
+        processed_data_for_lidar_calibration["lidar_poses"] = matched_lidar_poses
+        processed_data_for_lidar_calibration["ground_truth_poses"] = matched_lidar_ground_truth_poses
+        processed_data_for_cam_calibration["cam_poses"] = matched_cam_poses
+        processed_data_for_cam_calibration["ground_truth_poses"] = matched_cam_ground_truth_poses
+
         # rospy.loginfo("length of processed data lidar_poses")
         # rospy.loginfo(processed_data_for_lidar_calibration["lidar_poses"])
         # rospy.loginfo(processed_data_for_lidar_calibration["ground_truth_poses"])
@@ -127,6 +141,24 @@ class CalibrationCamLidarNode:
             for pose in pose_array.poses:
                 points.append([pose.position.x, pose.position.y])
         return np.array(points)
+
+    def match_poses_arrays(self, experiment_poses_arrays, ground_truth_poses_arrays):
+        """Match experiment poses to ground truth poses using Hungarian algorithm."""
+        assert len(experiment_poses_arrays) == len(ground_truth_poses_arrays), "Need the same number of poses"
+        assert len(experiment_poses_arrays) > 0, "Need at least one pose"
+        
+        matching_experiment_poses = []
+        matching_ground_truth_poses = []
+
+        for experiment_poses, ground_truth_poses in zip(experiment_poses_arrays, ground_truth_poses_arrays):
+            cost_matrix = np.linalg.norm(experiment_poses[:, np.newaxis] - ground_truth_poses, axis=2)
+            row_ind, col_ind = linear_sum_assignment(cost_matrix)
+            
+            for i in range(len(row_ind)):
+                matching_experiment_poses.append(experiment_poses[row_ind[i]])
+                matching_ground_truth_poses.append(ground_truth_poses[col_ind[i]])
+
+        return np.array(matching_experiment_poses), np.array(matching_ground_truth_poses)
 
     def calculate_transformation(self, reference, data):
         """Calculate transformation matrix to align data to reference."""
