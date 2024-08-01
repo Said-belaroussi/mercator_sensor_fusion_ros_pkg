@@ -1,8 +1,8 @@
 <launch>
   <!-- Define arguments with default values -->
   <arg name="bag1_topic" default="/cam_poses" />
-  <arg name="bag2_topic" default="tf" />
-  <arg name="frame_id" default="base_link_40" />
+  <arg name="bag2_topic" default="/tf" />
+  <arg name="frame_id" default="base_link_22" />
 
   <!-- Pass arguments as parameters to the node -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="rosbag_syncer" name="rosbag_syncer" args="-bag1 -bag2" output="screen"  >

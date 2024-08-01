@@ -65,7 +65,7 @@ class RosbagSyncerNode:
                     timestamps.append(t.to_sec())
         return np.array(positions), np.array(timestamps)
 
-    def detect_significant_movement(self, positions, threshold=0.03):
+    def detect_significant_movement(self, positions, threshold=0.05):
         diffs = np.linalg.norm(np.diff(positions, axis=0), axis=1)
         movement_indices = np.where(diffs > threshold)[0]
         if movement_indices.size == 0:

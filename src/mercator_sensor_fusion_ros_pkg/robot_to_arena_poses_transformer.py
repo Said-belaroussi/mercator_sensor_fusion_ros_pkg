@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from geometry_msgs.msg import PoseArray, PoseStamped
+from geometry_msgs.msg import PoseArray, PoseStamped, TransformStamped
 from tf2_ros import Buffer, TransformListener, LookupException, ConnectivityException, ExtrapolationException
 from tf2_geometry_msgs import do_transform_pose
 from tf2_msgs.msg import TFMessage
@@ -70,7 +70,7 @@ class RobotToArenaPosesTransformerNode:
 
                 transformed_poses.poses.append(transformed_pose.pose)
             except (LookupException, ConnectivityException, ExtrapolationException) as e:
-                rospy.logerr(f"Error looking up transform: {e}")
+                rospy.logwarn(f"Problem looking up transform: {e}")
             except Exception as e:
                 rospy.logerr(f"Error transforming pose: {e}")
 
