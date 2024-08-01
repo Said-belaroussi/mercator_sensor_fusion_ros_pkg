@@ -29,6 +29,10 @@ class CostBetweenPosesNode:
         experiment_poses = np.array([[pose.position.x, pose.position.y] for pose in self.experiment_poses])
         ground_truth_poses = np.array([[pose.position.x, pose.position.y] for pose in self.ground_truth_poses])
 
+        # Check that both poses arrays are available
+        if experiment_poses.shape[0] == 0 or ground_truth_poses.shape[0] == 0:
+            rospy.loginfo("No poses available")
+            return
         rospy.loginfo(experiment_poses)
         rospy.loginfo(ground_truth_poses)
         cost_matrix = np.linalg.norm(experiment_poses[:, np.newaxis] - ground_truth_poses, axis=2)
