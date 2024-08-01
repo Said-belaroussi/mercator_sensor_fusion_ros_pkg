@@ -4,6 +4,7 @@ import numpy as np
 from geometry_msgs.msg import PoseArray
 from threading import Lock
 from time import time
+from scipy.optimize import linear_sum_assignment
 
 class CalibrationCamLidarNode:
     def __init__(self):
