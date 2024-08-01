@@ -13,6 +13,7 @@ class GroundTruthPublisherNode:
         # Get list of robot names and reference robot name from parameter server
         robot_names = rospy.get_param('~robot_names', ["base_link_38"])
         reference_robot_name = rospy.get_param('~reference_robot_name', 'base_link_0')
+        self.new_frame_id = rospy.get_param('~new_frame_id', 'robot')
 
         rospy.loginfo(robot_names)
         rospy.loginfo(reference_robot_name)
@@ -68,7 +69,7 @@ class GroundTruthPublisherNode:
 
                 pose_array_msg = PoseArray()
                 pose_array_msg.header.stamp = rospy.Time.now()
-                pose_array_msg.header.frame_id = self.reference_robot_name
+                pose_array_msg.header.frame_id = self.new_frame_id
 
                 for robot_name in self.robot_names:
                     if robot_name != self.reference_robot_name:

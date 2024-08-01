@@ -1,6 +1,6 @@
 import rosbag
 import numpy as np
-from geometry_msgs.msg import PoseArray
+from nav_msgs.msg import Odometry
 from tf2_msgs.msg import TFMessage
 import os
 import rospy
@@ -10,7 +10,7 @@ class RosbagSyncerNode:
         rospy.init_node('rosbag_syncer', anonymous=True)
         self.bag1_path = rospy.get_param('~bag1_path', 'rvr_40_calib.bag')
         self.bag2_path = rospy.get_param('~bag2_path', 'rvr_40_tycho_calibration.bag')
-        self.bag1_topic = rospy.get_param('~bag1_topic', '/cam_poses')
+        self.bag1_topic = rospy.get_param('~bag1_topic', '/rvr/odom')
         self.bag2_topic = rospy.get_param('~bag2_topic', '/tf')
         self.frame_id = rospy.get_param('~frame_id', 'base_link_23')
 
@@ -23,33 +23,15 @@ class RosbagSyncerNode:
         rospy.loginfo("Topics in bag:")
         rospy.loginfo(bag.get_type_and_topic_info())
 
-    def extract_positions_from_cam_poses(self, bag):
+    def extract_positions_from_odometry(self, bag):
         positions = []
         timestamps = []
         rospy.loginfo(self.bag1_topic)
         
-        prev_position = None
-
         for topic, msg, t in bag.read_messages(topics=[self.bag1_topic]):
-            min_dist = float('inf')
-            selected_position = None
-
-            for pose in msg.poses:
-                position = (pose.position.x, pose.position.y, pose.position.z)
-                
-                if prev_position is not None:
-                    dist = np.linalg.norm(np.array(position) - np.array(prev_position))
-                else:
-                    dist = 0  # First message, select any pose
-
-                if dist < min_dist:
-                    min_dist = dist
-                    selected_position = position
-
-            if selected_position is not None:
-                positions.append(selected_position)
-                timestamps.append(t.to_sec())
-                prev_position = selected_position
+            position = (msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z)
+            positions.append(position)
+            timestamps.append(t.to_sec())
 
         return np.array(positions), np.array(timestamps)
 
@@ -65,9 +47,10 @@ class RosbagSyncerNode:
                     timestamps.append(t.to_sec())
         return np.array(positions), np.array(timestamps)
 
-    def detect_significant_movement(self, positions, threshold=0.05):
-        diffs = np.linalg.norm(np.diff(positions, axis=0), axis=1)
-        movement_indices = np.where(diffs > threshold)[0]
+    def detect_significant_movement(self, positions, threshold=0.01):
+        initial_position = positions[0]
+        distances = np.linalg.norm(positions - initial_position, axis=1)
+        movement_indices = np.where(distances > threshold)[0]
         if movement_indices.size == 0:
             return None
         return movement_indices[0]
@@ -79,7 +62,7 @@ class RosbagSyncerNode:
             self.extract_and_print_topics(bag1)
             rospy.loginfo(self.bag2_path)
             self.extract_and_print_topics(bag2)
-            positions1, timestamps1 = self.extract_positions_from_cam_poses(bag1)
+            positions1, timestamps1 = self.extract_positions_from_odometry(bag1)
             positions2, timestamps2 = self.extract_positions_from_tf(bag2)
 
             rospy.loginfo(positions1)

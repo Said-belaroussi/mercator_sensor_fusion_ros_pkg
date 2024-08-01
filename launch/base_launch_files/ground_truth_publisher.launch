@@ -1,5 +1,6 @@
 <launch>
   <!-- Arguments -->
+  <arg name="new_frame_id" default="robot"/>
   <arg name="robot_names" default="['base_link_23']"/>
   <arg name="reference_robot_name" default="base_link_40"/>
   <arg name="tf" default="/tf"/>
@@ -8,6 +9,7 @@
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="ground_truth_publisher" name="ground_truth_publisher" output="screen">
     <!-- Parameters -->
+    <param name="new_frame_id" value="$(arg new_frame_id)" />
     <param name="robot_names" value="$(arg robot_names)" />
     <param name="reference_robot_name" value="$(arg reference_robot_name)" />
     

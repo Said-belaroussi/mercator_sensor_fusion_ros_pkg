@@ -12,6 +12,7 @@
     <!-- You can pass arguments here if needed, or override them -->
     <arg name="robot_names" value="['base_link_23', 'base_link_31', 'base_link_22']"/>
     <arg name="reference_robot_name" value="base_link_22"/>
+    <arg name="new_frame_id" value="robot"/>
     <arg name="tf" value="/tf"/>
     <arg name="ground_truth_poses" value="/ground_truth_poses"/>
   </include>
