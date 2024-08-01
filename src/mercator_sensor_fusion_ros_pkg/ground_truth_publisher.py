@@ -2,9 +2,11 @@
 
 import rospy
 from geometry_msgs.msg import Pose, PoseArray
-from tf import transformations
-import numpy as np
+from tf.transformations import quaternion_from_euler, quaternion_matrix, quaternion_multiply, inverse_matrix
+from numpy import array, dot
 from tf2_msgs.msg import TFMessage
+from ast import literal_eval
+import time
 
 class GroundTruthPublisherNode:
     def __init__(self):
@@ -26,46 +28,45 @@ class GroundTruthPublisherNode:
         self.reference_robot_name = reference_robot_name
         self.robot_poses = {}
         self.ground_truth_pub = rospy.Publisher('/ground_truth_poses', PoseArray, queue_size=10)
-        self.tf_sub = rospy.Subscriber('tf', TFMessage, self.tf_callback)
+        self.tf_sub = rospy.Subscriber('tf', TFMessage, self.tf_callback, queue_size=1)
 
         self.run()
 
     def string_to_list(self, string):
         try:
-            # Use eval to convert the string to a list
-            list = eval(string)
-        except (NameError, SyntaxError):
+            return literal_eval(string)
+        except (ValueError, SyntaxError):
             raise ValueError("Invalid string format. Please use proper list of lists syntax.")
 
-        return list
-
     def tf_callback(self, tf_msg):
+        global_start_time = time.time()
+
         for transform in tf_msg.transforms:
             child_frame_id = transform.child_frame_id
-            # rospy.loginfo(child_frame_id)
             
             if child_frame_id in self.robot_names:
                 translation = transform.transform.translation
                 rotation = transform.transform.rotation
-                pose = Pose(position=translation, orientation=rotation)
-                self.robot_poses[child_frame_id] = pose
+                self.robot_poses[child_frame_id] = Pose(
+                    position=translation, orientation=rotation
+                )
 
-        # rospy.loginfo(self.robot_poses.keys())
-        # rospy.loginfo(self.robot_names)
         if set(self.robot_poses.keys()) == set(self.robot_names):
-            
             ref_pose = self.robot_poses.get(self.reference_robot_name)
             
             if ref_pose:
-                # rospy.loginfo("ref_pose")
-                ref_position = np.array([ref_pose.position.x, ref_pose.position.y, ref_pose.position.z, 1])
-                ref_orientation = np.array([ref_pose.orientation.x, ref_pose.orientation.y, ref_pose.orientation.z, ref_pose.orientation.w])
-                # Add +180 degrees rotation around z-axis to align with the map
-                ref_orientation = transformations.quaternion_multiply(ref_orientation, transformations.quaternion_from_euler(0, 0, 0))
-                ref_matrix = transformations.quaternion_matrix(ref_orientation)
-                ref_matrix[0:3, 3] = ref_position[0:3]
+                start_time = time.time()
+                
+                ref_position = array([ref_pose.position.x, ref_pose.position.y, 1])
+                ref_orientation = array([ref_pose.orientation.x, ref_pose.orientation.y, ref_pose.orientation.z, ref_pose.orientation.w])
+                ref_orientation = quaternion_multiply(ref_orientation, quaternion_from_euler(0, 0, 0))
+                ref_matrix = quaternion_matrix(ref_orientation)
+                ref_matrix[:2, 3] = ref_position[:2]
 
-                inverse_ref_matrix = np.linalg.inv(ref_matrix)
+                inverse_ref_matrix = inverse_matrix(ref_matrix)
+                
+                end_time = time.time()
+                # rospy.loginfo(f"Matrix inversion and reference pose transformation took {end_time - start_time:.6f} seconds")
 
                 pose_array_msg = PoseArray()
                 pose_array_msg.header.stamp = rospy.Time.now()
@@ -74,24 +75,32 @@ class GroundTruthPublisherNode:
                 for robot_name in self.robot_names:
                     if robot_name != self.reference_robot_name:
                         robot_pose = self.robot_poses[robot_name]
-                        robot_position = np.array([robot_pose.position.x, robot_pose.position.y, robot_pose.position.z, 1])
-                        robot_matrix = transformations.quaternion_matrix(np.array([
-                            robot_pose.orientation.x, robot_pose.orientation.y, robot_pose.orientation.z, robot_pose.orientation.w]))
-                        robot_matrix[0:3, 3] = robot_position[0:3]
+                        robot_position = array([robot_pose.position.x, robot_pose.position.y, 1])
+                        robot_matrix = quaternion_matrix(array([
+                            robot_pose.orientation.x, robot_pose.orientation.y, robot_pose.orientation.z, robot_pose.orientation.w
+                        ]))
+                        robot_matrix[:2, 3] = robot_position[:2]
 
-                        # Transform robot position to the reference frame
-                        transformed_matrix = np.dot(inverse_ref_matrix, robot_matrix)
-                        transformed_position = transformed_matrix[0:3, 3]
+                        start_time = time.time()
+                        
+                        transformed_matrix = dot(inverse_ref_matrix, robot_matrix)
+                        transformed_position = transformed_matrix[:2, 3]
+                        
+                        end_time = time.time()
+                        # rospy.loginfo(f"Robot {robot_name} transformation took {end_time - start_time:.6f} seconds")
 
-                        # New pose of the robot relative to the reference
                         new_pose = Pose()
                         new_pose.position.x = transformed_position[0]
                         new_pose.position.y = transformed_position[1]
-                        new_pose.position.z = transformed_position[2]
-                        new_pose.orientation = robot_pose.orientation  # Keeping original orientation for simplicity
+                        new_pose.position.z = 0  # Set z to a constant value (e.g., 0) as we are ignoring it
+                        new_pose.orientation = robot_pose.orientation
+                        
                         pose_array_msg.poses.append(new_pose)
 
                 self.ground_truth_pub.publish(pose_array_msg)
+
+        global_end_time = time.time()
+        # rospy.loginfo(f"Total processing time for the message: {global_end_time - global_start_time:.6f} seconds")
 
     def run(self):
         rospy.spin()

@@ -17,9 +17,9 @@ class PoseTransformerNode:
         self.child_frame_id = rospy.get_param('~child_frame_id', 'base_link')
         self.new_poses_frame_id = rospy.get_param('~new_poses_frame_id', 'odom')
 
-        self.cam_poses_sub = rospy.Subscriber('cam_poses', PoseArray, self.cam_poses_callback)
-        self.lidar_poses_sub = rospy.Subscriber('lidar_poses', PoseArray, self.lidar_poses_callback)
-        self.tf_sub = rospy.Subscriber('tf', TFMessage, self.tf_callback)
+        self.cam_poses_sub = rospy.Subscriber('cam_poses', PoseArray, self.cam_poses_callback, queue_size=1)
+        self.lidar_poses_sub = rospy.Subscriber('lidar_poses', PoseArray, self.lidar_poses_callback, queue_size=1)
+        self.tf_sub = rospy.Subscriber('tf', TFMessage, self.tf_callback, queue_size=1)
 
         self.cam_poses_pub = rospy.Publisher('cam_poses_odom', PoseArray, queue_size=10)
         self.lidar_poses_pub = rospy.Publisher('lidar_poses_odom', PoseArray, queue_size=10)

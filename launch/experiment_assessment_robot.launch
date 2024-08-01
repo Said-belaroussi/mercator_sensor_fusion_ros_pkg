@@ -12,7 +12,7 @@
 
     <!-- Including the base launch file with parameters -->
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/cost_between_poses.launch">
-    <arg name="experiment_topic" value="/cam_poses"/>
+    <arg name="experiment_topic" value="/lidar_poses"/>
     <arg name="ground_truth_topic" value="/ground_truth_poses"/>
   </include>
 </launch>

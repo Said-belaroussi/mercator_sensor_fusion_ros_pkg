@@ -55,7 +55,7 @@ class CalibrationCamLidarNode:
 
     def callback(self, data, args):
         topic_key = args
-        rospy.loginfo(topic_key)
+        # rospy.loginfo(topic_key)
         current_time = time()
         if current_time - self.start_time < self.collect_time:
             if len(data.poses) < 1:

@@ -25,8 +25,8 @@ class PoseArrayRepublisherNode:
         self.pub_lidar = rospy.Publisher('lidar_poses_transformed', PoseArray, queue_size=10)
 
         # Define the subscriber and its callback
-        self.sub_cam = rospy.Subscriber('cam_poses', PoseArray, self.callback_cam)
-        self.sub_lidar = rospy.Subscriber('lidar_poses', PoseArray, self.callback_lidar)
+        self.sub_cam = rospy.Subscriber('cam_poses', PoseArray, self.callback_cam, queue_size=1)
+        self.sub_lidar = rospy.Subscriber('lidar_poses', PoseArray, self.callback_lidar, queue_size=1)
 
         self.run()
 
