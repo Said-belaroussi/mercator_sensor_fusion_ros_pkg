@@ -1,0 +1,18 @@
+<launch>    
+
+    <!-- Including the base launch file -->
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/ground_truth_publisher.launch">
+    <!-- You can pass arguments here if needed, or override them -->
+    <arg name="robot_names" value="['base_link_23', 'base_link_31', 'base_link_22']"/>
+    <arg name="reference_robot_name" value="base_link_22"/>
+    <arg name="new_frame_id" value="robot"/>
+    <arg name="tf" value="/tf"/>
+    <arg name="ground_truth_poses" value="/ground_truth_poses"/>
+  </include>
+
+    <!-- Including the base launch file with parameters -->
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/cost_between_poses.launch">
+    <arg name="experiment_topic" value="/cam_poses"/>
+    <arg name="ground_truth_topic" value="/ground_truth_poses"/>
+  </include>
+</launch>
