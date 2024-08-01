@@ -7,11 +7,13 @@
   </include>
 
     <!-- Including the base launch file with parameters -->
-  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_transformer.launch">
-    <arg name="node_name" value="pose_transformer_fusion_arena"/>
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/robot_to_arena_poses_transformer.launch">
+    <arg name="node_name" value="robot_to_arena_poses_transformer"/>
     <arg name="new_poses_frame_id" value="odom"/>
     <arg name="frame_id" value="odom"/>
     <arg name="child_frame_id" value="base_link_22"/>
+    <arg name="robot_odom_frame_id" value="odom"/>
+    <arg name="robot_frame_id" value="robot"/>
     <arg name="cam_poses" value="/fused_poses"/>
     <arg name="lidar_poses" value="/donothing"/>
     <arg name="cam_poses_odom" value="/fused_poses_arena"/>
