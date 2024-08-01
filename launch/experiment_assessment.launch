@@ -7,7 +7,8 @@
   </include>
 
     <!-- Including the base launch file with parameters -->
-  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_transformer_assess.launch">
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_transformer.launch">
+    <arg name="node_name" value="pose_transformer_fusion_arena"/>
     <arg name="new_poses_frame_id" value="odom"/>
     <arg name="frame_id" value="odom"/>
     <arg name="child_frame_id" value="base_link_22"/>
