@@ -41,6 +41,8 @@ class CostBetweenPosesNode:
             return
 
         min_average_cost = float('inf')
+        min_average_x_cost = float('inf')
+        min_average_y_cost = float('inf')
         optimal_shift = 0
         perfect_delay = 0
 
@@ -56,22 +58,31 @@ class CostBetweenPosesNode:
                 shifted_ground_truth_buffer = self.ground_truth_buffer
 
             total_cost = 0
+            total_x_cost = 0
+            total_y_cost = 0
             count = 0
 
             for exp_msg, gt_msg in zip(shifted_experiment_buffer, shifted_ground_truth_buffer):
-                cost = self.calculate_cost(exp_msg[1], gt_msg[1])
+                cost, x_cost, y_cost = self.calculate_cost(exp_msg[1], gt_msg[1])
                 if cost != None:
                     total_cost += cost
+                    total_x_cost += x_cost
+                    total_y_cost += y_cost
                     count += 1
 
             if count > 0:
                 average_cost = total_cost / count
+                average_x_cost = total_x_cost / count
+                average_y_cost = total_y_cost / count
                 if average_cost < min_average_cost:
                     min_average_cost = average_cost
                     optimal_shift = shift
                     perfect_delay = shifted_experiment_buffer[0][0] - shifted_ground_truth_buffer[0][0]
+                    min_average_x_cost = average_x_cost
+                    min_average_y_cost = average_y_cost
 
         rospy.loginfo("Minimum average cost: %f at shift: %d and delay %f", min_average_cost, optimal_shift, perfect_delay)
+        rospy.loginfo("Average x cost: %f, Average y cost: %f", min_average_x_cost, min_average_y_cost)
 
     def calculate_cost(self, experiment_poses, ground_truth_poses):
         experiment_poses = np.array([[pose.position.x, pose.position.y] for pose in experiment_poses])
@@ -86,9 +97,17 @@ class CostBetweenPosesNode:
         # Compute the average cost
         total_cost = cost_matrix[row_ind, col_ind].sum() / len(row_ind)
 
-        # TODO: Compute if the cost is more along the x or y axis or z ???
+        # TODO: Compute if the cost is more along the x or y axis
+        x_cost = 0
+        y_cost = 0
+        for i in range(len(row_ind)):
+            x_cost += abs(experiment_poses[row_ind[i]][0] - ground_truth_poses[col_ind[i]][0])
+            y_cost += abs(experiment_poses[row_ind[i]][1] - ground_truth_poses[col_ind[i]][1])
 
-        return total_cost
+        x_cost /= len(row_ind)
+        y_cost /= len(row_ind)
+
+        return total_cost, x_cost, y_cost
 
     def run(self):
         rospy.spin()
