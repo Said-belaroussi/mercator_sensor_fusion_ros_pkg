@@ -12,13 +12,13 @@ class CostBetweenPosesNode:
         self.experiment_buffer = []
         self.ground_truth_buffer = []
         self.latest_experiment_poses = None
-        self.buffer_duration = rospy.get_param('~buffer_duration', 20)  # Buffer duration in seconds
-        self.max_shift_messages = rospy.get_param('~max_shift_messages', 20)  # Max shift in number of messages
-        self.shift_step = rospy.get_param('~shift_step', 2)
+        self.buffer_duration = rospy.get_param('~buffer_duration', 10)  # Buffer duration in seconds
+        self.max_shift_messages = rospy.get_param('~max_shift_messages', 10)  # Max shift in number of messages
+        self.shift_step = rospy.get_param('~shift_step', 1)
         self.timer = rospy.Timer(rospy.Duration(self.buffer_duration), self.compute_costs)
 
-        self.experiment_sub = rospy.Subscriber('experiment_poses', PoseArray, self.experiment_callback)
-        self.ground_truth_sub = rospy.Subscriber('ground_truth_poses', PoseArray, self.ground_truth_callback)
+        self.experiment_sub = rospy.Subscriber('experiment_poses', PoseArray, self.experiment_callback, queue_size=1)
+        self.ground_truth_sub = rospy.Subscriber('ground_truth_poses', PoseArray, self.ground_truth_callback, queue_size=1)
 
         self.run()
 
@@ -43,6 +43,8 @@ class CostBetweenPosesNode:
         min_average_cost = float('inf')
         min_average_x_cost = float('inf')
         min_average_y_cost = float('inf')
+        original_min_average_cost = float('inf')
+        original_flag = False
         optimal_shift = 0
         perfect_delay = 0
 
@@ -56,6 +58,7 @@ class CostBetweenPosesNode:
             else:
                 shifted_experiment_buffer = self.experiment_buffer
                 shifted_ground_truth_buffer = self.ground_truth_buffer
+                original_flag = True
 
             total_cost = 0
             total_x_cost = 0
@@ -80,8 +83,12 @@ class CostBetweenPosesNode:
                     perfect_delay = shifted_experiment_buffer[0][0] - shifted_ground_truth_buffer[0][0]
                     min_average_x_cost = average_x_cost
                     min_average_y_cost = average_y_cost
+                    if original_flag:
+                        original_min_average_cost = min_average_cost
+                        original_flag = False
 
         rospy.loginfo("Minimum average cost: %f at shift: %d and delay %f", min_average_cost, optimal_shift, perfect_delay)
+        rospy.loginfo("Original minimum average cost: %f", original_min_average_cost)
         rospy.loginfo("Average x cost: %f, Average y cost: %f", min_average_x_cost, min_average_y_cost)
 
     def calculate_cost(self, experiment_poses, ground_truth_poses):
@@ -89,7 +96,7 @@ class CostBetweenPosesNode:
         ground_truth_poses = np.array([[pose.position.x, pose.position.y] for pose in ground_truth_poses])
 
         if experiment_poses.shape[0] == 0 or ground_truth_poses.shape[0] == 0:
-            return None
+            return None, None, None
 
         cost_matrix = np.linalg.norm(experiment_poses[:, np.newaxis] - ground_truth_poses, axis=2)
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
