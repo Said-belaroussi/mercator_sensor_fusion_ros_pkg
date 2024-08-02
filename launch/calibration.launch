@@ -30,7 +30,7 @@
 
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/calibration_cam_lidar.launch">
     <!-- Optionally override arguments here -->
-    <arg name="collect_time" value="60.0"/>
+    <arg name="collect_time" value="20.0"/>
     <arg name="data_max_size" value="1000"/>
     <arg name="cam_poses" value="/cam_poses"/>
     <arg name="lidar_poses" value="/lidar_poses"/>

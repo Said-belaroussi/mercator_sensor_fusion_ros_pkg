@@ -50,7 +50,7 @@ class CalibrationCamLidarNode:
     def compute_distance(self, pose1, pose2):
         return np.linalg.norm([pose1.position.x - pose2.position.x, pose1.position.y - pose2.position.y])
 
-    def check_distance(self, pose1, pose2, threshold=0.3):
+    def check_distance(self, pose1, pose2, threshold=5.5):
         return self.compute_distance(pose1, pose2) < threshold
 
     def callback(self, data, args):
@@ -77,6 +77,8 @@ class CalibrationCamLidarNode:
                 rospy.loginfo("callback cam_poses")
                 rospy.loginfo(len(self.data_for_cam_calibration[topic_key]))
                 rospy.loginfo(len(self.data_for_cam_calibration["ground_truth_poses"]))
+                rospy.loginfo(data.poses[0])
+                rospy.loginfo(self.last_data["ground_truth_poses"].poses[0])
                 if (self.check_distance(data.poses[0], self.last_data["ground_truth_poses"].poses[0])):
                     with self.locks[topic_key]:
                         self.data_for_cam_calibration[topic_key].append(data)
