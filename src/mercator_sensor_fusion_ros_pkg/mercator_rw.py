@@ -156,7 +156,7 @@ class MercatorRwNode:
             data_to_send.data = [left, right]
             self.pub.publish(data_to_send)
 
-            stop_duration = random.uniform(5, 10)
+            stop_duration = random.uniform(1, 3)
             time.sleep(stop_duration)
 
             self.straight_counter = 0
@@ -164,7 +164,7 @@ class MercatorRwNode:
             self.can_stop_again = False
 
         # Check if the stop cooldown period has passed
-        if not self.can_stop_again and (current_time - self.last_stop_time) > 10:
+        if not self.can_stop_again and (current_time - self.last_stop_time) > 15:
             self.can_stop_again = True
 
     def run(self):
