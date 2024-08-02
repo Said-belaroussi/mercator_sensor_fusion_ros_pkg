@@ -30,6 +30,8 @@ class GroundTruthPublisherNode:
         self.ground_truth_pub = rospy.Publisher('/ground_truth_poses', PoseArray, queue_size=10)
         self.tf_sub = rospy.Subscriber('tf', TFMessage, self.tf_callback, queue_size=1)
 
+        self.tf_clone_pub = rospy.Publisher('/tf_clone', TFMessage, queue_size=10)
+
         self.run()
 
     def string_to_list(self, string):
@@ -98,7 +100,7 @@ class GroundTruthPublisherNode:
                         pose_array_msg.poses.append(new_pose)
 
                 self.ground_truth_pub.publish(pose_array_msg)
-
+        self.tf_clone_pub.publish(tf_msg)
         global_end_time = time.time()
         # rospy.loginfo(f"Total processing time for the message: {global_end_time - global_start_time:.6f} seconds")
 
