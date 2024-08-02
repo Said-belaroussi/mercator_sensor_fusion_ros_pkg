@@ -156,7 +156,7 @@ class OakDetectorNode:
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,255), cv2.FONT_HERSHEY_SIMPLEX)  # Draw the bounding box on the frame
 
 
-    def start_oak_camera(self, blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0,0), IR=False):
+    def start_oak_camera(self, blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0, 200), IR=False):
 
         (confidenceThreshold, numClasses, anchors, anchorMasks,
         coordinateSize, iouThreshold, inputSizeX, inputSizeY, labelMap) = self.get_config_from_json(json_filename)
