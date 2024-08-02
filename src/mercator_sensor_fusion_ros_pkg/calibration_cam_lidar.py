@@ -159,8 +159,9 @@ class CalibrationCamLidarNode:
             row_ind, col_ind = linear_sum_assignment(cost_matrix)
             
             for i in range(len(row_ind)):
-                matching_experiment_poses.append(experiment_poses[row_ind[i]])
-                matching_ground_truth_poses.append(ground_truth_poses[col_ind[i]])
+                if cost_matrix[row_ind[i], col_ind[i]] < 0.5:
+                    matching_experiment_poses.append(experiment_poses[row_ind[i]])
+                    matching_ground_truth_poses.append(ground_truth_poses[col_ind[i]])
 
         return np.array(matching_experiment_poses), np.array(matching_ground_truth_poses)
 
