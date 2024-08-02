@@ -160,11 +160,11 @@ class MercatorRwNode:
             time.sleep(stop_duration)
 
             self.straight_counter = 0
-            self.last_stop_time = current_time
+            self.last_stop_time = time.time()
             self.can_stop_again = False
 
         # Check if the stop cooldown period has passed
-        if not self.can_stop_again and (current_time - self.last_stop_time) > 5:
+        if not self.can_stop_again and (current_time - self.last_stop_time) > 10:
             self.can_stop_again = True
 
     def run(self):
