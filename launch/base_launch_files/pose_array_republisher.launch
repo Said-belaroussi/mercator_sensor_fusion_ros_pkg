@@ -1,12 +1,13 @@
 <launch>
   <!-- Arguments -->
-  <arg name="transform_matrix_cam" default="[[0.99675996, 0.08043372, -0.05389885],[-0.08043372, 0.99675996, 0.16321373],[0.0, 0.0, 1.0]]"/>
-  <arg name="transform_matrix_lidar" default="[[0.98483877, 0.1734722, 0.02260684],[-0.1734722, 0.98483877, 0.01221501],[0.0, 0.0, 1.0]]"/>
+  <arg name="transform_matrix_cam" default="[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]"/>
+  <arg name="transform_matrix_lidar" default="[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]]"/>
   <arg name="frame_id" default="base_link_40"/>
   <arg name="cam_poses" default="/cam_poses"/>
   <arg name="lidar_poses" default="/lidar_poses"/>
   <arg name="cam_poses_transformed" default="/cam_poses_transformed"/>
   <arg name="lidar_poses_transformed" default="/lidar_poses_transformed"/>
+  <arg name="fov_range" default="35"/>
 
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="pose_array_republisher" name="pose_array_republisher" output="screen">
@@ -14,6 +15,7 @@
     <param name="transform_matrix_cam" value="$(arg transform_matrix_cam)" />
     <param name="transform_matrix_lidar" value="$(arg transform_matrix_lidar)" />
     <param name="~frame_id" value="$(arg frame_id)" />
+    <param name="~fov_range" value="$(arg fov_range)" />
     
     <!-- Topic remappings -->
     <remap from="cam_poses" to="$(arg cam_poses)" />

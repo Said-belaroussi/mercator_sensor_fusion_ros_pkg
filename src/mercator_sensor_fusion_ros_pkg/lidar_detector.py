@@ -292,10 +292,11 @@ class LidarDetectorNode:
             # x, y = self.depth_angle_to_two_d(depth, middle_angle)
             
             # Create a Pose object and set its position
-            position = Pose()
-            position.position = Point(detected_point[0], detected_point[1], 0)
-            
-            positions.poses.append(position)
+            if detected_point is not None:
+                position = Pose()
+                position.position = Point(detected_point[0], detected_point[1], 0)
+                
+                positions.poses.append(position)
             
         return positions
 
@@ -308,7 +309,7 @@ class LidarDetectorNode:
             distances = [math.sqrt(position[0]**2 + position[1]**2) for position in positions]
             min_position = positions[distances.index(min(distances))]
         else:
-            min_position = (0.0, 0.0)
+            min_position = None
 
         return min_position
 
@@ -318,7 +319,7 @@ class LidarDetectorNode:
         data = [pair for pair in data if pair[0] != 0]
 
         if len(data) == 0:
-            closest_position = (0.0, 0.0)
+            closest_position = None
         else:
             # Convert the data to Cartesian coordinates
             points = [self.depth_angle_to_two_d(depth, angle) for depth, angle in data]
@@ -407,8 +408,9 @@ class LidarDetectorNode:
 
 
     def depth_angle_to_two_d(self, depth, angle):
-        x = depth * math.cos(angle)
-        y = depth * math.sin(angle)
+        adjusted_angle = angle + np.pi / 2
+        x = depth * math.cos(adjusted_angle)
+        y = depth * math.sin(adjusted_angle)
         return x, y
 
     def publish_positions(self, positions):

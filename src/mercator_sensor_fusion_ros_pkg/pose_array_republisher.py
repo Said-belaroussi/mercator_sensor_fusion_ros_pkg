@@ -58,7 +58,7 @@ class PoseArrayRepublisherNode:
 
 
     def callback_lidar(self, pose_array_msg):
-        transformed_pose_array_msg = self.transform_publish(pose_array_msg, self.transform_matrix_lidar)
+        transformed_pose_array_msg = self.transform_poses(pose_array_msg, self.transform_matrix_lidar)
         self.pub_lidar.publish(transformed_pose_array_msg)
 
     def filter_poses_by_fov(self, pose_array_msg):
@@ -76,6 +76,7 @@ class PoseArrayRepublisherNode:
 
             # Convert the angle to degrees
             angle_deg = np.degrees(angle)
+            rospy.loginfo(f"%f, %f, %f", x, y, angle_deg)
 
             # Check if the pose is within the FOV
             if -self.fov_range <= angle_deg <= self.fov_range:
@@ -83,7 +84,7 @@ class PoseArrayRepublisherNode:
 
         return filtered_pose_array_msg
 
-    def transform_publish(self, pose_array_msg, transform_matrix):
+    def transform_poses(self, pose_array_msg, transform_matrix):
         # Change the frame_id to "base_link_40"
         pose_array_msg.header.frame_id = self.frame_id
         

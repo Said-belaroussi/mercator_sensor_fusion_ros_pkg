@@ -5,14 +5,23 @@
 
     <arg name="robot_names" value="['base_link_23', 'base_link_31', 'base_link_22']"/>
     <arg name="reference_robot_name" value="base_link_22"/>
-    <arg name="new_frame_id" value="robot"/>
+    <arg name="new_frame_id" value="odom"/>
     <arg name="tf" value="/tf"/>
     <arg name="ground_truth_poses" value="/ground_truth_poses"/>
   </include>
 
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/odom_to_base_link_pose_transformer.launch">
+    <arg name="node_name" value="robot_to_arena_poses_transformer"/>
+    <arg name="new_poses_frame_id" value="odom"/>
+    <arg name="robot_odom_frame_id" value="odom"/>
+    <arg name="robot_frame_id" value="robot"/>
+    <arg name="poses" value="/fused_poses"/>
+    <arg name="poses_odom" value="/fused_poses_robot"/>
+  </include>
+
     <!-- Including the base launch file with parameters -->
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/cost_between_poses.launch">
-    <arg name="experiment_topic" value="/cam_poses_transformed"/>
+    <arg name="experiment_topic" value="/fused_poses_robot"/>
     <arg name="ground_truth_topic" value="/ground_truth_poses"/>
   </include>
 </launch>
