@@ -297,7 +297,7 @@ class OakDetectorNode:
                         bbox_data_list_robot.append(bbox_data)
                         self.publisher_position(position_data)  # Publish the position data
                     elif labelMap[detection.label] == "obstacle":
-                        detections_position_obstacle.poses.append(Pose(Point(position_data["x"], position_data["y"], 0), geometry_msgs.msg.Quaternion(0, 0, 0, 1))
+                        detections_position_obstacle.poses.append(Pose(Point(position_data["x"], position_data["y"], 0), geometry_msgs.msg.Quaternion(0, 0, 0, 1)))
                         bbox_data_list_obstacle.append(bbox_data)
                         self.publisher_position(position_data)  # Publish the position data
 
