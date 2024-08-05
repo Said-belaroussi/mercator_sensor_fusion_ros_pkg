@@ -18,8 +18,8 @@
     },
     "mappings": {
         "labels": [
-            "Class_0",
-            "Class_1"
+            "obstacle",
+            "robot"
         ]
     },
     "version": 1

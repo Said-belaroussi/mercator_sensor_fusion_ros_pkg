@@ -69,14 +69,14 @@ class OakDetectorNode:
 
         self.start_oak_camera(self.blob_filename, self.json_filename, self.visualize, self.publish_frames)
         
-    def publisher_bbox(self, bbox_data_list, labelMap):
+    def publisher_bbox(self, bbox_data_list, label):
         """
         Function to publish the bounding box information as a Detection2DArray message
         """
         msg = Detection2DArray()
         header = Header()
         header.stamp = rospy.Time.now()
-        header.frame_id = labelMap[0]
+        header.frame_id = label
         msg.header = header
         detection_2d_list = []
 
@@ -209,7 +209,6 @@ class OakDetectorNode:
         yolo_spatial_detection_network.setBoundingBoxScaleFactor(0.5)
         yolo_spatial_detection_network.setDepthLowerThreshold(100)
         yolo_spatial_detection_network.setDepthUpperThreshold(10000)
-        yolo_spatial_detection_network.setSpatialCalculationStepSize(2)
         # Calculation method for depth : can be set to AVERAGE,MIN,MAX,MEDIAN,MODE
         yolo_spatial_detection_network.setSpatialCalculationAlgorithm(dai.SpatialLocationCalculatorAlgorithm.AVERAGE)
 
@@ -264,10 +263,14 @@ class OakDetectorNode:
 
                 height, width = frame.shape[0], frame.shape[1]
 
-                detections_position = PoseArray()
-                detections_position.header.stamp = rospy.Time.now()
-                detections_position.header.frame_id = labelMap[0]
-                bbox_data_list = []
+                detections_position_robot = PoseArray()
+                detections_position_robot.header.stamp = rospy.Time.now()
+                detections_position_robot.header.frame_id = labelMap[1]
+                detections_position_obstacle = PoseArray()
+                detections_position_obstacle.header.stamp = rospy.Time.now()
+                detections_position_obstacle.header.frame_id = labelMap[0]
+                bbox_data_list_robot = []
+                bbox_data_list_obstacle = []
                 for detection in detections:
                     bbox_data = dict()
                     position_data = dict()
@@ -289,9 +292,14 @@ class OakDetectorNode:
                     position_data["x"] = ((detection.spatialCoordinates.x) + offset_x) / 1000
                     position_data["y"] = ((detection.spatialCoordinates.z) + offset_y) / 1000
 
-                    detections_position.poses.append(Pose(Point(position_data["x"], position_data["y"], 0), geometry_msgs.msg.Quaternion(0, 0, 0, 1)))
-                    bbox_data_list.append(bbox_data)
-                    self.publisher_position(position_data)  # Publish the position data
+                    if labelMap[detection.label] == "robot":
+                        detections_position_robot.poses.append(Pose(Point(position_data["x"], position_data["y"], 0), geometry_msgs.msg.Quaternion(0, 0, 0, 1)))
+                        bbox_data_list_robot.append(bbox_data)
+                        self.publisher_position(position_data)  # Publish the position data
+                    elif labelMap[detection.label] == "obstacle":
+                        detections_position_obstacle.poses.append(Pose(Point(position_data["x"], position_data["y"], 0), geometry_msgs.msg.Quaternion(0, 0, 0, 1))
+                        bbox_data_list_obstacle.append(bbox_data)
+                        self.publisher_position(position_data)  # Publish the position data
 
                     if publish_frames == True:
                         self.visualize_detection(frame, detection, labelMap,
@@ -300,11 +308,17 @@ class OakDetectorNode:
                 if publish_frames == True:
                     # Publish frame as ROS Image message
                     self.publisher_images_post_proc(frame)
-                # Publish the position data of each detection in a PoseArray message to the cam_poses topic    
-                self.pub_poses.publish(detections_position)
+                # Publish the position data of each detection in a PoseArray message to the cam_poses topic  
+                if len(detections_position_robot.poses) > 0:  
+                    self.pub_poses.publish(detections_position_robot)
+                if len(detections_position_obstacle.poses) > 0:
+                    self.pub_poses.publish(detections_position_obstacle)
 
                 # Publish the bounding box data
-                self.publisher_bbox(bbox_data_list, labelMap)
+                if len(bbox_data_list_robot) > 0:
+                    self.publisher_bbox(bbox_data_list_robot, labelMap[1])
+                if len(bbox_data_list_obstacle) > 0:
+                    self.publisher_bbox(bbox_data_list_obstacle, labelMap[0])
                 if visualize == True:
                     cv2.putText(frame, f"FPS: {int(fps)}", (0, frame.shape[0] - 5), cv2.FONT_HERSHEY_SIMPLEX,
                             0.5, (0, 0, 0))  # Draw the FPS on the frame
