@@ -8,7 +8,7 @@
         "NN_family": "YOLO",
         "input_size": "256x256",
         "NN_specific_metadata": {
-            "classes": 1,
+            "classes": 2,
             "coordinates": 4,
             "anchors": [],
             "anchor_masks": {},
@@ -18,7 +18,8 @@
     },
     "mappings": {
         "labels": [
-            "robot"
+            "Class_0",
+            "Class_1"
         ]
     },
     "version": 1
