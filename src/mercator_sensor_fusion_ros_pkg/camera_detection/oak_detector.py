@@ -210,7 +210,7 @@ class OakDetectorNode:
         yolo_spatial_detection_network.setDepthLowerThreshold(100)
         yolo_spatial_detection_network.setDepthUpperThreshold(10000)
         # Calculation method for depth : can be set to AVERAGE,MIN,MAX,MEDIAN,MODE
-        yolo_spatial_detection_network.setSpatialCalculationAlgorithm(dai.SpatialLocationCalculatorAlgorithm.AVERAGE)
+        yolo_spatial_detection_network.setSpatialCalculationAlgorithm(dai.SpatialLocationCalculatorAlgorithm.MEDIAN)
 
         # Yolo specific parameters
         # https://docs.luxonis.com/projects/api/en/latest/components/nodes/yolo_spatial_detection_network/
