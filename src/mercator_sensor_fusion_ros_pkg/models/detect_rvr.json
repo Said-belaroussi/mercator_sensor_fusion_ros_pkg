@@ -1,0 +1,25 @@
+{
+    "model": {
+        "xml": "detect_rvr.xml",
+        "bin": "detect_rvr.bin"
+    },
+    "nn_config": {
+        "output_format": "detection",
+        "NN_family": "YOLO",
+        "input_size": "256x256",
+        "NN_specific_metadata": {
+            "classes": 1,
+            "coordinates": 4,
+            "anchors": [],
+            "anchor_masks": {},
+            "iou_threshold": 0.5,
+            "confidence_threshold": 0.5
+        }
+    },
+    "mappings": {
+        "labels": [
+            "robot"
+        ]
+    },
+    "version": 1
+}
