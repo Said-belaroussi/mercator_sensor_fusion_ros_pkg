@@ -46,7 +46,7 @@ class PathFollowingNode:
 
         # Calculate the time to turn the given angle
         turn_speed = self.speed
-        duration = angle / (self.speed * 45)  # Assuming it takes 1 second to turn 45 degrees
+        duration = angle / (self.speed * 360)  # Assuming it takes 1 second to turn 45 degrees
 
         if direction == 'left':
             left = -turn_speed
