@@ -206,7 +206,7 @@ class OakDetectorNode:
         yolo_spatial_detection_network.setBlobPath(blob_filename)
         yolo_spatial_detection_network.setConfidenceThreshold(confidenceThreshold)
         yolo_spatial_detection_network.input.setBlocking(False)
-        yolo_spatial_detection_network.setBoundingBoxScaleFactor(0.1)
+        yolo_spatial_detection_network.setBoundingBoxScaleFactor(0.01)
         yolo_spatial_detection_network.setDepthLowerThreshold(100)
         yolo_spatial_detection_network.setDepthUpperThreshold(10000)
         # Calculation method for depth : can be set to AVERAGE,MIN,MAX,MEDIAN,MODE
