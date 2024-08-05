@@ -9,7 +9,7 @@ class PathFollowingNode:
     def __init__(self):
         rospy.init_node('path_following_node', anonymous=True)
 
-        self.speed = rospy.get_param('~speed', 0.25)
+        self.speed = rospy.get_param('~speed', 0.3)
         self.pub = rospy.Publisher('/rvr/wheels_speed', Float32MultiArray, queue_size=1)
 
         self.run()
@@ -46,7 +46,7 @@ class PathFollowingNode:
 
         # Calculate the time to turn the given angle
         turn_speed = self.speed
-        duration = angle / (self.speed * 360)  # Assuming it takes 1 second to turn 45 degrees
+        duration = angle / (self.speed * 720)  # Assuming it takes 1 second to turn 45 degrees
 
         if direction == 'left':
             left = -turn_speed
