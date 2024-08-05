@@ -1,0 +1,11 @@
+<launch>
+
+    <arg name="speed" default="0.25"/>
+  
+    <!-- Node launching -->
+    <node pkg="mercator_sensor_fusion_ros_pkg" type="path_following" name="path_following" output="screen">
+      <!-- Parameters-->
+      <param name="speed" value="$(arg speed)" />
+    </node>
+</launch>
+  
