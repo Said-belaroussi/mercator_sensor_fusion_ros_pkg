@@ -13,7 +13,7 @@ class MercatorRwNode:
         rospy.init_node('mercator_rw_node', anonymous=True)
 
         # Retrieve parameters from the parameter server
-        self.speed = rospy.get_param('~speed', 0.25)
+        self.speed = rospy.get_param('~speed', 0.3)
         self.min_dist_threshold = rospy.get_param('~min_dist_threshold', 0.4)
         self.sensor_angles = rospy.get_param('~sensor_angles', "[-150, -80, -20, -10, 10, 20, 80, 150]")
         self.sensor_angles = self.string_to_list(self.sensor_angles)
@@ -156,8 +156,8 @@ class MercatorRwNode:
             data_to_send.data = [left, right]
             self.pub.publish(data_to_send)
 
-            stop_duration = random.uniform(1, 3)
-            time.sleep(stop_duration)
+            # stop_duration = random.uniform(1, 3)
+            # time.sleep(stop_duration)
 
             self.straight_counter = 0
             self.last_stop_time = time.time()

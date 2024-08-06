@@ -1,7 +1,7 @@
 <launch>
     <!-- Define arguments with default values -->
-    <arg name="speed" default="0.25" />
-    <arg name="min_dist_threshold" default="0.5" />
+    <arg name="speed" default="0.3" />
+    <arg name="min_dist_threshold" default="0.4" />
     <arg name="sensor_angles" default="[-150, -80, -20, -10, 10, 20, 80, 150]" />
     <arg name="dodge_angle_range" default="45" />
 
