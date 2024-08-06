@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from mercator_sensor_fusion_ros_pkg import PoseTransformerNode
+from mercator_sensor_fusion_ros_pkg.pose_transformer import PoseTransformerNode
 from mercator_sensor_fusion_ros_pkg.util import config_utils
 
 
