@@ -52,8 +52,8 @@ class PoseArrayRepublisherNode:
         return np.array(array_list)
 
     def callback_cam(self, pose_array_msg):
-        filtered_pose_array_msg = self.filter_poses_by_fov(pose_array_msg)
-        transformed_pose_array_msg = self.transform_poses(filtered_pose_array_msg, self.transform_matrix_cam)
+        # filtered_pose_array_msg = self.filter_poses_by_fov(pose_array_msg)
+        transformed_pose_array_msg = self.transform_poses(pose_array_msg, self.transform_matrix_cam)
         self.pub_cam.publish(transformed_pose_array_msg)
 
 
@@ -61,28 +61,28 @@ class PoseArrayRepublisherNode:
         transformed_pose_array_msg = self.transform_poses(pose_array_msg, self.transform_matrix_lidar)
         self.pub_lidar.publish(transformed_pose_array_msg)
 
-    def filter_poses_by_fov(self, pose_array_msg):
-        # Create a new PoseArray to store filtered poses
-        filtered_pose_array_msg = PoseArray()
-        filtered_pose_array_msg.header = pose_array_msg.header
+    # def filter_poses_by_fov(self, pose_array_msg):
+    #     # Create a new PoseArray to store filtered poses
+    #     filtered_pose_array_msg = PoseArray()
+    #     filtered_pose_array_msg.header = pose_array_msg.header
 
-        # Filter the poses within the FOV
-        for pose in pose_array_msg.poses:
-            x = pose.position.x
-            y = pose.position.y
+    #     # Filter the poses within the FOV
+    #     for pose in pose_array_msg.poses:
+    #         x = pose.position.x
+    #         y = pose.position.y
 
-            # Calculate the angle with the y-axis (in radians)
-            angle = np.arctan2(x, y)
+    #         # Calculate the angle with the y-axis (in radians)
+    #         angle = np.arctan2(x, y)
 
-            # Convert the angle to degrees
-            angle_deg = np.degrees(angle)
-            rospy.loginfo(f"%f, %f, %f", x, y, angle_deg)
+    #         # Convert the angle to degrees
+    #         angle_deg = np.degrees(angle)
+    #         rospy.loginfo(f"%f, %f, %f", x, y, angle_deg)
 
-            # Check if the pose is within the FOV
-            if -self.fov_range <= angle_deg <= self.fov_range:
-                filtered_pose_array_msg.poses.append(pose)
+    #         # Check if the pose is within the FOV
+    #         if -self.fov_range <= angle_deg <= self.fov_range:
+    #             filtered_pose_array_msg.poses.append(pose)
 
-        return filtered_pose_array_msg
+    #     return filtered_pose_array_msg
 
     def transform_poses(self, pose_array_msg, transform_matrix):
         # Change the frame_id to "base_link_40"
