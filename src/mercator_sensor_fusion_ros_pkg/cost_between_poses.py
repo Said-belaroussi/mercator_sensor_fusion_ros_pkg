@@ -12,8 +12,8 @@ class CostBetweenPosesNode:
         self.experiment_buffer = []
         self.ground_truth_buffer = []
         self.latest_experiment_poses = None
-        self.buffer_duration = rospy.get_param('~buffer_duration', 10)  # Buffer duration in seconds
-        self.max_shift_messages = rospy.get_param('~max_shift_messages', 10)  # Max shift in number of messages
+        self.buffer_duration = rospy.get_param('~buffer_duration', 60)  # Buffer duration in seconds
+        self.max_shift_messages = rospy.get_param('~max_shift_messages', 20)  # Max shift in number of messages
         self.shift_step = rospy.get_param('~shift_step', 1)
         self.timer = rospy.Timer(rospy.Duration(self.buffer_duration), self.compute_costs)
 

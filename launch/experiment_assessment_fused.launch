@@ -3,7 +3,7 @@
     <!-- Including the base launch file -->
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/ground_truth_publisher.launch">
 
-    <arg name="robot_names" value="['base_link_23', 'base_link_31', 'base_link_22']"/>
+    <arg name="robot_names" value="['base_link_23', 'base_link_22']"/>
     <arg name="reference_robot_name" value="base_link_22"/>
     <arg name="new_frame_id" value="odom"/>
     <arg name="tf" value="/tf"/>
