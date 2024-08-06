@@ -41,7 +41,7 @@ class PoseTransformerNode:
 
     def publish_transformed_poses(self, msg, publisher):
         if self.transform is None:
-            rospy.logwarn("Transform from odom to base_link not yet received")
+            rospy.logwarn("transform from %s to %s not received yet", self.frame_id, self.child_frame_id)
             return
 
         transformed_poses = PoseArray()
