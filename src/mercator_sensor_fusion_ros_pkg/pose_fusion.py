@@ -6,6 +6,7 @@ from geometry_msgs.msg import Pose
 from scipy.optimize import linear_sum_assignment
 from filterpy.kalman import KalmanFilter
 from sensor_msgs.msg import LaserScan
+from nav_msgs.msg import Odometry
 import numpy as np
 import threading
 
@@ -152,11 +153,15 @@ class PoseFusionNode:
             rospy.loginfo(type(self.sensors_topics))
             raise ValueError("The number of sensors topics should be equal to the number of sensors")
         
-        self.cam_sub = rospy.Subscriber('cam_poses', PoseArray, self.cam_callback)
-        self.lidar_sub = rospy.Subscriber('lidar_poses', PoseArray, self.lidar_callback)
-        self.fused_pub = rospy.Publisher('fused_poses', PoseArray, queue_size=10)
+        self.cam_sub = rospy.Subscriber('cam_poses', PoseArray, self.cam_callback, queue_size=3)
+        self.lidar_sub = rospy.Subscriber('lidar_poses', PoseArray, self.lidar_callback, queue_size=3)
+        self.fused_pub = rospy.Publisher('fused_poses', PoseArray, queue_size=3)
 
-        self.lidar_scan_sub = rospy.Subscriber('scan', LaserScan, self.lidar_scan_callback)
+        self.lidar_scan_sub = rospy.Subscriber('scan', LaserScan, self.lidar_scan_callback, queue_size=3)
+
+        self.odom_sub = rospy.Subscriber('/rvr/odom/correct', Odometry, self.odom_callback, queue_size=3)
+        self.lock_odom = threading.Lock()
+        self.odom = (0,0)
         self.lidar_scan = None
         self.non_matched_kf_ids = []
         self.lidar_scan_only_poses = PoseArray()
@@ -176,13 +181,19 @@ class PoseFusionNode:
                             frequency=self.frequency, process_noise_factor=self.process_noise_factor, initial_sensors_variances=self.initial_sensors_variances,
                             robot_average_radius=self.robot_average_radius)
 
+    def odom_callback(self, data):
+        with self.lock_odom:
+            self.odom = (data.pose.pose.position.x, data.pose.pose.position.y)
+
     def cam_absolute_error(self, x, y):
         """
         Returns the relative error of the position measured from the camera based on its distance
         from the object.
         https://docs.luxonis.com/projects/hardware/en/latest/pages/BW1098OAK/#stereo-depth-perception
         """
-        distance = np.sqrt(x**2 + y**2)
+        with self.lock_odom:
+            robot_x, robot_y = self.odom
+        distance = np.sqrt((x-robot_x)**2 + (y-robot_y)**2)
         relative_error = None
         if distance < 3:
             relative_error = 0.02
@@ -199,8 +210,9 @@ class PoseFusionNode:
         from the object.
         https://www.ydlidar.com/dowfile.html?cid=5&type=1
         """
-        distance = np.sqrt(x**2 + y**2)
-
+        with self.lock_odom:
+            robot_x, robot_y = self.odom
+        distance = np.sqrt((x-robot_x)**2 + (y-robot_y)**2)
         absolute_error = None
 
         if distance <= 1:
