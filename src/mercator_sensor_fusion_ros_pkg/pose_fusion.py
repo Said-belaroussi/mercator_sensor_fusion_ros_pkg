@@ -184,9 +184,9 @@ class PoseFusionNode:
         """
         distance = np.sqrt(x**2 + y**2)
         relative_error = None
-        if distance < 4:
+        if distance < 3:
             relative_error = 0.02
-        elif distance < 7:
+        elif distance < 6:
             relative_error = 0.04
         else:
             relative_error = 0.06

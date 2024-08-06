@@ -191,13 +191,14 @@ class OakDetectorNode:
             camRgb.setPreviewKeepAspectRatio(False)
 
         # Setting resolution for depth 800P OR 400P
-        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
         monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
-        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
         monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
         # setting node configs
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
+        stereo.setExtendedDisparity(True)
         # Change the depth frame alignment to the center camera, by default set to the right camera
         stereo.setDepthAlign(dai.CameraBoardSocket.RGB)
         stereo.setOutputSize(monoLeft.getResolutionWidth(), monoLeft.getResolutionHeight())
