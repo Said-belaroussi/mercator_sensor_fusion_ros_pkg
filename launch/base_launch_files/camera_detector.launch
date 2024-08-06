@@ -1,7 +1,7 @@
 <launch>
   <!-- Arguments -->
-  <arg name="blob_file_path" default="$(find mercator_sensor_fusion_ros_pkg)/src/mercator_sensor_fusion_ros_pkg/models/detect_all.blob"/>
-  <arg name="json_file_path" default="$(find mercator_sensor_fusion_ros_pkg)/src/mercator_sensor_fusion_ros_pkg/models/detect_all.json"/>
+  <arg name="blob_file_path" default="$(find mercator_sensor_fusion_ros_pkg)/src/mercator_sensor_fusion_ros_pkg/models/detect_rvr.blob"/>
+  <arg name="json_file_path" default="$(find mercator_sensor_fusion_ros_pkg)/src/mercator_sensor_fusion_ros_pkg/models/detect_rvr.json"/>
   <arg name="visualize" default="false"/>
   <arg name="publish_frames" default="false"/>
   <arg name="oak" default="/oak"/>
