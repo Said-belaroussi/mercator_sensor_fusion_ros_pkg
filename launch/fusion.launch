@@ -36,8 +36,13 @@
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_array_republisher.launch">
     <!-- Optionally override arguments here -->
     <arg name="fov_range" value="50"/>
-    <!-- <arg name="transform_matrix_cam" value="[[0.99675996, 0.08043372, -0.05389885],[-0.08043372, 0.99675996, 0.16321373],[0.0, 0.0, 1.0]]"/>
-    <arg name="transform_matrix_lidar" value="[[0.98483877, 0.1734722, 0.02260684],[-0.1734722, 0.98483877, 0.01221501],[0.0, 0.0, 1.0]]"/> -->
+    <!-- Calibration for rvr2 -->
+    <arg name="transform_matrix_lidar" value="[[ 0.99862575, -0.05240814, -0.00265637],
+                                            [ 0.05240814,  0.99862575,  0.05989439],
+                                            [ 0.0       ,  0.0        , 1.0        ]]"/>
+    <arg name="transform_matrix_cam" value="[[ 0.99813228, -0.06108975, -0.02698445],
+                                            [ 0.06108975,  0.99813228,  0.02368279],
+                                            [ 0.0        ,  0.0        ,  1.0        ]]"/>
     <arg name="frame_id" value="$(arg robot_frame_id_name)"/>
     <arg name="cam_poses" value="/cam_poses"/>
     <arg name="lidar_poses" value="/lidar_poses"/>
