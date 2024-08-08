@@ -33,7 +33,7 @@
     <arg name="rvr_odom_correct" value="/rvr/odom/correct"/>
   </include>
 
-  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/pose_republishers/pose_republisher_rvr2.launch">
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/pose_republishers/pose_republisher_rvr_2.launch">
     <!-- Optionally override arguments here -->
     <arg name="fov_range" value="50"/>
     <arg name="frame_id" value="$(arg robot_frame_id_name)"/>
