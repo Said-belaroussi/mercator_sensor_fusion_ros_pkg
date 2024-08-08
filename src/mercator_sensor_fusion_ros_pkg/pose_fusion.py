@@ -346,7 +346,19 @@ class PoseFusionNode:
         cost_matrix = self.build_cost_matrix(poses_1_xy, poses_2_xy)
         poses_1_indices, poses_2_indices = linear_sum_assignment(cost_matrix)
 
+        # Filter the matches based on the distance between the poses, no more than 0.5 meters
+        poses_1_indices, poses_2_indices = self.filter_matches_based_on_distance(poses_1_xy, poses_2_xy, poses_1_indices, poses_2_indices)
+
         return poses_1_indices, poses_2_indices
+
+    def filter_matches_based_on_distance(self, poses_1_xy, poses_2_xy, poses_1_indices, poses_2_indices):
+        filtered_poses_1_indices = []
+        filtered_poses_2_indices = []
+        for i, j in zip(poses_1_indices, poses_2_indices):
+            if np.linalg.norm(poses_1_xy[i] - poses_2_xy[j]) < 0.5:
+                filtered_poses_1_indices.append(i)
+                filtered_poses_2_indices.append(j)
+        return filtered_poses_1_indices, filtered_poses_2_indices
 
     def delete_kalman_filters(self, kf_keys, kf_frame_id):
         kfs_to_delete = []
