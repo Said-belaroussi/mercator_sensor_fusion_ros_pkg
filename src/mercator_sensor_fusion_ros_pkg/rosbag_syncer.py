@@ -77,20 +77,20 @@ class RosbagSyncerNode:
             start_time1 = timestamps1[move_index1]
             start_time2 = timestamps2[move_index2]
 
-            start_time1 -= timestamps1[0]
-            start_time2 -= timestamps2[0]
+            # start_time1 -= timestamps1[0]
+            # start_time2 -= timestamps2[0]
             rospy.loginfo(f"start_time1: {start_time1}")
             rospy.loginfo(f"start_time2: {start_time2}")
 
-            # Find the earlier start time
-            if start_time1 < start_time2:
-                self._write_synced_bag(self.bag1_path, self.output_bag1_path, timestamps1[0])
-                self._write_synced_bag(self.bag2_path, self.output_bag2_path, start_time2 - start_time1 + timestamps2[0])
-            else:
-                self._write_synced_bag(self.bag2_path, self.output_bag2_path, timestamps2[0])
-                self._write_synced_bag(self.bag1_path, self.output_bag1_path, start_time1 - start_time2 + timestamps1[0])
-            # self._write_synced_bag(self.bag1_path, self.output_bag1_path, start_time1)
-            # self._write_synced_bag(self.bag2_path, self.output_bag2_path, start_time2)
+            # # Find the earlier start time
+            # if start_time1 < start_time2:
+            #     self._write_synced_bag(self.bag1_path, self.output_bag1_path, timestamps1[0])
+            #     self._write_synced_bag(self.bag2_path, self.output_bag2_path, start_time2 - start_time1 + timestamps2[0])
+            # else:
+            #     self._write_synced_bag(self.bag2_path, self.output_bag2_path, timestamps2[0])
+            #     self._write_synced_bag(self.bag1_path, self.output_bag1_path, start_time1 - start_time2 + timestamps1[0])
+            self._write_synced_bag(self.bag1_path, self.output_bag1_path, start_time1)
+            self._write_synced_bag(self.bag2_path, self.output_bag2_path, start_time2)
 
     def _write_synced_bag(self, input_bag_path, output_bag_path, start_time):
         with rosbag.Bag(input_bag_path) as inbag, rosbag.Bag(output_bag_path, 'w') as outbag:

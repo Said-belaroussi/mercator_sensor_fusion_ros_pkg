@@ -1,0 +1,21 @@
+ <launch>   
+  <!-- Arguments -->
+  <arg name="transform_matrix_cam" default="[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]"/>
+  <arg name="transform_matrix_lidar" default="[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]]"/>
+  <arg name="frame_id" default="base_link_40"/>
+  <arg name="cam_poses" default="/cam_poses"/>
+  <arg name="lidar_poses" default="/lidar_poses"/>
+  <arg name="cam_poses_transformed" default="/cam_poses_transformed"/>
+  <arg name="lidar_poses_transformed" default="/lidar_poses_transformed"/>
+  <arg name="fov_range" default="35"/>
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_array_republisher.launch">
+    <!-- Optionally override arguments here -->
+    <arg name="transform_matrix_cam" value="[[0.99675996, 0.08043372, -0.05389885],[-0.08043372, 0.99675996, 0.16321373],[0.0, 0.0, 1.0]]"/>
+    <arg name="transform_matrix_lidar" value="[[0.98483877, 0.1734722, 0.02260684],[-0.1734722, 0.98483877, 0.01221501],[0.0, 0.0, 1.0]]"/>
+    <arg name="frame_id" value="base_link_22"/>
+    <arg name="cam_poses" value="/cam_poses"/>
+    <arg name="lidar_poses" value="/lidar_poses"/>
+    <arg name="cam_poses_transformed" value="/cam_poses_transformed"/>
+    <arg name="lidar_poses_transformed" value="/lidar_poses_transformed"/>
+  </include>
+</launch>
