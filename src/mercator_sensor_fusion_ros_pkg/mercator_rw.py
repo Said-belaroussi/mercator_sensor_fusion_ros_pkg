@@ -14,7 +14,7 @@ class MercatorRwNode:
 
         # Retrieve parameters from the parameter server
         self.speed = rospy.get_param('~speed', 0.3)
-        self.min_dist_threshold = rospy.get_param('~min_dist_threshold', 0.4)
+        self.min_dist_threshold = rospy.get_param('~min_dist_threshold', 0.35)
         self.sensor_angles = rospy.get_param('~sensor_angles', "[-150, -80, -20, -10, 10, 20, 80, 150]")
         self.sensor_angles = self.string_to_list(self.sensor_angles)
         self.dodge_angle_range = rospy.get_param('~dodge_angle_range', 45)  # range of angles to dodge an obstacle
@@ -105,7 +105,7 @@ class MercatorRwNode:
             left, right = self.go_straight()
             data_to_send.data = [left, right]
             self.pub.publish(data_to_send)
-
+            rospy.loginfo("Going straight")
             self.straight_counter += 1
         else:
             self.straight_counter = 0  # Reset straight counter if not going straight
@@ -134,7 +134,7 @@ class MercatorRwNode:
                     left, right = self.go_right()
             
             # Randomly choose a time duration between 0 and 1 second
-            duration = (0.25/self.speed)*random.uniform(1, 1.5)
+            duration = (0.25/self.speed)*random.uniform(0.5, 1.5)
             rospy.loginfo("Avoiding obstacle: Turning for %f seconds", duration)
             
             # Send the chosen direction
