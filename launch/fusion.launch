@@ -33,16 +33,9 @@
     <arg name="rvr_odom_correct" value="/rvr/odom/correct"/>
   </include>
 
-  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/pose_array_republisher.launch">
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/pose_republishers/pose_republisher_rvr2.launch">
     <!-- Optionally override arguments here -->
     <arg name="fov_range" value="50"/>
-    <!-- Calibration for rvr2 -->
-    <arg name="transform_matrix_lidar" value="[[ 0.99862575, -0.05240814, -0.00265637],
-                                            [ 0.05240814,  0.99862575,  0.05989439],
-                                            [ 0.0       ,  0.0        , 1.0        ]]"/>
-    <arg name="transform_matrix_cam" value="[[ 0.99813228, -0.06108975, -0.02698445],
-                                            [ 0.06108975,  0.99813228,  0.02368279],
-                                            [ 0.0        ,  0.0        ,  1.0        ]]"/>
     <arg name="frame_id" value="$(arg robot_frame_id_name)"/>
     <arg name="cam_poses" value="/cam_poses"/>
     <arg name="lidar_poses" value="/lidar_poses"/>
