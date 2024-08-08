@@ -1,7 +1,13 @@
  <launch>   
   <!-- Arguments -->
-  <arg name="transform_matrix_cam" default="[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]"/>
-  <arg name="transform_matrix_lidar" default="[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]]"/>
+  <arg name="transform_matrix_lidar" value="[[ 0.99926541, -0.03832295,  0.01074011],
+                                          [ 0.03832295,  0.99926541,  0.0499875 ],
+                                          [ 0.0       ,  0.0        , 1.0        ]]"/>
+
+  <arg name="transform_matrix_cam" value="[[ 0.99995743, -0.00922737, -0.02399254],
+                                          [ 0.00922737,  0.99995743, -0.01189941],
+                                          [ 0.0        ,  0.0        , 1.0        ]]"/>
+
   <arg name="frame_id" default="base_link_31"/>
   <arg name="cam_poses" default="/cam_poses"/>
   <arg name="lidar_poses" default="/lidar_poses"/>
