@@ -14,7 +14,7 @@ class MercatorRwNode:
 
         # Retrieve parameters from the parameter server
         self.speed = rospy.get_param('~speed', 0.3)
-        self.min_dist_threshold = rospy.get_param('~min_dist_threshold', 0.35)
+        self.min_dist_threshold = rospy.get_param('~min_dist_threshold', 0.4)
         self.sensor_angles = rospy.get_param('~sensor_angles', "[-150, -80, -20, -10, 10, 20, 80, 150]")
         self.sensor_angles = self.string_to_list(self.sensor_angles)
         self.dodge_angle_range = rospy.get_param('~dodge_angle_range', 45)  # range of angles to dodge an obstacle
@@ -81,17 +81,17 @@ class MercatorRwNode:
             angle = self.sensor_angles[i]
             if -self.dodge_angle_range <= angle <= self.dodge_angle_range:
                 if 0 < range_msg.range < min_dist:
-                    second_min_dist = min_dist
-                    second_min_idx = min_idx
+                    # second_min_dist = min_dist
+                    # second_min_idx = min_idx
                     min_dist = range_msg.range
                     min_idx = i
-                elif min_dist < range_msg.range < second_min_dist:
-                    second_min_dist = range_msg.range
-                    second_min_idx = i
+                # elif min_dist < range_msg.range < second_min_dist:
+                #     second_min_dist = range_msg.range
+                #     second_min_idx = i
         
-        rospy.loginfo("Second min dist: %f", second_min_dist)
-        rospy.loginfo("Second min idx: %d", second_min_idx)
-        self.obstacle_avoidance(ranges, second_min_idx, second_min_dist)
+        rospy.loginfo("Second min dist: %f", min_dist)
+        rospy.loginfo("Second min idx: %d", min_idx)
+        self.obstacle_avoidance(ranges, min_idx, min_dist)
     
     def obstacle_avoidance(self, ranges, idx, dist):
         data_to_send = Float32MultiArray()
@@ -134,7 +134,7 @@ class MercatorRwNode:
                     left, right = self.go_right()
             
             # Randomly choose a time duration between 0 and 1 second
-            duration = (0.25/self.speed)*random.uniform(0.5, 1.5)
+            duration = (0.25/self.speed)*random.uniform(0.2, 0.8)
             rospy.loginfo("Avoiding obstacle: Turning for %f seconds", duration)
             
             # Send the chosen direction
