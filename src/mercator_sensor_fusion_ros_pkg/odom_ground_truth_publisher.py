@@ -2,9 +2,9 @@
 
 import rospy
 from geometry_msgs.msg import Pose, PoseArray
+from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_from_euler, quaternion_matrix, quaternion_multiply, inverse_matrix
 from numpy import array, dot
-from tf2_msgs.msg import TFMessage
 from ast import literal_eval
 import time
 
@@ -16,21 +16,30 @@ class GroundTruthPublisherNode:
         robot_names = rospy.get_param('~robot_names', "['base_link_31', 'base_link_22']")
         reference_robot_name = rospy.get_param('~reference_robot_name', 'base_link_31')
         self.new_frame_id = rospy.get_param('~new_frame_id', 'odom')
+        
+        # Get odometry topic names
+        odom_topics = rospy.get_param('~odom_topics', "['/epuck_22/odometry/filtered', '/epuck_31/odometry/filtered']")
 
         rospy.loginfo(robot_names)
         rospy.loginfo(reference_robot_name)
 
-        if not robot_names or not reference_robot_name:
-            rospy.logerr("Robot names or reference robot name not provided. Exiting...")
-            return
-
         self.robot_names = self.string_to_list(robot_names)
         self.reference_robot_name = reference_robot_name
+        self.odom_topics = self.string_to_list(odom_topics)
+
+        if not robot_names or not reference_robot_name or len(self.odom_topics) != len(self.robot_names):
+            rospy.logerr("Robot names, reference robot name or odometry topics not provided correctly. Exiting...")
+            return
+
+
         self.robot_poses = {}
         self.ground_truth_pub = rospy.Publisher('/ground_truth_poses', PoseArray, queue_size=10)
-        self.tf_sub = rospy.Subscriber('tf', TFMessage, self.tf_callback, queue_size=1)
-
-        self.tf_clone_pub = rospy.Publisher('/tf_clone', TFMessage, queue_size=10)
+        
+        # Initialize subscribers for each odometry topic
+        self.odom_subs = [
+            rospy.Subscriber(topic, Odometry, self.odom_callback, callback_args=(name, index))
+            for index, (topic, name) in enumerate(zip(self.odom_topics, self.robot_names))
+        ]
 
         self.run()
 
@@ -40,18 +49,23 @@ class GroundTruthPublisherNode:
         except (ValueError, SyntaxError):
             raise ValueError("Invalid string format. Please use proper list of lists syntax.")
 
-    def tf_callback(self, tf_msg):
-        global_start_time = time.time()
+    def odom_callback(self, odom_msg, args):
+        robot_name, index = args
+        self.store_pose(odom_msg, robot_name)
+        
+        # Only publish ground truth poses when the first odometry topic callback is called
+        if index == 0:
+            self.publish_ground_truth()
 
-        for transform in tf_msg.transforms:
-            child_frame_id = transform.child_frame_id
-            
-            if child_frame_id in self.robot_names:
-                translation = transform.transform.translation
-                rotation = transform.transform.rotation
-                self.robot_poses[child_frame_id] = Pose(
-                    position=translation, orientation=rotation
-                )
+    def store_pose(self, odom_msg, robot_name):
+        translation = odom_msg.pose.pose.position
+        rotation = odom_msg.pose.pose.orientation
+        self.robot_poses[robot_name] = Pose(
+            position=translation, orientation=rotation
+        )
+
+    def publish_ground_truth(self):
+        global_start_time = time.time()
 
         if set(self.robot_poses.keys()) == set(self.robot_names):
             ref_pose = self.robot_poses.get(self.reference_robot_name)
@@ -100,7 +114,6 @@ class GroundTruthPublisherNode:
                         pose_array_msg.poses.append(new_pose)
 
                 self.ground_truth_pub.publish(pose_array_msg)
-        self.tf_clone_pub.publish(tf_msg)
         global_end_time = time.time()
         # rospy.loginfo(f"Total processing time for the message: {global_end_time - global_start_time:.6f} seconds")
 
