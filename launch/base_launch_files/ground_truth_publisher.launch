@@ -3,6 +3,7 @@
   <arg name="new_frame_id" default="robot"/>
   <arg name="robot_names" default="['base_link_23']"/>
   <arg name="reference_robot_name" default="base_link_40"/>
+  <arg name="reference_robot_rotation" default="0.0"/>
   <arg name="tf" default="/tf"/>
   <arg name="ground_truth_poses" default="/ground_truth_poses"/>
 
@@ -12,6 +13,7 @@
     <param name="new_frame_id" value="$(arg new_frame_id)" />
     <param name="robot_names" value="$(arg robot_names)" />
     <param name="reference_robot_name" value="$(arg reference_robot_name)" />
+    <param name="reference_robot_rotation" value="$(arg reference_robot_rotation)" />
     
     <!-- Topic remappings -->
     <remap from="tf" to="$(arg tf)" />

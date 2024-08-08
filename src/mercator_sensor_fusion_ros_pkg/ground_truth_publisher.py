@@ -15,6 +15,7 @@ class GroundTruthPublisherNode:
         # Get list of robot names and reference robot name from parameter server
         robot_names = rospy.get_param('~robot_names', "['base_link_31', 'base_link_22']")
         reference_robot_name = rospy.get_param('~reference_robot_name', 'base_link_31')
+        self.reference_robot_rotation = rospy.get_param('~reference_robot_rotation', -90)
         self.new_frame_id = rospy.get_param('~new_frame_id', 'odom')
 
         rospy.loginfo(robot_names)
@@ -61,7 +62,7 @@ class GroundTruthPublisherNode:
                 
                 ref_position = array([ref_pose.position.x, ref_pose.position.y, 1])
                 ref_orientation = array([ref_pose.orientation.x, ref_pose.orientation.y, ref_pose.orientation.z, ref_pose.orientation.w])
-                ref_orientation = quaternion_multiply(ref_orientation, quaternion_from_euler(0, 0, 0))
+                ref_orientation = quaternion_multiply(quaternion_from_euler(0, 0, self.reference_robot_rotation), ref_orientation)
                 ref_matrix = quaternion_matrix(ref_orientation)
                 ref_matrix[:2, 3] = ref_position[:2]
 
