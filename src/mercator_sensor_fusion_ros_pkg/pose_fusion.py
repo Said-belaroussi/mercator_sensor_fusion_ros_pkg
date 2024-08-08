@@ -417,10 +417,10 @@ class PoseFusionNode:
 
         return pose_msg
 
-    def init_fused_poses_array(self):
+    def init_fused_poses_array(self, kf_frame_id):
         fused_poses = PoseArray()
         fused_poses.header.stamp = rospy.Time.now()
-        fused_poses.header.frame_id = self.robot_name
+        fused_poses.header.frame_id = kf_frame_id
 
         return fused_poses
 
@@ -460,7 +460,7 @@ class PoseFusionNode:
         """
 
         # Init fused poses
-        fused_poses = self.init_fused_poses_array()
+        fused_poses = self.init_fused_poses_array(kf_frame_id)
 
         cam_poses_xy, lidar_poses_xy = self.extract_cam_lidar_poses(kf_frame_id)
 
@@ -522,7 +522,7 @@ class PoseFusionNode:
         if self.cam_poses is None or self.lidar_poses is None:
             return
         # Init fused poses
-        fused_poses = self.init_fused_poses_array()
+        fused_poses = self.init_fused_poses_array(kf_frame_id)
 
         cam_poses_xy, lidar_poses_xy = self.extract_cam_lidar_poses(kf_frame_id)
 
@@ -633,7 +633,7 @@ class PoseFusionNode:
         corresponding_kf_ids = self.match_kf_poses(poses_xy, kf_frame_id)
 
         # Publish fused poses
-        fused_poses = self.init_fused_poses_array()
+        fused_poses = self.init_fused_poses_array(kf_frame_id)
 
         for i in range(len(poses_xy)):
             pose = poses_xy[i]

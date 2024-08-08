@@ -86,7 +86,7 @@ class PoseArrayRepublisherNode:
 
     def transform_poses(self, pose_array_msg, transform_matrix):
         # Change the frame_id to "base_link_40"
-        pose_array_msg.header.frame_id = self.frame_id
+        pose_array_msg.header.frame_id = pose_array_msg.header.frame_id
         
         # Transform each pose in the PoseArray
         for pose in pose_array_msg.poses:

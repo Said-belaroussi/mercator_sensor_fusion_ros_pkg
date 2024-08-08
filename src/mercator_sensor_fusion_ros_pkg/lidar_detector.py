@@ -224,7 +224,7 @@ class LidarDetectorNode:
                     self.clustering_min_points, self.clustering_max_points)
 
         positions = PoseArray()
-        positions.header.frame_id = data.header.frame_id
+        positions.header.frame_id = self.robot_name
         for cluster in clusters:
             center = np.mean(cluster, axis=0)
             position = Pose()
@@ -246,7 +246,7 @@ class LidarDetectorNode:
         clusters = dbscan_clustering(points, self.clustering_distance_threshold, self.clustering_min_points)
 
         positions = PoseArray()
-        positions.header.frame_id = data.header.frame_id
+        positions.header.frame_id = self.robot_name
         for cluster in clusters:
             center = np.mean(cluster, axis=0)
             position = Pose()
