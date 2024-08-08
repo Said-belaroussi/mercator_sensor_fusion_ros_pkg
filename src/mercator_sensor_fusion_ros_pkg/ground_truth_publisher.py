@@ -16,6 +16,8 @@ class GroundTruthPublisherNode:
         robot_names = rospy.get_param('~robot_names', "['base_link_31', 'base_link_22']")
         reference_robot_name = rospy.get_param('~reference_robot_name', 'base_link_31')
         self.reference_robot_rotation = rospy.get_param('~reference_robot_rotation', -90)
+        # convert the rotation to radians
+        self.reference_robot_rotation = self.reference_robot_rotation * 3.14159 / 180
         self.new_frame_id = rospy.get_param('~new_frame_id', 'odom')
 
         rospy.loginfo(robot_names)
