@@ -37,28 +37,32 @@ class InverseTransformerBaggerNode:
         self.out_bag.close()
 
     def process_bag(self):
+        current_transform = None  # Store the latest relevant transform
+
         for topic, msg, t in self.in_bag.read_messages():
-            # If it's a 'tf' message, buffer it
+            # If it's a 'tf' message, extract the relevant transform
             if topic == '/tf':
                 for transform in msg.transforms:
-                    self.tf_buffer.set_transform(transform, "bag")  # Authority is 'bag' to avoid conflicts
+                    if (transform.header.frame_id == self.robot_odom_frame_id and
+                        transform.child_frame_id == self.robot_frame_id):
+                        current_transform = transform
 
             # If it's a self.poses_topic message, transform it
-
             if topic == self.poses_topic:
-                # rospy.loginfo(topic)
-                # rospy.loginfo("self.poses_topic:")
-                # rospy.loginfo(self.poses_topic)
-                transformed_poses = self.transform_poses(msg)
-                self.out_bag.write(self.new_poses_topic, transformed_poses, t)  # Write transformed poses
+                transformed_poses = self.transform_poses(msg, current_transform)
+                self.out_bag.write(self.new_poses_topic, transformed_poses, t)
 
             # Write all messages (including /tf) to the output bag
             self.out_bag.write(topic, msg, t)
 
-    def transform_poses(self, msg):
+    def transform_poses(self, msg, transform):
+        if transform is None:
+            rospy.logwarn("No transform available yet. Skipping pose transformation.")
+            return  # Or return the original msg if you want to keep untransformed poses
+
         transformed_poses = PoseArray()
         transformed_poses.header = msg.header 
-        transformed_poses.header.stamp = rospy.Time.now() # Or use 't' from the bag message for original timestamp
+        transformed_poses.header.stamp = rospy.Time.now()  # Or use 't' from the bag message 
         transformed_poses.header.frame_id = self.new_poses_frame_id
 
         for pose in msg.poses:
@@ -67,16 +71,13 @@ class InverseTransformerBaggerNode:
             pose_stamped.pose = pose
 
             try:
-                # Lookup transform from robot_odom to robot and invert it
-                robot_odom_to_robot_transform = self.tf_buffer.lookup_transform(self.robot_odom_frame_id, self.robot_frame_id, msg.header.stamp)  # Use timestamp from self.poses_topic message
-                robot_to_robot_odom_transform = self.invert_transform(robot_odom_to_robot_transform)
+                # Use the extracted transform directly
+                robot_to_robot_odom_transform = self.invert_transform(transform)
 
                 # Apply the inverted transform
                 transformed_pose = do_transform_pose(pose_stamped, robot_to_robot_odom_transform)
 
                 transformed_poses.poses.append(transformed_pose.pose)
-            except (LookupException, ConnectivityException, ExtrapolationException) as e:
-                rospy.logwarn(f"Problem looking up transform: {e}")
             except Exception as e:
                 rospy.logerr(f"Error transforming pose: {e}")
 
