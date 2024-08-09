@@ -65,6 +65,7 @@ class OakDetectorNode:
 
         self.pub_bbox = rospy.Publisher("oak", Detection2DArray, queue_size=1)
         self.pub_frame = rospy.Publisher("oak_frames", Image, queue_size=1)
+        self.pub_depth = rospy.Publisher("oak_depth", Image, queue_size=1)
         self.pub_poses = rospy.Publisher("cam_poses", PoseArray, queue_size=1)
 
         self.start_oak_camera(self.blob_filename, self.json_filename, self.visualize, self.publish_frames)
@@ -254,7 +255,8 @@ class OakDetectorNode:
 
                 frame = inPreview.getCvFrame()
 
-                frame = cv2.resize(frame, (1280, 720))
+                if publish_frames == True:
+                    frame = cv2.resize(frame, (1280, 720))
 
                 counter += 1
                 current_time = time.time()
@@ -311,6 +313,7 @@ class OakDetectorNode:
                 if publish_frames == True:
                     # Publish frame as ROS Image message
                     self.publisher_images_post_proc(frame)
+                    self.pub_depth.publish(depth.getCvFrame())
                 # Publish the position data of each detection in a PoseArray message to the cam_poses topic  
                 if len(detections_position_robot.poses) > 0:  
                     self.pub_poses.publish(detections_position_robot)
