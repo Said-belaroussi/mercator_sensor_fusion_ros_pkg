@@ -181,7 +181,7 @@ class OakDetectorNode:
         nnNetworkOut.setStreamName("nnNetwork")
 
         # RGB camera setup
-        camRgb.setPreviewSize(1920, 1080)
+        camRgb.setPreviewSize(inputSizeX, inputSizeY)
         camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
         camRgb.setInterleaved(False)
         camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)
@@ -224,26 +224,12 @@ class OakDetectorNode:
         monoLeft.out.link(stereo.left)
         monoRight.out.link(stereo.right)
 
-        # camRgb.preview.link(yolo_spatial_detection_network.input)
-
-        camRgb_manip = pipeline.create(dai.node.ImageManip)
-        camRgb_manip.initialConfig.setResize(inputSizeX, inputSizeY)
-        camRgb_manip.setKeepAspectRatio(False)
-        camRgb.video.link(camRgb_manip.inputImage)
-        camRgb_manip.out.link(yolo_spatial_detection_network.input)
-
-        yolo_spatial_detection_network.passthrough.link(nnNetworkOut.input)
-        stereo.depth.link(yolo_spatial_detection_network.inputDepth)
-
-        camRgb.preview.link(xoutRgb.input)
+        camRgb.preview.link(yolo_spatial_detection_network.input)
+        yolo_spatial_detection_network.passthrough.link(xoutRgb.input)
         yolo_spatial_detection_network.out.link(xoutNN.input)
-        stereo.depth.link(xoutDepth.input)
-
-        # yolo_spatial_detection_network.passthrough.link(xoutRgb.input)
-        # yolo_spatial_detection_network.out.link(xoutNN.input)
-        # stereo.depth.link(yolo_spatial_detection_network.inputDepth)
-        # yolo_spatial_detection_network.passthroughDepth.link(xoutDepth.input)
-        # yolo_spatial_detection_network.outNetwork.link(nnNetworkOut.input)
+        stereo.depth.link(yolo_spatial_detection_network.inputDepth)
+        yolo_spatial_detection_network.passthroughDepth.link(xoutDepth.input)
+        yolo_spatial_detection_network.outNetwork.link(nnNetworkOut.input)
 
         # Connect to device and start processing
         with dai.Device(pipeline) as device:
