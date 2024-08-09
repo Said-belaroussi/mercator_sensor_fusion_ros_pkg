@@ -9,9 +9,9 @@ from ast import literal_eval
 import time
 import rosbag
 
-class GroundTruthPublisherNode:
+class GroundTruthBaggerNode:
     def __init__(self):
-        rospy.init_node('ground_truth_publisher_node')
+        rospy.init_node('ground_truth_bagger_node')
 
         # Get list of robot names and reference robot name from parameter server
         robot_names = rospy.get_param('~robot_names', "['base_link_31', 'base_link_22']")
@@ -69,7 +69,7 @@ class GroundTruthPublisherNode:
                         position=translation, orientation=rotation
                     )
 
-            if set(self.robot_poses.keys()) == set(self.robot_names):
+            if set(self.robot_poses.keys()) == set(self.robot_names) and child_frame_id == self.reference_robot_name:
                 ref_pose = self.robot_poses.get(self.reference_robot_name)
 
                 if ref_pose:
@@ -114,10 +114,10 @@ class GroundTruthPublisherNode:
                             new_pose.orientation = robot_pose.orientation
 
                             pose_array_msg.poses.append(new_pose)
+                    self.out_bag.write('/ground_truth_poses', pose_array_msg, t)  # Use 't' for consistent timestamps
 
             # Write both the original tf message and the computed ground_truth_poses message to the output bag
             self.out_bag.write('/tf', msg, t)
-            self.out_bag.write('/ground_truth_poses', pose_array_msg, t)  # Use 't' for consistent timestamps
 
             global_end_time = time.time()
             # rospy.loginfo(f"Total processing time for the message: {global_end_time - global_start_time:.6f} seconds")

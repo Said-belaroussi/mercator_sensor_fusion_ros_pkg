@@ -1,13 +1,13 @@
 <launch>
   <!-- Arguments -->
   <arg name="new_frame_id" default="robot"/>
-  <arg name="robot_names" default="['base_link_23']"/>
-  <arg name="reference_robot_name" default="base_link_40"/>
-  <arg name="reference_robot_rotation" default="0.0"/>
-  <arg name="input_bag_file" default=""/>
+  <arg name="robot_names" default="['base_link_22', 'base_link_31']"/>
+  <arg name="reference_robot_name" default="base_link_31"/>
+  <arg name="reference_robot_rotation" default="-90.0"/>
+  <arg name="input_bag_file" default="/home/said/fxpbags/tracking/trackpathrvr1.bag"/>
 
   <!-- Node launching -->
-  <node pkg="mercator_sensor_fusion_ros_pkg" type="ground_truth_publisher" name="ground_truth_publisher" output="screen">
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="ground_truth_bagger" name="ground_truth_bagger" output="screen">
     <!-- Parameters -->
     <param name="new_frame_id" value="$(arg new_frame_id)" />
     <param name="robot_names" value="$(arg robot_names)" />
