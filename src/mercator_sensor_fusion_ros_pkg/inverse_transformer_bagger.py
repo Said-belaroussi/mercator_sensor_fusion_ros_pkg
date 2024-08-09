@@ -17,6 +17,8 @@ class InverseTransformerBaggerNode:
         self.new_poses_frame_id = rospy.get_param('~new_poses_frame_id', 'odom')
         self.robot_odom_frame_id = rospy.get_param('~robot_odom_frame_id', 'robot_odom')
         self.robot_frame_id = rospy.get_param('~robot_frame_id', 'robot')
+        self.poses_topic = rospy.get_param('~poses', 'poses')
+        self.new_poses_topic = rospy.get_param('~poses_odom', 'poses_odom')
 
         # Rosbag handling
         self.input_bag_file = rospy.get_param('~input_bag_file')  # Get input bag file path from parameter
@@ -41,10 +43,14 @@ class InverseTransformerBaggerNode:
                 for transform in msg.transforms:
                     self.tf_buffer.set_transform(transform, "bag")  # Authority is 'bag' to avoid conflicts
 
-            # If it's a 'poses' message, transform it
-            if topic == 'poses':
+            # If it's a self.poses_topic message, transform it
+
+            if topic == self.poses_topic:
+                # rospy.loginfo(topic)
+                # rospy.loginfo("self.poses_topic:")
+                # rospy.loginfo(self.poses_topic)
                 transformed_poses = self.transform_poses(msg)
-                self.out_bag.write('poses', transformed_poses, t)  # Write transformed poses
+                self.out_bag.write(self.new_poses_topic, transformed_poses, t)  # Write transformed poses
 
             # Write all messages (including /tf) to the output bag
             self.out_bag.write(topic, msg, t)
@@ -62,7 +68,7 @@ class InverseTransformerBaggerNode:
 
             try:
                 # Lookup transform from robot_odom to robot and invert it
-                robot_odom_to_robot_transform = self.tf_buffer.lookup_transform(self.robot_odom_frame_id, self.robot_frame_id, msg.header.stamp)  # Use timestamp from 'poses' message
+                robot_odom_to_robot_transform = self.tf_buffer.lookup_transform(self.robot_odom_frame_id, self.robot_frame_id, msg.header.stamp)  # Use timestamp from self.poses_topic message
                 robot_to_robot_odom_transform = self.invert_transform(robot_odom_to_robot_transform)
 
                 # Apply the inverted transform

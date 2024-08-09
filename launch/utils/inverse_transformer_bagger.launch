@@ -9,7 +9,7 @@
   <arg name="poses" default="/fused_poses"/>
   <arg name="poses_odom" default="/fused_poses_odom"/>
 
-  <arg name="input_bag_file" default="/home/said/fxpbags/tracking/trackpathrvr1.bag"/>
+  <arg name="input_bag_file" default="/home/said/fxpbags/rvr1/pathrvr1.bag"/>
 
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="inverse_transformer_bagger" name="$(arg node_name)" output="screen">
@@ -18,8 +18,8 @@
     <param name="robot_odom_frame_id" type="string" value="$(arg robot_odom_frame_id)" />
     <param name="robot_frame_id" type="string" value="$(arg robot_frame_id)" />
     <param name="input_bag_file" type="string" value="$(arg input_bag_file)" />
-    <!-- Topic remappings -->
-    <remap from="poses" to="$(arg poses)" />
-    <remap from="poses_odom" to="$(arg poses_odom)" />
+    <param name="poses" type="string" value="$(arg poses)" />
+    <param name="poses_odom" type="string" value="$(arg poses_odom)" />
+
   </node>
 </launch>
