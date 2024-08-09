@@ -19,6 +19,7 @@ class CostBetweenPosesNode:
         self.experiment_buffer = []
         self.cam_buffer = []
         self.lidar_buffer = []
+        self.ground_truth_buffer = []
         self.ground_truth_buffer_for_experiment = []
         self.ground_truth_buffer_for_cam = []
         self.ground_truth_buffer_for_lidar = []
@@ -31,41 +32,41 @@ class CostBetweenPosesNode:
         self.read_bag_thread = threading.Thread(target=self.read_bags)
         self.read_bag_thread.start()
 
-        self.run()
-
     def read_bags(self):
         # Open rosbag files
         experiment_bag = rosbag.Bag(self.experiment_bag_path, 'r')
         ground_truth_bag = rosbag.Bag(self.ground_truth_bag_path, 'r')
 
         # Read all messages from the bags
-        experiment_messages = list(experiment_bag.read_messages(topics=['fused_poses_odom', 'cam_poses_transformed', 'lidar_poses_transformed']))
-        ground_truth_messages = list(ground_truth_bag.read_messages(topics=['ground_truth_poses']))
+        experiment_messages = list(experiment_bag.read_messages(topics=['/fused_poses_odom', '/cam_poses_transformed', '/lidar_poses_transformed']))
+        ground_truth_messages = list(ground_truth_bag.read_messages(topics=['/ground_truth_poses']))
+
+        first_experiment_time = None
+        first_ground_truth_time = None
 
         # Get the first timestamps
-        for topic, msg, t in experiment_messages:
-            first_experiment_time = t.to_sec()
-            break
-
-        for topic, msg, t in ground_truth_messages:
-            first_ground_truth_time = t.to_sec()
-            break
+        rospy.loginfo(len(experiment_messages))
+        rospy.loginfo(len(ground_truth_messages))
+        first_experiment_time = experiment_messages[0][2].to_sec()
+        first_ground_truth_time = ground_truth_messages[0][2].to_sec()
+        rospy.loginfo(first_experiment_time)
+        rospy.loginfo(first_ground_truth_time)
 
         # Compute the time offset between the two bags
         time_offset = first_experiment_time - first_ground_truth_time
 
+        for topic, msg, t in ground_truth_messages:
+            self.ground_truth_callback(msg, t.to_sec())
+
         # Process each message in order of timestamp
         for topic, msg, t in experiment_messages:
             adjusted_time = t.to_sec() - time_offset
-            if topic == 'fused_poses_odom':
+            if topic == '/fused_poses_odom':
                 self.experiment_callback(msg, adjusted_time)
-            elif topic == 'cam_poses_transformed':
+            elif topic == '/cam_poses_transformed':
                 self.cam_callback(msg, adjusted_time)
-            elif topic == 'lidar_poses_transformed':
+            elif topic == '/lidar_poses_transformed':
                 self.lidar_callback(msg, adjusted_time)
-
-        for topic, msg, t in ground_truth_messages:
-            self.ground_truth_callback(msg, t.to_sec())
 
         experiment_bag.close()
         ground_truth_bag.close()
@@ -74,28 +75,26 @@ class CostBetweenPosesNode:
         self.compute_costs()
 
     def experiment_callback(self, msg, timestamp):
-        gt_pose = self.find_closest_ground_truth(timestamp, self.ground_truth_buffer_for_experiment)
+        gt_pose = self.find_closest_ground_truth(timestamp, self.ground_truth_buffer)
         if gt_pose:
             self.experiment_buffer.append((timestamp, msg.poses))
             self.ground_truth_buffer_for_experiment.append((timestamp, gt_pose))
 
     def cam_callback(self, msg, timestamp):
-        gt_pose = self.find_closest_ground_truth(timestamp, self.ground_truth_buffer_for_cam)
+        gt_pose = self.find_closest_ground_truth(timestamp, self.ground_truth_buffer)
         if gt_pose:
             self.cam_buffer.append((timestamp, msg.poses))
             self.ground_truth_buffer_for_cam.append((timestamp, gt_pose))
 
     def lidar_callback(self, msg, timestamp):
-        gt_pose = self.find_closest_ground_truth(timestamp, self.ground_truth_buffer_for_lidar)
+        gt_pose = self.find_closest_ground_truth(timestamp, self.ground_truth_buffer)
         if gt_pose:
             self.lidar_buffer.append((timestamp, msg.poses))
             self.ground_truth_buffer_for_lidar.append((timestamp, gt_pose))
 
     def ground_truth_callback(self, msg, timestamp):
         # Append ground truth poses without filtering
-        self.ground_truth_buffer_for_experiment.append((timestamp, msg.poses))
-        self.ground_truth_buffer_for_cam.append((timestamp, msg.poses))
-        self.ground_truth_buffer_for_lidar.append((timestamp, msg.poses))
+        self.ground_truth_buffer.append((timestamp, msg.poses))
 
     def find_closest_ground_truth(self, timestamp, ground_truth_buffer):
         closest_pose = None
@@ -111,9 +110,16 @@ class CostBetweenPosesNode:
 
     def compute_costs(self):
         # Compute costs for each pair of buffers
-        self.compute_cost_for_pair(self.experiment_buffer, self.ground_truth_buffer_for_experiment, "fused_poses_odom")
-        self.compute_cost_for_pair(self.cam_buffer, self.ground_truth_buffer_for_cam, "cam_poses_transformed")
-        self.compute_cost_for_pair(self.lidar_buffer, self.ground_truth_buffer_for_lidar, "lidar_poses_transformed")
+        rospy.loginfo(len(self.experiment_buffer))
+        rospy.loginfo(len(self.cam_buffer))
+        rospy.loginfo(len(self.lidar_buffer))
+        rospy.loginfo(len(self.ground_truth_buffer_for_experiment))
+        rospy.loginfo(len(self.ground_truth_buffer_for_cam))
+        rospy.loginfo(len(self.ground_truth_buffer_for_lidar))
+
+        self.compute_cost_for_pair(self.experiment_buffer, self.ground_truth_buffer_for_experiment, "/fused_poses_odom")
+        self.compute_cost_for_pair(self.cam_buffer, self.ground_truth_buffer_for_cam, "/cam_poses_transformed")
+        self.compute_cost_for_pair(self.lidar_buffer, self.ground_truth_buffer_for_lidar, "/lidar_poses_transformed")
 
     def compute_cost_for_pair(self, buffer_a, buffer_b, label):
         min_average_cost = float('inf')
@@ -172,8 +178,6 @@ class CostBetweenPosesNode:
 
         return total_cost
 
-    def run(self):
-        rospy.spin()
 
 if __name__ == '__main__':
     # Parse command line arguments
