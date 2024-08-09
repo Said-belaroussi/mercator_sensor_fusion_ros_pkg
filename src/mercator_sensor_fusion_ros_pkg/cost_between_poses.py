@@ -39,7 +39,7 @@ class CostBetweenPosesNode:
         ground_truth_bag = rosbag.Bag(self.ground_truth_bag_path, 'r')
 
         # Read all messages from the bags
-        experiment_messages = list(experiment_bag.read_messages(topics=['fused_poses', 'cam_poses', 'lidar_poses']))
+        experiment_messages = list(experiment_bag.read_messages(topics=['fused_poses_odom', 'cam_poses_transformed', 'lidar_poses_transformed']))
         ground_truth_messages = list(ground_truth_bag.read_messages(topics=['ground_truth_poses']))
 
         # Get the first timestamps
@@ -52,11 +52,11 @@ class CostBetweenPosesNode:
         # Process each message in order of timestamp
         for topic, msg, t in experiment_messages:
             adjusted_time = t.to_sec() - time_offset
-            if topic == 'fused_poses':
+            if topic == 'fused_poses_odom':
                 self.experiment_callback(msg, adjusted_time)
-            elif topic == 'cam_poses':
+            elif topic == 'cam_poses_transformed':
                 self.cam_callback(msg, adjusted_time)
-            elif topic == 'lidar_poses':
+            elif topic == 'lidar_poses_transformed':
                 self.lidar_callback(msg, adjusted_time)
 
         for topic, msg, t in ground_truth_messages:
@@ -106,9 +106,9 @@ class CostBetweenPosesNode:
 
     def compute_costs(self):
         # Compute costs for each pair of buffers
-        self.compute_cost_for_pair(self.experiment_buffer, self.ground_truth_buffer_for_experiment, "fused_poses")
-        self.compute_cost_for_pair(self.cam_buffer, self.ground_truth_buffer_for_cam, "cam_poses")
-        self.compute_cost_for_pair(self.lidar_buffer, self.ground_truth_buffer_for_lidar, "lidar_poses")
+        self.compute_cost_for_pair(self.experiment_buffer, self.ground_truth_buffer_for_experiment, "fused_poses_odom")
+        self.compute_cost_for_pair(self.cam_buffer, self.ground_truth_buffer_for_cam, "cam_poses_transformed")
+        self.compute_cost_for_pair(self.lidar_buffer, self.ground_truth_buffer_for_lidar, "lidar_poses_transformed")
 
     def compute_cost_for_pair(self, buffer_a, buffer_b, label):
         min_average_cost = float('inf')

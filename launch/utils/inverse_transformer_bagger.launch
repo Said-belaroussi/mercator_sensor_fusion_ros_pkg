@@ -9,7 +9,7 @@
   <arg name="poses" default="/fused_poses"/>
   <arg name="poses_odom" default="/fused_poses_odom"/>
 
-  <arg name="input_bag_file" default="/home/said/fxpbags/rvr1/pathrvr1.bag"/>
+  <arg name="input_bag_file" default="/home/said/fxpbags/rvr1/pathrvr1_synced.bag"/>
 
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="inverse_transformer_bagger" name="$(arg node_name)" output="screen">
