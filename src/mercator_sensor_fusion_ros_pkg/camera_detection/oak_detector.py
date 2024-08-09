@@ -156,6 +156,16 @@ class OakDetectorNode:
 
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 3)  # Increase the thickness of the bounding box
 
+    def publish_depth_map(self, depth_data):
+        """
+        Function to publish the depth map as a ROS Image message
+        """
+        depth_data = cv2.normalize(depth_data, None, 255, 0, cv2.NORM_INF, cv2.CV_8UC1)
+        depth_data = cv2.equalizeHist(depth_data)
+        bridge = CvBridge()
+        depth_msg = bridge.cv2_to_imgmsg(depth_data, "mono8")
+        self.pub_depth.publish(depth_msg)
+
 
     def start_oak_camera(self, blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0, 200), IR=False):
 
@@ -313,7 +323,9 @@ class OakDetectorNode:
                 if publish_frames == True:
                     # Publish frame as ROS Image message
                     self.publisher_images_post_proc(frame)
-                    self.pub_depth.publish(depth.getCvFrame())
+                    if depth is not None:
+                        depth_data = depth.getFrame()
+                        self.publish_depth_map(depth_data)
                 # Publish the position data of each detection in a PoseArray message to the cam_poses topic  
                 if len(detections_position_robot.poses) > 0:  
                     self.pub_poses.publish(detections_position_robot)
