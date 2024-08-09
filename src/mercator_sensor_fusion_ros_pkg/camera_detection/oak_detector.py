@@ -143,17 +143,17 @@ class OakDetectorNode:
         except:
             label = detection.label
         x1, y1, x2, y2 = box_position
-        cv2.putText(frame, str(label), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0))  # Draw the label on the frame
-        cv2.putText(frame, f"Conf: {int(detection.confidence * 100)} %", (x1, y1 + 20), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.3, (0, 0, 0))  # Draw the confidence percentage on the frame
-        cv2.putText(frame, f"x: {int(detection.spatialCoordinates.x/10)} cm", (x1, y1 + 30), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.3, (0, 0, 0))  # Draw the x-coordinate of the spatial position on the frame
-        cv2.putText(frame, f"y: {int(detection.spatialCoordinates.z/10)} cm", (x1, y1 + 40), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.3, (0, 0, 0))  # Draw the y-coordinate of the spatial position on the frame
-        cv2.putText(frame, f"z: {int(detection.spatialCoordinates.y/10)} cm", (x1, y1 + 50), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.3, (0, 0, 0))  # Draw the z-coordinate of the spatial position on the frame
+        cv2.putText(frame, str(label), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3)  # Draw the label with increased thickness
+        cv2.putText(frame, f"Conf: {int(detection.confidence * 100)} %", (x1, y1 + 60), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.9, (0, 0, 0), 3)  # Draw the confidence percentage with increased thickness
+        cv2.putText(frame, f"x: {int(detection.spatialCoordinates.x/10)} cm", (x1, y1 + 90), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.9, (0, 0, 0), 3)  # Draw the x-coordinate with increased thickness
+        cv2.putText(frame, f"y: {int(detection.spatialCoordinates.z/10)} cm", (x1, y1 + 120), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.9, (0, 0, 0), 3)  # Draw the y-coordinate with increased thickness
+        cv2.putText(frame, f"z: {int(detection.spatialCoordinates.y/10)} cm", (x1, y1 + 150), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.9, (0, 0, 0), 3)  # Draw the z-coordinate with increased thickness
 
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,255), cv2.FONT_HERSHEY_SIMPLEX)  # Draw the bounding box on the frame
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 3)  # Increase the thickness of the bounding box
 
 
     def start_oak_camera(self, blob_filename, json_filename, visualize, publish_frames, compressed=True, offset=(0, 200), IR=False):
@@ -253,6 +253,8 @@ class OakDetectorNode:
                 depth = depthQueue.get()
 
                 frame = inPreview.getCvFrame()
+
+                frame = cv2.resize(frame, (1280, 720))
 
                 counter += 1
                 current_time = time.time()
