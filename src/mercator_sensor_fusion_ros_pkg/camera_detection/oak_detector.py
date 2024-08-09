@@ -232,11 +232,18 @@ class OakDetectorNode:
         camRgb.video.link(camRgb_manip.inputImage)
         camRgb_manip.out.link(yolo_spatial_detection_network.input)
 
-        yolo_spatial_detection_network.passthrough.link(xoutRgb.input)
-        yolo_spatial_detection_network.out.link(xoutNN.input)
+        yolo_spatial_detection_network.passthrough.link(nnNetworkOut.input)
         stereo.depth.link(yolo_spatial_detection_network.inputDepth)
-        yolo_spatial_detection_network.passthroughDepth.link(xoutDepth.input)
-        yolo_spatial_detection_network.outNetwork.link(nnNetworkOut.input)
+
+        camRgb.preview.link(xoutRgb.input)
+        yolo_spatial_detection_network.out.link(xoutNN.input)
+        stereo.depth.link(xoutDepth.input)
+
+        # yolo_spatial_detection_network.passthrough.link(xoutRgb.input)
+        # yolo_spatial_detection_network.out.link(xoutNN.input)
+        # stereo.depth.link(yolo_spatial_detection_network.inputDepth)
+        # yolo_spatial_detection_network.passthroughDepth.link(xoutDepth.input)
+        # yolo_spatial_detection_network.outNetwork.link(nnNetworkOut.input)
 
         # Connect to device and start processing
         with dai.Device(pipeline) as device:
