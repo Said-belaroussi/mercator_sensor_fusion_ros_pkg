@@ -43,8 +43,13 @@ class CostBetweenPosesNode:
         ground_truth_messages = list(ground_truth_bag.read_messages(topics=['ground_truth_poses']))
 
         # Get the first timestamps
-        first_experiment_time = experiment_messages[0][2].to_sec()
-        first_ground_truth_time = ground_truth_messages[0][2].to_sec()
+        for topic, msg, t in experiment_messages:
+            first_experiment_time = t.to_sec()
+            break
+
+        for topic, msg, t in ground_truth_messages:
+            first_ground_truth_time = t.to_sec()
+            break
 
         # Compute the time offset between the two bags
         time_offset = first_experiment_time - first_ground_truth_time
