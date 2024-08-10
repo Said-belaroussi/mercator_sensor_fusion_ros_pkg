@@ -240,17 +240,21 @@ class CostBetweenPosesNode:
         bin_avg_errors = np.zeros(len(bins) - 1)
         for i in range(1, len(bins)):
             bin_avg_errors[i - 1] = np.mean(polar_poses_with_cost[bin_indices == i, 2])
-        axs[1].plot(bins[:-1], bin_avg_errors)
+
+        # Use vlines to create the stick plot for distance bins
+        axs[1].vlines(bins[:-1], 0, bin_avg_errors, colors='b', lw=2, label='Error') 
         axs[1].set(xlabel='Distance (m)', ylabel='Average error (m)')
         axs[1].grid()
 
         # Separate angle values on bins of 10 degrees and plot the average error on each bin
-        bins = np.arange(0, 180, 10)
+        bins = np.arange(0, 180, 5)
         bin_indices = np.digitize(np.degrees(polar_poses_with_cost[:, 1]), bins)
         bin_avg_errors = np.zeros(len(bins) - 1)
         for i in range(1, len(bins)):
             bin_avg_errors[i - 1] = np.mean(polar_poses_with_cost[bin_indices == i, 2])
-        axs[2].plot(bins[:-1], bin_avg_errors)
+
+        # Use vlines for the stick plot for angle bins
+        axs[2].vlines(bins[:-1], 0, bin_avg_errors, colors='b', lw=2, label='Error')
         axs[2].set(xlabel='Angle (degrees)', ylabel='Average error (m)')
         axs[2].grid()
 
