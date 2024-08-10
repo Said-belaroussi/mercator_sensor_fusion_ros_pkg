@@ -221,9 +221,22 @@ class CostBetweenPosesNode:
         fig, axs = plt.subplots(3)
         fig.suptitle(f'Error on {topic_name} poses')
 
-        # Compute cumulative histogram of errors in percentage
-        axs[0].hist(polar_poses_with_cost[:, 2], bins=50, cumulative=True, density=True)
-        axs[0].set(xlabel='Error (m)', ylabel='Percentage')
+        # Compute cumulative histogram of errors values (on y-axis) on percentage of poses (on x-axis)
+        axs[0].hist(polar_poses_with_cost[:, 2], bins=100, cumulative=True, density=True)
+        axs[0].set(xlabel='Error (m)', ylabel='Percentage of poses')
+
+        # Draw line at 95% of poses and display the corresponding error
+        error_threshold = np.percentile(polar_poses_with_cost[:, 2], 95)
+        axs[0].axvline(x=error_threshold, color='r', linestyle='--')
+        axs[0].text(error_threshold, 0.5, f'95% of poses have error < {error_threshold:.2f} m', rotation=90)
+        # Draw line at 99% of poses and display the corresponding error
+        error_threshold = np.percentile(polar_poses_with_cost[:, 2], 99)
+        axs[0].axvline(x=error_threshold, color='r', linestyle='--')
+        axs[0].text(error_threshold, 0.5, f'99% of poses have error < {error_threshold:.2f} m', rotation=90)
+        # Draw line at 67% of poses and display the corresponding error
+        error_threshold = np.percentile(polar_poses_with_cost[:, 2], 67)
+        axs[0].axvline(x=error_threshold, color='r', linestyle='--')
+        axs[0].text(error_threshold, 0.5, f'67% of poses have error < {error_threshold:.2f} m', rotation=90)
 
         # Use scatter plots for the first two subplots
         axs[1].scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2]) 
