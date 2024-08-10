@@ -234,13 +234,25 @@ class CostBetweenPosesNode:
         axs[0].axvline(x=error_threshold, color='r', linestyle='--')
         axs[0].text(error_threshold, 0.5, f'67% < {error_threshold:.2f} m')
 
-        # Compute histogram of average error values on distance values
-        axs[1].hist(polar_poses_with_cost[:, 2], bins=100)
-        axs[1].set(xlabel='Error (m)', ylabel='Number of poses')
+        # Separate distance values on bins of 0.1 m and plot the average error on each bin
+        bins = np.arange(0, np.ceil(polar_poses_with_cost[:, 0].max()), 0.1)
+        bin_indices = np.digitize(polar_poses_with_cost[:, 0], bins)
+        bin_avg_errors = np.zeros(len(bins) - 1)
+        for i in range(1, len(bins)):
+            bin_avg_errors[i - 1] = np.mean(polar_poses_with_cost[bin_indices == i, 2])
+        axs[1].plot(bins[:-1], bin_avg_errors)
+        axs[1].set(xlabel='Distance (m)', ylabel='Average error (m)')
+        axs[1].grid()
 
-        # Compute histogram of average error values on angle values
-        axs[2].hist(polar_poses_with_cost[:, 1], bins=100)
-        axs[2].set(xlabel='Angle (rad)', ylabel='Number of poses')
+        # Separate angle values on bins of 10 degrees and plot the average error on each bin
+        bins = np.arange(0, 180, 10)
+        bin_indices = np.digitize(np.degrees(polar_poses_with_cost[:, 1]), bins)
+        bin_avg_errors = np.zeros(len(bins) - 1)
+        for i in range(1, len(bins)):
+            bin_avg_errors[i - 1] = np.mean(polar_poses_with_cost[bin_indices == i, 2])
+        axs[2].plot(bins[:-1], bin_avg_errors)
+        axs[2].set(xlabel='Angle (degrees)', ylabel='Average error (m)')
+        axs[2].grid()
 
         plt.show()
 
