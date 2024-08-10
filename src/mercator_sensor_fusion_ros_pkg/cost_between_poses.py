@@ -32,9 +32,7 @@ class CostBetweenPosesNode:
         self.shift_step = rospy.get_param('~shift_step', 1)
         self.time_tolerance = rospy.get_param('~time_tolerance', 0.05)  # Tolerance in seconds for syncing messages
 
-        # Thread to read and process rosbag data
-        self.read_bag_thread = threading.Thread(target=self.read_bags)
-        self.read_bag_thread.start()
+        self.read_bags()
 
     def read_bags(self):
         # Open rosbag files
@@ -249,15 +247,22 @@ class CostBetweenPosesNode:
         plt.savefig(f'{bag_name}_{topic_name}_error_on_distance_and_angle.png')
 
     def plot_all_same_plot(self, polar_poses_with_cost, topic_name):
+        topic_name = topic_name[1:]
+
         bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
         fig, axs = plt.subplots(3)
         fig.suptitle(f'Error on {topic_name} poses')
-        axs[0].plot(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2])
+
+        # Use scatter plots for the first two subplots
+        axs[0].scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2]) 
         axs[0].set(xlabel='Distance (m)', ylabel='Error')
-        axs[1].plot(polar_poses_with_cost[:, 1], polar_poses_with_cost[:, 2])
+
+        axs[1].scatter(polar_poses_with_cost[:, 1], polar_poses_with_cost[:, 2])
         axs[1].set(xlabel='Angle (radians)', ylabel='Error')
+
         axs[2].scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 1], c=polar_poses_with_cost[:, 2])
         axs[2].set(xlabel='Distance (m)', ylabel='Angle (radians)')
+
         plt.show()
 
         # Save the plot
