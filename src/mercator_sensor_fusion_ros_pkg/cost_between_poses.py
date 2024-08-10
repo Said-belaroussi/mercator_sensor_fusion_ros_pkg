@@ -187,9 +187,9 @@ class CostBetweenPosesNode:
         # for i in range(len(row_ind)):
         #     rospy.loginfo(poses_a[row_ind[i]])
         #     rospy.loginfo(cost_matrix[row_ind[i], col_ind[i]])
-        poses_a_with_cost = np.array([[poses_a[row_ind[i]][0], poses_a[row_ind[i]][1], cost_matrix[row_ind[i], col_ind[i]]] for i in range(len(row_ind))])
+        poses_b_with_cost = np.array([[poses_b[col_ind[i]][0], poses_b[col_ind[i]][1], cost_matrix[row_ind[i], col_ind[i]]] for i in range(len(row_ind))])
 
-        return poses_a_with_cost
+        return poses_b_with_cost
 
 
 if __name__ == '__main__':
