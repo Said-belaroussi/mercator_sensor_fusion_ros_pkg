@@ -140,18 +140,18 @@ class CostBetweenPosesNode:
                 shifted_buffer_b = buffer_b
                 original_flag = True
 
-            total_poses_with_cost_array = []
+            total_poses_with_cost_array = np.array([]).reshape(0, 3)
 
             for a_msg, b_msg in zip(shifted_buffer_a, shifted_buffer_b):
-                poses_with cost_array = self.calculate_cost(a_msg[1], b_msg[1])
-=               if poses_with_cost_array is not None:
+                poses_with_cost_array = self.calculate_cost(a_msg[1], b_msg[1])
+                if poses_with_cost_array is not None:
                     total_poses_with_cost_array.extend(poses_with_cost_array)
 
 
             if len(total_poses_with_cost_array) > 0:
                 # Compute Root Mean Squared Error
                 
-                rmse = np.sqrt(np.mean(np.square(total_poses_with_cost_array[:, 1])))            
+                rmse = np.sqrt(np.mean(np.square(total_poses_with_cost_array[:, 2])))            
 
                 if rmse < min_rmse:
                     min_rmse = rmse
@@ -174,8 +174,10 @@ class CostBetweenPosesNode:
 
         cost_matrix = np.linalg.norm(poses_a[:, np.newaxis] - poses_b, axis=2)
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
-
-        poses_a_with_cost = np.array([[poses_a[row_ind[i]], cost_matrix[row_ind[i], col_ind[i]]] for i in range(len(row_ind))])
+        # for i in range(len(row_ind)):
+        #     rospy.loginfo(poses_a[row_ind[i]])
+        #     rospy.loginfo(cost_matrix[row_ind[i], col_ind[i]])
+        poses_a_with_cost = np.array([[poses_a[row_ind[i]][0], poses_a[row_ind[i]][1], cost_matrix[row_ind[i], col_ind[i]]] for i in range(len(row_ind))])
 
         return poses_a_with_cost
 
