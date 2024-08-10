@@ -145,7 +145,7 @@ class CostBetweenPosesNode:
             for a_msg, b_msg in zip(shifted_buffer_a, shifted_buffer_b):
                 poses_with_cost_array = self.calculate_cost(a_msg[1], b_msg[1])
                 if poses_with_cost_array is not None:
-                    total_poses_with_cost_array.extend(poses_with_cost_array)
+                    total_poses_with_cost_array = np.vstack((total_poses_with_cost_array, poses_with_cost_array))
 
 
             if len(total_poses_with_cost_array) > 0:
