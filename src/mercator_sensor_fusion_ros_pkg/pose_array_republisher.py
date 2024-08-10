@@ -52,7 +52,7 @@ class PoseArrayRepublisherNode:
         # Filter detections based on confidence threshold
         self.filtered_detections = []
         for detection in detection_array_msg.detections:
-            if detection.bbox.center.theta > 0.8:
+            if detection.bbox.center.theta > 0.7 and detection.bbox.size_x < 200 and detection.bbox.size_y < 100:
                 self.filtered_detections.append(detection)
 
         # Only keep the filtered detections if there are any

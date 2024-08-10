@@ -273,30 +273,32 @@ class LidarDetectorNode:
             return positions
 
         positions.header.frame_id = last_detections_copy.header.frame_id
+        
 
         for detection in last_detections_copy.detections:
-            bbox = detection.bbox
-            
-            min_angle, max_angle = self.min_max_angles(bbox)
-            
-            # Extract the relevant part of the Lidar scan based on the angles within the bounding box
-            zone_of_interest = [[data.ranges[i], data.angle_min + i * data.angle_increment]  for i in range(len(data.ranges)) if min_angle <= (data.angle_min + i * data.angle_increment) <= max_angle]
-            
-            # Calculate the depth, angle and convert it to cartesian using the provided detection function
-            detected_point = detection_function(zone_of_interest)
-            
-            # # Calculate the middle angle of the bounding box
-            # middle_angle = (min_angle + max_angle) / 2
-            
-            # # Convert depth and middle angle to x, y coordinates
-            # x, y = self.depth_angle_to_two_d(depth, middle_angle)
-            
-            # Create a Pose object and set its position
-            if detected_point is not None:
-                position = Pose()
-                position.position = Point(detected_point[0], detected_point[1], 0)
+            if detection.bbox.center.theta > 0.7 and detection.bbox.size_x < 200 and detection.bbox.size_y < 100:
+                bbox = detection.bbox
                 
-                positions.poses.append(position)
+                min_angle, max_angle = self.min_max_angles(bbox)
+                
+                # Extract the relevant part of the Lidar scan based on the angles within the bounding box
+                zone_of_interest = [[data.ranges[i], data.angle_min + i * data.angle_increment]  for i in range(len(data.ranges)) if min_angle <= (data.angle_min + i * data.angle_increment) <= max_angle]
+                
+                # Calculate the depth, angle and convert it to cartesian using the provided detection function
+                detected_point = detection_function(zone_of_interest)
+                
+                # # Calculate the middle angle of the bounding box
+                # middle_angle = (min_angle + max_angle) / 2
+                
+                # # Convert depth and middle angle to x, y coordinates
+                # x, y = self.depth_angle_to_two_d(depth, middle_angle)
+                
+                # Create a Pose object and set its position
+                if detected_point is not None:
+                    position = Pose()
+                    position.position = Point(detected_point[0], detected_point[1], 0)
+                    
+                    positions.poses.append(position)
             
         return positions
 
