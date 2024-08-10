@@ -234,18 +234,13 @@ class CostBetweenPosesNode:
         axs[0].axvline(x=error_threshold, color='r', linestyle='--')
         axs[0].text(error_threshold, 0.5, f'67% < {error_threshold:.2f} m')
 
-        # Scatter the error as a function of the distance for 80% of the poses with the smallest error
-        sorted_indices = np.argsort(polar_poses_with_cost[:, 2])
-        n = int(0.8 * len(sorted_indices))
-        axs[1].scatter(polar_poses_with_cost[sorted_indices[:n], 0], polar_poses_with_cost[sorted_indices[:n], 2])
-        axs[1].set(xlabel='Distance (m)', ylabel='Error (m)')
-        axs[1].set_title('Error as a function of the distance')
-    
+        # Compute histogram of average error values on distance values
+        axs[1].hist(polar_poses_with_cost[:, 2], bins=100)
+        axs[1].set(xlabel='Error (m)', ylabel='Number of poses')
 
-        # Scatter the error as a function of the angle for 80% of the poses with the smallest error
-        axs[2].scatter(polar_poses_with_cost[sorted_indices[:n], 1], polar_poses_with_cost[sorted_indices[:n], 2])
-        axs[2].set(xlabel='Angle (rad)', ylabel='Error (m)')
-        axs[2].set_title('Error as a function of the angle')
+        # Compute histogram of average error values on angle values
+        axs[2].hist(polar_poses_with_cost[:, 1], bins=100)
+        axs[2].set(xlabel='Angle (rad)', ylabel='Number of poses')
 
         plt.show()
 
