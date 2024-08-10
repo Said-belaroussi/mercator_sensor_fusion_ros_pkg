@@ -221,16 +221,16 @@ class CostBetweenPosesNode:
         fig, axs = plt.subplots(3)
         fig.suptitle(f'Error on {topic_name} poses')
 
-        # Compute histogram of errors
-        axs[0].hist(polar_poses_with_cost[:, 2], bins=50)
-        axs[0].set(xlabel='Error', ylabel='Frequency')
+        # Compute cumulative histogram of errors in percentage
+        axs[0].hist(polar_poses_with_cost[:, 2], bins=50, cumulative=True, density=True)
+        axs[0].set(xlabel='Error (m)', ylabel='Percentage')
 
         # Use scatter plots for the first two subplots
         axs[1].scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2]) 
-        axs[1].set(xlabel='Distance (m)', ylabel='Error')
+        axs[1].set(xlabel='Distance (m)', ylabel='Error Error (m)')
 
         axs[2].scatter(polar_poses_with_cost[:, 1], polar_poses_with_cost[:, 2])
-        axs[2].set(xlabel='Angle (radians)', ylabel='Error')
+        axs[2].set(xlabel='Angle (radians)', ylabel='Error Error (m)')
 
         plt.show()
 
