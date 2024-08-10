@@ -14,6 +14,8 @@ class CostBetweenPosesNode:
         # Get rosbag paths from ROS parameters
         self.experiment_bag_path = rospy.get_param('~experiment_bag_path', experiment_bag_path)
         self.ground_truth_bag_path = rospy.get_param('~ground_truth_bag_path', ground_truth_bag_path)
+        self.fused_poses_topic = rospy.get_param('~fused_poses_topic', '/fused_posessss')
+        rospy.loginfo(self.fused_poses_topic)
 
         # Buffers for poses and ground truth
         self.experiment_buffer = []
@@ -38,7 +40,7 @@ class CostBetweenPosesNode:
         ground_truth_bag = rosbag.Bag(self.ground_truth_bag_path, 'r')
 
         # Read all messages from the bags
-        experiment_messages = list(experiment_bag.read_messages(topics=['/fused_poses', '/cam_poses_transformed', '/lidar_poses_transformed']))
+        experiment_messages = list(experiment_bag.read_messages(topics=[self.fused_poses_topic, '/cam_poses_transformed', '/lidar_poses_transformed']))
         ground_truth_messages = list(ground_truth_bag.read_messages(topics=['/ground_truth_poses']))
 
         first_experiment_time = None
@@ -61,7 +63,7 @@ class CostBetweenPosesNode:
         # Process each message in order of timestamp
         for topic, msg, t in experiment_messages:
             adjusted_time = t.to_sec() - time_offset
-            if topic == '/fused_poses':
+            if topic == self.fused_poses_topic:
                 self.experiment_callback(msg, adjusted_time)
             elif topic == '/cam_poses_transformed':
                 self.cam_callback(msg, adjusted_time)
