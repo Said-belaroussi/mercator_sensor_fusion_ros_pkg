@@ -475,7 +475,7 @@ class PoseFusionNode:
                 if self.lidar_poses_last_timestamp[kf_frame_id] - self.cam_poses_last_timestamp[kf_frame_id] > rospy.Duration.from_sec(self.time_tolerance):
                     self.lidar_poses[kf_frame_id] = None
                     return cam_poses_xy, []
-                if self.lidar_poses is not None:
+                if self.lidar_poses[kf_frame_id] is not None:
                     lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
                     self.lidar_poses[kf_frame_id] = None
             else:
