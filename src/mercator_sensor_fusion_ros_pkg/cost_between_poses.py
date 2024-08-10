@@ -124,6 +124,8 @@ class CostBetweenPosesNode:
     def compute_cost_for_pair(self, buffer_a, buffer_b, label):
         min_rmse = float('inf')
         original_rmse = float('inf')
+        min_avg_error = float('inf')
+        original_avg_error = float('inf')
         original_flag = False
         optimal_shift = 0
         perfect_delay = 0
@@ -150,20 +152,26 @@ class CostBetweenPosesNode:
 
             if len(total_poses_with_cost_array) > 0:
                 # Compute Root Mean Squared Error
-                
-                rmse = np.sqrt(np.mean(np.square(total_poses_with_cost_array[:, 2])))            
+                rmse = np.sqrt(np.mean(np.square(total_poses_with_cost_array[:, 2])))    
+                # Compute Average Error
+                avg_error = np.mean(total_poses_with_cost_array[:, 2])        
 
                 if rmse < min_rmse:
                     min_rmse = rmse
                     optimal_shift = shift
                     perfect_delay = shifted_buffer_a[0][0] - shifted_buffer_b[0][0]
 
+                    min_avg_error = avg_error
+
                 if original_flag:
                     original_rmse = rmse
+                    original_avg_error = avg_error
                     original_flag = False
 
         rospy.loginfo("[%s] Minimum RMSE: %f at shift: %d and delay %f", label, min_rmse, optimal_shift, perfect_delay)
         rospy.loginfo("[%s] Original RMSE: %f", label, original_rmse)
+        rospy.loginfo("[%s] Minimum Average Error: %f", label, min_avg_error)
+        rospy.loginfo("[%s] Original Average Error: %f", label, original_avg_error)
 
     def calculate_cost(self, poses_a, poses_b):
         poses_a = np.array([[pose.position.x, pose.position.y] for pose in poses_a])
