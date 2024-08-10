@@ -38,7 +38,7 @@ class CostBetweenPosesNode:
         ground_truth_bag = rosbag.Bag(self.ground_truth_bag_path, 'r')
 
         # Read all messages from the bags
-        experiment_messages = list(experiment_bag.read_messages(topics=['/fused_poses_odom', '/cam_poses_transformed', '/lidar_poses_transformed']))
+        experiment_messages = list(experiment_bag.read_messages(topics=['/fused_poses', '/cam_poses_transformed', '/lidar_poses_transformed']))
         ground_truth_messages = list(ground_truth_bag.read_messages(topics=['/ground_truth_poses']))
 
         first_experiment_time = None
@@ -61,7 +61,7 @@ class CostBetweenPosesNode:
         # Process each message in order of timestamp
         for topic, msg, t in experiment_messages:
             adjusted_time = t.to_sec() - time_offset
-            if topic == '/fused_poses_odom':
+            if topic == '/fused_poses':
                 self.experiment_callback(msg, adjusted_time)
             elif topic == '/cam_poses_transformed':
                 self.cam_callback(msg, adjusted_time)
@@ -117,7 +117,7 @@ class CostBetweenPosesNode:
         rospy.loginfo(len(self.ground_truth_buffer_for_cam))
         rospy.loginfo(len(self.ground_truth_buffer_for_lidar))
 
-        self.compute_cost_for_pair(self.experiment_buffer, self.ground_truth_buffer_for_experiment, "/fused_poses_odom")
+        self.compute_cost_for_pair(self.experiment_buffer, self.ground_truth_buffer_for_experiment, "/fused_poses")
         self.compute_cost_for_pair(self.cam_buffer, self.ground_truth_buffer_for_cam, "/cam_poses_transformed")
         self.compute_cost_for_pair(self.lidar_buffer, self.ground_truth_buffer_for_lidar, "/lidar_poses_transformed")
 
