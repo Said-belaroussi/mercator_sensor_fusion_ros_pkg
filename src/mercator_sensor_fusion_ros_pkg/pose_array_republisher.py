@@ -2,6 +2,7 @@
 
 import rospy
 from geometry_msgs.msg import PoseArray, Pose
+from vision_msgs.msg import Detection2DArray
 import numpy as np
 
 class PoseArrayRepublisherNode:
@@ -22,26 +23,22 @@ class PoseArrayRepublisherNode:
         # Convert the string to a numpy array
         self.transform_matrix_cam = self.string_to_2d_array(self.transform_matrix_cam)
         self.transform_matrix_lidar = self.string_to_2d_array(self.transform_matrix_lidar)
-        # Define the publisher
+
+        # Define the publishers
         self.pub_cam = rospy.Publisher('cam_poses_transformed', PoseArray, queue_size=3)
         self.pub_lidar = rospy.Publisher('lidar_poses_transformed', PoseArray, queue_size=3)
 
-        # Define the subscriber and its callback
+        # Define the subscribers and their callbacks
         self.sub_cam = rospy.Subscriber('cam_poses', PoseArray, self.callback_cam, queue_size=3)
         self.sub_lidar = rospy.Subscriber('lidar_poses', PoseArray, self.callback_lidar, queue_size=3)
+        self.sub_oak = rospy.Subscriber('/oak', Detection2DArray, self.callback_oak, queue_size=3)
+
+        # Variable to store the filtered detections
+        self.filtered_detections = None
 
         self.run()
 
     def string_to_2d_array(self, string):
-        """
-        Converts a string representation of a 2D array to a NumPy array.
-        Args:
-            string: The string representation of the 2D array.
-        Returns:
-            A 2D NumPy array representing the input string.
-        Raises:
-            ValueError: If the string format is invalid.
-        """
         try:
             # Use eval to convert the string to a nested list
             array_list = eval(string)
@@ -51,42 +48,31 @@ class PoseArrayRepublisherNode:
         # Convert the nested list to a NumPy array
         return np.array(array_list)
 
-    def callback_cam(self, pose_array_msg):
-        # filtered_pose_array_msg = self.filter_poses_by_fov(pose_array_msg)
-        transformed_pose_array_msg = self.transform_poses(pose_array_msg, self.transform_matrix_cam)
-        self.pub_cam.publish(transformed_pose_array_msg)
+    def callback_oak(self, detection_array_msg):
+        # Filter detections based on confidence threshold
+        self.filtered_detections = []
+        for detection in detection_array_msg.detections:
+            if detection.bbox.center.theta > 0.8:
+                self.filtered_detections.append(detection)
 
+        # Only keep the filtered detections if there are any
+        if not self.filtered_detections:
+            self.filtered_detections = None
+
+    def callback_cam(self, pose_array_msg):
+        if self.filtered_detections:
+            transformed_pose_array_msg = self.transform_poses(pose_array_msg, self.transform_matrix_cam)
+            self.pub_cam.publish(transformed_pose_array_msg)
+        else:
+            rospy.loginfo("No detections with confidence > 0.8, cam_poses message dropped.")
 
     def callback_lidar(self, pose_array_msg):
         transformed_pose_array_msg = self.transform_poses(pose_array_msg, self.transform_matrix_lidar)
         self.pub_lidar.publish(transformed_pose_array_msg)
 
-    # def filter_poses_by_fov(self, pose_array_msg):
-    #     # Create a new PoseArray to store filtered poses
-    #     filtered_pose_array_msg = PoseArray()
-    #     filtered_pose_array_msg.header = pose_array_msg.header
-
-    #     # Filter the poses within the FOV
-    #     for pose in pose_array_msg.poses:
-    #         x = pose.position.x
-    #         y = pose.position.y
-
-    #         # Calculate the angle with the y-axis (in radians)
-    #         angle = np.arctan2(x, y)
-
-    #         # Convert the angle to degrees
-    #         angle_deg = np.degrees(angle)
-    #         rospy.loginfo(f"%f, %f, %f", x, y, angle_deg)
-
-    #         # Check if the pose is within the FOV
-    #         if -self.fov_range <= angle_deg <= self.fov_range:
-    #             filtered_pose_array_msg.poses.append(pose)
-
-    #     return filtered_pose_array_msg
-
     def transform_poses(self, pose_array_msg, transform_matrix):
         # Change the frame_id to "base_link_40"
-        pose_array_msg.header.frame_id = pose_array_msg.header.frame_id
+        pose_array_msg.header.frame_id = self.frame_id
         
         # Transform each pose in the PoseArray
         for pose in pose_array_msg.poses:
