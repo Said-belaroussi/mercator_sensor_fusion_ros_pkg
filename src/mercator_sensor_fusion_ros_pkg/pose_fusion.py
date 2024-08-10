@@ -463,8 +463,9 @@ class PoseFusionNode:
     def extract_cam_lidar_poses(self, kf_frame_id):
         with self.lock_cam_poses:
             if kf_frame_id in self.cam_poses:
-                cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses[kf_frame_id].poses])
-                self.cam_poses[kf_frame_id] = None
+                if self.cam_poses[kf_frame_id] is not None:
+                    cam_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.cam_poses[kf_frame_id].poses])
+                    self.cam_poses[kf_frame_id] = None
             else:
                 cam_poses_xy = []     
             
@@ -474,8 +475,9 @@ class PoseFusionNode:
                 if self.lidar_poses_last_timestamp[kf_frame_id] - self.cam_poses_last_timestamp[kf_frame_id] > rospy.Duration.from_sec(self.time_tolerance):
                     self.lidar_poses[kf_frame_id] = None
                     return cam_poses_xy, []
-                lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
-                self.lidar_poses[kf_frame_id] = None
+                if self.lidar_poses is not None:
+                    lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
+                    self.lidar_poses[kf_frame_id] = None
             else:
                 lidar_poses_xy = []
 
