@@ -208,43 +208,11 @@ class CostBetweenPosesNode:
             cost = pose[2]
             r = np.sqrt(x**2 + y**2)
             theta = np.arctan2(y, x)
+            # 0 radian angle is at the y-axis
+            theta = theta - np.pi / 2
             polar_poses_with_cost[i] = [r, theta, cost]
 
         return polar_poses_with_cost
-
-    def plot_error_on_angle(self, polar_poses_with_cost, topic_name):
-        bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
-        plt.plot(polar_poses_with_cost[:, 1], polar_poses_with_cost[:, 2])
-        plt.xlabel('Angle (radians)')
-        plt.ylabel('Error')
-        plt.title(f'Error on {topic_name} poses')
-        plt.show()
-
-        # Save the plot
-        plt.savefig(f'{bag_name}_{topic_name}_error_on_angle.png')
-
-    def plot_error_on_distance(self, polar_poses_with_cost, topic_name):
-        bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
-        plt.plot(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2])
-        plt.xlabel('Distance (m)')
-        plt.ylabel('Error')
-        plt.title(f'Error on {topic_name} poses')
-        plt.show()
-
-        # Save the plot
-        plt.savefig(f'{bag_name}_{topic_name}_error_on_distance.png')
-
-    def plot_error_on_distance_and_angle(self, polar_poses_with_cost, topic_name):
-        bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
-        plt.scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 1], c=polar_poses_with_cost[:, 2])
-        plt.xlabel('Distance (m)')
-        plt.ylabel('Angle (radians)')
-        plt.title(f'Error on {topic_name} poses')
-        plt.colorbar()
-        plt.show()
-
-        # Save the plot
-        plt.savefig(f'{bag_name}_{topic_name}_error_on_distance_and_angle.png')
 
     def plot_all_same_plot(self, polar_poses_with_cost, topic_name):
         topic_name = topic_name[1:]
@@ -253,15 +221,16 @@ class CostBetweenPosesNode:
         fig, axs = plt.subplots(3)
         fig.suptitle(f'Error on {topic_name} poses')
 
+        # Compute histogram of errors
+        axs[0].hist(polar_poses_with_cost[:, 2], bins=50)
+        axs[0].set(xlabel='Error', ylabel='Frequency')
+
         # Use scatter plots for the first two subplots
-        axs[0].scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2]) 
-        axs[0].set(xlabel='Distance (m)', ylabel='Error')
+        axs[1].scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2]) 
+        axs[1].set(xlabel='Distance (m)', ylabel='Error')
 
-        axs[1].scatter(polar_poses_with_cost[:, 1], polar_poses_with_cost[:, 2])
-        axs[1].set(xlabel='Angle (radians)', ylabel='Error')
-
-        axs[2].scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 1], c=polar_poses_with_cost[:, 2])
-        axs[2].set(xlabel='Distance (m)', ylabel='Angle (radians)')
+        axs[2].scatter(polar_poses_with_cost[:, 1], polar_poses_with_cost[:, 2])
+        axs[2].set(xlabel='Angle (radians)', ylabel='Error')
 
         plt.show()
 
