@@ -210,6 +210,10 @@ class CostBetweenPosesNode:
             theta = np.arctan2(y, x)
             # 0 radian angle is at the y-axis
             theta = theta - np.pi / 2
+            if theta < -np.pi:
+                theta += 2 * np.pi
+            if theta < 0:
+                theta = -theta
             polar_poses_with_cost[i] = [r, theta, cost]
 
         return polar_poses_with_cost
@@ -225,25 +229,20 @@ class CostBetweenPosesNode:
         axs[0].hist(polar_poses_with_cost[:, 2], bins=100, cumulative=True, density=True)
         axs[0].set(xlabel='Error (m)', ylabel='Percentage of poses')
 
-        # Draw line at 95% of poses and display the corresponding error
-        error_threshold = np.percentile(polar_poses_with_cost[:, 2], 95)
-        axs[0].axvline(x=error_threshold, color='r', linestyle='--')
-        axs[0].text(error_threshold, 0.5, f'95% of poses have error < {error_threshold:.2f} m', rotation=90)
-        # Draw line at 99% of poses and display the corresponding error
-        error_threshold = np.percentile(polar_poses_with_cost[:, 2], 99)
-        axs[0].axvline(x=error_threshold, color='r', linestyle='--')
-        axs[0].text(error_threshold, 0.5, f'99% of poses have error < {error_threshold:.2f} m', rotation=90)
         # Draw line at 67% of poses and display the corresponding error
         error_threshold = np.percentile(polar_poses_with_cost[:, 2], 67)
         axs[0].axvline(x=error_threshold, color='r', linestyle='--')
-        axs[0].text(error_threshold, 0.5, f'67% of poses have error < {error_threshold:.2f} m', rotation=90)
+        axs[0].text(error_threshold, 0.5, f'67% < {error_threshold:.2f} m')
 
-        # Use scatter plots for the first two subplots
-        axs[1].scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2]) 
-        axs[1].set(xlabel='Distance (m)', ylabel='Error Error (m)')
+        # Plot the error as a function of the distance using log scale
+        axs[1].scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2])
+        axs[1].set(xlabel='Distance (m)', ylabel='Error (m)')
+        axs[1].set_yscale('log')
 
+        # Plot the error as a function of the angle deviation
         axs[2].scatter(polar_poses_with_cost[:, 1], polar_poses_with_cost[:, 2])
-        axs[2].set(xlabel='Angle (radians)', ylabel='Error Error (m)')
+        axs[2].set(xlabel='Angle deviation (rad)', ylabel='Error (m)')
+        axs[2].set_yscale('log')
 
         plt.show()
 
