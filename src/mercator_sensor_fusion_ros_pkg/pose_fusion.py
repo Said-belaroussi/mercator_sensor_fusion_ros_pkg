@@ -126,6 +126,9 @@ class PoseFusionNode:
         self.lock_cam_poses = threading.Lock()
         self.lock_lidar_poses = threading.Lock()
 
+        self.cam_poses_last_timestamp = dict()
+        self.lidar_poses_last_timestamp = dict()
+
         self.sensors_topics = rospy.get_param('~sensors_topics', ['cam_poses', 'lidar_poses'])
         self.sensors_trusts = rospy.get_param('~sensors_trusts', [True, False])
         self.keep_tracking_with_only_lidar = rospy.get_param('~keep_tracking_with_only_lidar', False)
@@ -139,6 +142,8 @@ class PoseFusionNode:
         self.initial_position = rospy.get_param('~initial_position', 0.0)
 
         self.sensor_fusion_simple_weighted_average = rospy.get_param('~sensor_fusion_simple_weighted_average', False)
+
+        self.time_tolerance = rospy.get_param('~time_tolerance', 0.2)
 
         # self.track_obstacles = rospy.get_param('~track_obstacles', False)
 
@@ -284,6 +289,7 @@ class PoseFusionNode:
         cam_poses_frame_id = data.header.frame_id
         with self.lock_cam_poses:
             self.cam_poses[cam_poses_frame_id] = data
+            self.cam_poses_last_timestamp[cam_poses_frame_id] = rospy.Time.now()
         
         if self.sensors_number == 1 and 'cam' in self.sensors_topics[0]:
             self.single_sensor_tracking(cam_poses_frame_id)
@@ -314,6 +320,7 @@ class PoseFusionNode:
         lidar_poses_frame_id = data.header.frame_id
         with self.lock_lidar_poses:
             self.lidar_poses[lidar_poses_frame_id] = data
+            self.lidar_poses_last_timestamp[lidar_poses_frame_id] = rospy.Time.now()
         
         if self.sensors_number == 1 and 'lidar' in self.sensors_topics[0]:
             self.single_sensor_tracking(lidar_poses_frame_id)
@@ -463,6 +470,9 @@ class PoseFusionNode:
               
         with self.lock_lidar_poses:
             if kf_frame_id in self.lidar_poses:
+                if self.lidar_poses_last_timestamp[kf_frame_id] - self.cam_poses_last_timestamp[kf_frame_id] > rospy.Duration.from_sec(self.time_tolerance):
+                    self.lidar_poses = None
+                    return cam_poses_xy, []
                 lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
             else:
                 lidar_poses_xy = []
