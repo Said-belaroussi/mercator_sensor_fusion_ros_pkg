@@ -6,6 +6,8 @@ from geometry_msgs.msg import PoseArray
 from scipy.optimize import linear_sum_assignment
 import numpy as np
 import threading
+import matplotlib.pyplot as plt
+
 
 class CostBetweenPosesNode:
     def __init__(self, experiment_bag_path='experiment_bag_path', ground_truth_bag_path='ground_truth_bag_path'):
@@ -131,6 +133,8 @@ class CostBetweenPosesNode:
         original_flag = False
         optimal_shift = 0
         perfect_delay = 0
+        
+        kept_total_poses_with_cost_array = np.array([]).reshape(0, 3)
 
         for shift in range(-self.max_shift_messages, self.max_shift_messages + 1, self.shift_step):
             if shift < 0:
@@ -165,6 +169,8 @@ class CostBetweenPosesNode:
 
                     min_avg_error = avg_error
 
+                    kept_total_poses_with_cost_array = total_poses_with_cost_array
+
                 if original_flag:
                     original_rmse = rmse
                     original_avg_error = avg_error
@@ -174,6 +180,11 @@ class CostBetweenPosesNode:
         rospy.loginfo("[%s] Original RMSE: %f", label, original_rmse)
         rospy.loginfo("[%s] Minimum Average Error: %f", label, min_avg_error)
         rospy.loginfo("[%s] Original Average Error: %f", label, original_avg_error)
+
+        polar_poses_with_cost = self.cartesian_to_polar_poses_with_cost(kept_total_poses_with_cost_array)
+
+        # Plot all errors
+        self.plot_all_same_plot(polar_poses_with_cost, label)
 
     def calculate_cost(self, poses_a, poses_b):
         poses_a = np.array([[pose.position.x, pose.position.y] for pose in poses_a])
@@ -190,6 +201,68 @@ class CostBetweenPosesNode:
         poses_b_with_cost = np.array([[poses_b[col_ind[i]][0], poses_b[col_ind[i]][1], cost_matrix[row_ind[i], col_ind[i]]] for i in range(len(row_ind))])
 
         return poses_b_with_cost
+
+    def cartesian_to_polar_poses_with_cost(self, poses_with_cost):
+        polar_poses_with_cost = np.zeros((poses_with_cost.shape[0], 3))
+        for i, pose in enumerate(poses_with_cost):
+            x = pose[0]
+            y = pose[1]
+            cost = pose[2]
+            r = np.sqrt(x**2 + y**2)
+            theta = np.arctan2(y, x)
+            polar_poses_with_cost[i] = [r, theta, cost]
+
+        return polar_poses_with_cost
+
+    def plot_error_on_angle(self, polar_poses_with_cost, topic_name):
+        bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
+        plt.plot(polar_poses_with_cost[:, 1], polar_poses_with_cost[:, 2])
+        plt.xlabel('Angle (radians)')
+        plt.ylabel('Error')
+        plt.title(f'Error on {topic_name} poses')
+        plt.show()
+
+        # Save the plot
+        plt.savefig(f'{bag_name}_{topic_name}_error_on_angle.png')
+
+    def plot_error_on_distance(self, polar_poses_with_cost, topic_name):
+        bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
+        plt.plot(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2])
+        plt.xlabel('Distance (m)')
+        plt.ylabel('Error')
+        plt.title(f'Error on {topic_name} poses')
+        plt.show()
+
+        # Save the plot
+        plt.savefig(f'{bag_name}_{topic_name}_error_on_distance.png')
+
+    def plot_error_on_distance_and_angle(self, polar_poses_with_cost, topic_name):
+        bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
+        plt.scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 1], c=polar_poses_with_cost[:, 2])
+        plt.xlabel('Distance (m)')
+        plt.ylabel('Angle (radians)')
+        plt.title(f'Error on {topic_name} poses')
+        plt.colorbar()
+        plt.show()
+
+        # Save the plot
+        plt.savefig(f'{bag_name}_{topic_name}_error_on_distance_and_angle.png')
+
+    def plot_all_same_plot(self, polar_poses_with_cost, topic_name):
+        bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
+        fig, axs = plt.subplots(3)
+        fig.suptitle(f'Error on {topic_name} poses')
+        axs[0].plot(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 2])
+        axs[0].set(xlabel='Distance (m)', ylabel='Error')
+        axs[1].plot(polar_poses_with_cost[:, 1], polar_poses_with_cost[:, 2])
+        axs[1].set(xlabel='Angle (radians)', ylabel='Error')
+        axs[2].scatter(polar_poses_with_cost[:, 0], polar_poses_with_cost[:, 1], c=polar_poses_with_cost[:, 2])
+        axs[2].set(xlabel='Distance (m)', ylabel='Angle (radians)')
+        plt.show()
+
+        # Save the plot
+        plt.savefig(f'{bag_name}_{topic_name}_error_all.png')
+        
 
 
 if __name__ == '__main__':
