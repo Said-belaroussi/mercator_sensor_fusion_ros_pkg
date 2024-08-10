@@ -122,8 +122,8 @@ class CostBetweenPosesNode:
         self.compute_cost_for_pair(self.lidar_buffer, self.ground_truth_buffer_for_lidar, "/lidar_poses_transformed")
 
     def compute_cost_for_pair(self, buffer_a, buffer_b, label):
-        min_average_cost = float('inf')
-        original_min_average_cost = float('inf')
+        min_rmse = float('inf')
+        original_rmse = float('inf')
         original_flag = False
         optimal_shift = 0
         perfect_delay = 0
@@ -140,28 +140,30 @@ class CostBetweenPosesNode:
                 shifted_buffer_b = buffer_b
                 original_flag = True
 
-            total_cost = 0
-            count = 0
+            total_poses_with_cost_array = []
 
             for a_msg, b_msg in zip(shifted_buffer_a, shifted_buffer_b):
-                cost = self.calculate_cost(a_msg[1], b_msg[1])
-                if cost is not None:
-                    total_cost += cost
-                    count += 1
+                poses_with cost_array = self.calculate_cost(a_msg[1], b_msg[1])
+=               if poses_with_cost_array is not None:
+                    total_poses_with_cost_array.extend(poses_with_cost_array)
 
-            if count > 0:
-                average_cost = total_cost / count
-                if average_cost < min_average_cost:
-                    min_average_cost = average_cost
+
+            if len(total_poses_with_cost_array) > 0:
+                # Compute Root Mean Squared Error
+                
+                rmse = np.sqrt(np.mean(np.square(total_poses_with_cost_array[:, 1])))            
+
+                if rmse < min_rmse:
+                    min_rmse = rmse
                     optimal_shift = shift
                     perfect_delay = shifted_buffer_a[0][0] - shifted_buffer_b[0][0]
 
                 if original_flag:
-                    original_min_average_cost = average_cost
+                    original_rmse = rmse
                     original_flag = False
 
-        rospy.loginfo("[%s] Minimum average cost: %f at shift: %d and delay %f", label, min_average_cost, optimal_shift, perfect_delay)
-        rospy.loginfo("[%s] Original minimum average cost: %f", label, original_min_average_cost)
+        rospy.loginfo("[%s] Minimum RMSE: %f at shift: %d and delay %f", label, min_rmse, optimal_shift, perfect_delay)
+        rospy.loginfo("[%s] Original RMSE: %f", label, original_rmse)
 
     def calculate_cost(self, poses_a, poses_b):
         poses_a = np.array([[pose.position.x, pose.position.y] for pose in poses_a])
@@ -173,10 +175,9 @@ class CostBetweenPosesNode:
         cost_matrix = np.linalg.norm(poses_a[:, np.newaxis] - poses_b, axis=2)
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
 
-        # Compute the average cost
-        total_cost = cost_matrix[row_ind, col_ind].sum() / len(row_ind)
+        poses_a_with_cost = np.array([[poses_a[row_ind[i]], cost_matrix[row_ind[i], col_ind[i]]] for i in range(len(row_ind))])
 
-        return total_cost
+        return poses_a_with_cost
 
 
 if __name__ == '__main__':
