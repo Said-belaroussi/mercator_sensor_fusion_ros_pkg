@@ -227,7 +227,7 @@ class PoseFusionNode:
         else:
             absolute_error = 0.035*distance
         
-        return absolute_error
+        return absolute_error*10
 
     def compute_measurement_covariance(self, measurements):
         """

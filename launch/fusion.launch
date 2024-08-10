@@ -10,7 +10,7 @@
     <!-- Optionally override arguments here -->
     <arg name="camera_fov_deg" value="95"/>
     <arg name="camera_resolution" value="256"/>
-    <arg name="detection_method" value="standalone_euclidean_clustering"/>
+    <arg name="detection_method" value="partially_assisted_euclidean_clustering"/>
     <arg name="visualize" value="false"/>
     <arg name="clustering_distance_threshold" value="0.15"/>
     <arg name="clustering_min_points" value="2"/>
@@ -64,7 +64,7 @@
     <arg name="initial_sensors_variances" value="[0.0256, 0.0196]"/>
     <arg name="keep_tracking_with_only_lidar" value="False"/>
     <arg name="sensors_number" value="2"/>
-    <arg name="process_noise_factor" value="0.0001"/>
+    <arg name="process_noise_factor" value="0.1"/>
     <arg name="frequency" value="30.0"/>
     <arg name="robot_average_radius" value="0.15"/>
     <arg name="initial_velocity" value="0.0"/>
