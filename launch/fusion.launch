@@ -10,7 +10,7 @@
     <!-- Optionally override arguments here -->
     <arg name="camera_fov_deg" value="95"/>
     <arg name="camera_resolution" value="256"/>
-    <arg name="detection_method" value="fully_assisted_detection"/>
+    <arg name="detection_method" value="standalone_euclidean_clustering"/>
     <arg name="visualize" value="false"/>
     <arg name="clustering_distance_threshold" value="0.15"/>
     <arg name="clustering_min_points" value="2"/>
@@ -60,7 +60,7 @@
     <!-- Optionally override arguments here -->
     <arg name="robot_name" value= "$(arg robot_frame_id_name)"/>
     <arg name="sensors_topics" value="['cam_poses_transformed', 'lidar_poses_transformed']"/>
-    <arg name="sensors_trusts" value="[false, false]"/>
+    <arg name="sensors_trusts" value="[true, false]"/>
     <arg name="initial_sensors_variances" value="[0.0256, 0.0196]"/>
     <arg name="keep_tracking_with_only_lidar" value="False"/>
     <arg name="sensors_number" value="2"/>
