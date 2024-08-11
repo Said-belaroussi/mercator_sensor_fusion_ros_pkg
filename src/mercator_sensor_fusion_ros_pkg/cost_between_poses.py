@@ -138,7 +138,6 @@ class CostBetweenPosesNode:
     def plot_all_in_one_figure(self):
         # Create a single figure with 5 subplots (2 rows, 3 columns)
         fig, axs = plt.subplots(2, 3, figsize=(18, 10))
-        fig.suptitle('Comprehensive Error Analysis for All Topics')
 
         # Define the topics and data to be plotted
         topics_and_data = [
@@ -156,7 +155,7 @@ class CostBetweenPosesNode:
             
             # Cumulative histogram
             axs[0, col].hist(polar_poses_with_cost[:, 2], bins=100, cumulative=True, density=True)
-            axs[0, col].set(xlabel='Error (m)', ylabel='Percentage of poses', title=f'{label} Poses')
+            axs[0, col].set(xlabel='Error (m)', ylabel='Cumulative frequency', title=f'Cumulative histogram of {label} errors')
             
             # Draw line at 67% of poses and display the corresponding error
             error_threshold = np.percentile(polar_poses_with_cost[:, 2], 67)
@@ -175,30 +174,31 @@ class CostBetweenPosesNode:
             # Plot the average error as a function of distance with a small offset
             axs[1, 0].vlines(bins[:-1] + offsets[i], 0, bin_avg_errors, colors=colors[i], lw=2, label=label)
         
-        axs[1, 0].set(xlabel='Distance (m)', ylabel='Average error (m)')
+        axs[1, 0].set(title='Average error over distance to target', xlabel='Distance (m)', ylabel='Average error (m)')
         axs[1, 0].grid()
         axs[1, 0].legend()
 
         # Plot errors in function of angle (second row, second column)
         for i, (polar_poses_with_cost, label) in enumerate(topics_and_data):
             # Separate angle values into bins of 5 degrees and calculate the average error in each bin
-            bins = np.arange(0, 180, 5)
+            bins = np.arange(-180, 180, 5)
             bin_indices = np.digitize(np.degrees(polar_poses_with_cost[:, 1]), bins)
             bin_avg_errors = np.zeros(len(bins) - 1)
             for j in range(1, len(bins)):
                 bin_avg_errors[j - 1] = np.mean(polar_poses_with_cost[bin_indices == j, 2])
 
             # Plot the average error as a function of angle with a small offset
-            axs[1, 1].vlines(bins[:-1] + offsets[i]*20, 0, bin_avg_errors, colors=colors[i], lw=2, label=label)
+            axs[1, 1].vlines(bins[:-1] + offsets[i]*40, 0, bin_avg_errors, colors=colors[i], lw=2, label=label)
         
-        axs[1, 1].set(xlabel='Angle (degrees)', ylabel='Average error (m)')
+        axs[1, 1].set(title='Average error over angle to target',xlabel='Angle (degrees)', ylabel='Average error (m)')
         axs[1, 1].grid()
         axs[1, 1].legend()
 
         # Remove the last subplot (second row, third column)
         fig.delaxes(axs[1, 2])
 
-        plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to fit the title
+        # Adjust layout to provide more space between plots
+        plt.subplots_adjust(hspace=0.8, wspace=0.2)
 
         # Save the plot
         bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
@@ -219,9 +219,8 @@ class CostBetweenPosesNode:
         # Define the maximum time gap (in seconds) that you consider to be continuous
         max_time_gap = 0.5  # Adjust this threshold based on your specific data
 
-        # Create a figure with two subplots (2 rows, 1 column)
-        fig, axs = plt.subplots(2, 1, figsize=(10, 8))
-        fig.suptitle('X and Y Deviation for all topics in function of time')
+        # Create a figure with 8 subplots (4 rows, 2 columns)
+        fig, axs = plt.subplots(3, 2, figsize=(14, 16))
 
         def plot_with_gaps(ax, times, deviations, color, label):
             # Identify where the time gaps are larger than the threshold
@@ -237,28 +236,77 @@ class CostBetweenPosesNode:
             # Add a single invisible plot to handle the legend
             ax.plot([], [], color=color, label=label)
 
-        # Plot X deviations with gaps
-        plot_with_gaps(axs[0], self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 0], color='blue', label='Fused Poses')
-        plot_with_gaps(axs[0], self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 0], color='orange', label='Cam Poses')
-        plot_with_gaps(axs[0], self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 0], color='green', label='Lidar Poses')
-        axs[0].set(xlabel='Time (s)', ylabel='X Deviation (m)')
-        axs[0].legend()
+        # Plot X deviations with gaps (first plot)
+        plot_with_gaps(axs[0, 0], self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 0], color='blue', label='Fused Poses')
+        plot_with_gaps(axs[0, 0], self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 0], color='orange', label='Cam Poses')
+        plot_with_gaps(axs[0, 0], self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 0], color='green', label='Lidar Poses')
+        axs[0, 0].set(title='X Deviation over time for fused and sensors poses', xlabel='Time (s)', ylabel='X Deviation (m)')
+        axs[0, 0].legend(fontsize='small')
 
-        # Plot Y deviations with gaps
-        plot_with_gaps(axs[1], self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 1], color='blue', label='Fused Poses')
-        plot_with_gaps(axs[1], self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 1], color='orange', label='Cam Poses')
-        plot_with_gaps(axs[1], self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 1], color='green', label='Lidar Poses')
-        axs[1].set(xlabel='Time (s)', ylabel='Y Deviation (m)')
-        axs[1].legend()
+        # Plot Y deviations with gaps (second plot)
+        plot_with_gaps(axs[0, 1], self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 1], color='blue', label='Fused Poses')
+        plot_with_gaps(axs[0, 1], self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 1], color='orange', label='Cam Poses')
+        plot_with_gaps(axs[0, 1], self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 1], color='green', label='Lidar Poses')
+        axs[0, 1].set(title='Y Deviation over time for fused and sensors poses', xlabel='Time (s)', ylabel='Y Deviation (m)')
+        axs[0, 1].legend(fontsize='small')
 
-        plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to fit the title
+        # Define colors for each topic
+        colors = ['blue', 'orange', 'green']
+
+        # Plot histograms for X deviations (third row)
+        data_sets = [
+            (self.cam_timestamp_x_y_deviation[:, 0], 'Cam Poses'),
+            (self.lidar_timestamp_x_y_deviation[:, 0], 'Lidar Poses')
+        ]
+
+        # Set a symmetric bin range around 0 for X and Y deviations
+        bin_range = np.linspace(-np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 0].max()), abs(self.experiment_timestamp_x_y_deviation[:, 0].min()))), 
+                                np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 0].max()), abs(self.experiment_timestamp_x_y_deviation[:, 0].min()))), 
+                                50)
+
+        for i, (data, label) in enumerate(data_sets):
+            counts, _ = np.histogram(data, bins=bin_range)
+            probabilities = counts / np.sum(counts)  # Normalize to get probabilities
+            axs[i+1, 0].bar(bin_range[:-1], probabilities, width=np.diff(bin_range), color=colors[i+1], alpha=0.7, edgecolor='black')
+            mean = np.mean(data)
+            std_dev = np.std(data)
+            axs[i+1, 0].axvline(mean, color='red', linestyle='dashed', linewidth=2)
+            axs[i+1, 0].text(mean + 0.05, np.max(probabilities) * 0.5, f'Mean: {mean:.2f}\nStd: {std_dev:.2f}', color='red')
+            axs[i+1, 0].set(title=f'X Deviation Distribution - {label}', xlabel='X Deviation (m)', ylabel='Frequency')
+            axs[i+1, 0].set_xlim([bin_range.min(), bin_range.max()])  # Center the histogram around 0
+
+        # Plot histograms for Y deviations (fourth row)
+        data_sets = [
+            (self.cam_timestamp_x_y_deviation[:, 1], 'Cam Poses'),
+            (self.lidar_timestamp_x_y_deviation[:, 1], 'Lidar Poses')
+        ]
+
+        # Set a symmetric bin range around 0 for Y deviations
+        bin_range = np.linspace(-np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 1].max()), abs(self.experiment_timestamp_x_y_deviation[:, 1].min()))), 
+                                np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 1].max()), abs(self.experiment_timestamp_x_y_deviation[:, 1].min()))), 
+                                50)
+
+        for i, (data, label) in enumerate(data_sets):
+            counts, _ = np.histogram(data, bins=bin_range)
+            probabilities = counts / np.sum(counts)  # Normalize to get probabilities
+            axs[i+1, 1].bar(bin_range[:-1], probabilities, width=np.diff(bin_range), color=colors[i+1], alpha=0.7, edgecolor='black')
+            mean = np.mean(data)
+            std_dev = np.std(data)
+            axs[i+1, 1].axvline(mean, color='red', linestyle='dashed', linewidth=2)
+            axs[i+1, 1].text(mean + 0.05, np.max(probabilities) * 0.5, f'Mean: {mean:.2f}\nStd: {std_dev:.2f}', color='red')
+            axs[i+1, 1].set(title=f'Y Deviation Distribution - {label}', xlabel='Y Deviation (m)', ylabel='Frequency')
+            axs[i+1, 1].set_xlim([bin_range.min(), bin_range.max()])  # Center the histogram around 0
+
+        # Adjust layout to provide more space between plots
+        plt.subplots_adjust(hspace=0.6, wspace=0.2)
 
         # Save the figure before displaying it
         bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
-        plt.savefig(f'{bag_name}_xy_deviation_all.png')
+        plt.savefig(f'{bag_name}_xy_deviation_analysis.png')
 
         # Show the figure
         plt.show()
+
 
     def compute_cost_for_pair(self, buffer_a, buffer_b, label):
         min_rmse = float('inf')
@@ -369,8 +417,8 @@ class CostBetweenPosesNode:
             theta = theta - np.pi / 2
             if theta < -np.pi:
                 theta += 2 * np.pi
-            if theta < 0:
-                theta = -theta
+            # if theta < 0:
+            #     theta = -theta
             polar_poses_with_cost[i] = [r, theta, cost]
 
         return polar_poses_with_cost

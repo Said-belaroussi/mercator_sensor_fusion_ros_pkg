@@ -60,11 +60,11 @@
     <!-- Optionally override arguments here -->
     <arg name="robot_name" value= "$(arg robot_frame_id_name)"/>
     <arg name="sensors_topics" value="['cam_poses_transformed', 'lidar_poses_transformed']"/>
-    <arg name="sensors_trusts" value="[false, false]"/>
+    <arg name="sensors_trusts" value="[true, false]"/>
     <arg name="initial_sensors_variances" value="[0.0256, 0.0196]"/>
     <arg name="keep_tracking_with_only_lidar" value="False"/>
     <arg name="sensors_number" value="2"/>
-    <arg name="process_noise_factor" value="0.1"/>
+    <arg name="process_noise_factor" value="0.0001"/>
     <arg name="frequency" value="30.0"/>
     <arg name="robot_average_radius" value="0.15"/>
     <arg name="initial_velocity" value="0.0"/>
