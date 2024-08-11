@@ -1,7 +1,12 @@
 <launch>
 
-  <arg name="scan_topic" default="/corrected_scan" />
+  <arg name="scan_topic" default="/correct_scan" />
   <arg name="tf_topic" default="/tf" />
+
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/rotate_laser_scan.launch">
+    <arg name="rotation_angle_in_radians" value="3.14159"/>
+    <arg name="rotated_scan" value="$(arg scan_topic)"/>
+  </include>
 
   <node pkg="tf" type="static_transform_publisher" name="robot_to_laser_scan_broadcaster" 
         args="0 0 0 0 0 0 robot laser_frame 100" /> <!-- 100 Hz-->
