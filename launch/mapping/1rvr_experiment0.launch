@@ -4,7 +4,7 @@
   <arg name="tf_topic" default="/tf" />
 
   <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/rotate_laser_scan.launch">
-    <arg name="rotation_angle_in_radians" value="3.14159"/>
+    <arg name="rotation_angle_in_radians" value="-1.570796"/>
     <arg name="rotated_scan" value="$(arg scan_topic)"/>
   </include>
 

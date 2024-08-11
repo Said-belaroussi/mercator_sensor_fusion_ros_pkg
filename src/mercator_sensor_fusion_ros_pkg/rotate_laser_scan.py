@@ -24,6 +24,7 @@ class RotateLaserScanNode:
         """
         rotated_scan = LaserScan()
         rotated_scan.header = scan_msg.header
+        rotated_scan.header.stamp = rospy.Time.now()
         rotated_scan.angle_min = scan_msg.angle_min + self.rotation_angle_in_radians  # Add angle (in radians)
         rotated_scan.angle_max = scan_msg.angle_max + self.rotation_angle_in_radians  # Add angle (in radians)
         rotated_scan.angle_increment = scan_msg.angle_increment
