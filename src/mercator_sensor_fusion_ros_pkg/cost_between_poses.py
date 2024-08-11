@@ -296,7 +296,6 @@ class CostBetweenPosesNode:
         axs[0].text(error_threshold, 0.5, f'67% < {error_threshold:.2f} m')
 
         # Separate distance values on bins of 0.1 m and plot the average error on each bin
-        rospy.loginfo(polar_poses_with_cost[:, 0])
         bins = np.arange(0, np.ceil(polar_poses_with_cost[:, 0].max()), 0.1)
         bin_indices = np.digitize(polar_poses_with_cost[:, 0], bins)
         bin_avg_errors = np.zeros(len(bins) - 1)
