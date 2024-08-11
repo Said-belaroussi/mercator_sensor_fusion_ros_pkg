@@ -131,6 +131,10 @@ class CostBetweenPosesNode:
         self.plot_x_y_deviations_for_all()
 
     def plot_x_y_deviations_for_all(self):
+        # Offset timestamps to start at 0
+        self.experiment_timestamp_x_y_deviation[:, 2] -= self.experiment_timestamp_x_y_deviation[0, 2]
+        self.cam_timestamp_x_y_deviation[:, 2] -= self.cam_timestamp_x_y_deviation[0, 2]
+        self.lidar_timestamp_x_y_deviation[:, 2] -= self.lidar_timestamp_x_y_deviation[0, 2]
         self.plot_x_deviation_for_all()
         self.plot_y_deviation_for_all()
 
@@ -139,9 +143,9 @@ class CostBetweenPosesNode:
         fig, ax = plt.subplots()
         fig.suptitle('X Deviation for all topics in function of time')
 
-        ax.plot(self.experiment_timestamp_x_y_deviation[:, 0], self.experiment_timestamp_x_y_deviation[:, 2], label='Fused Poses')
-        ax.plot(self.cam_timestamp_x_y_deviation[:, 0], self.cam_timestamp_x_y_deviation[:, 2], label='Cam Poses')
-        ax.plot(self.lidar_timestamp_x_y_deviation[:, 0], self.lidar_timestamp_x_y_deviation[:, 2], label='Lidar Poses')
+        ax.plot(self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 0], label='Fused Poses')
+        ax.plot(self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 0], label='Cam Poses')
+        ax.plot(self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 0], label='Lidar Poses')
 
         ax.set(xlabel='Time (s)', ylabel='X Deviation (m)')
         ax.legend()
@@ -156,9 +160,9 @@ class CostBetweenPosesNode:
         fig, ax = plt.subplots()
         fig.suptitle('Y Deviation for all topics in function of time')
 
-        ax.plot(self.experiment_timestamp_x_y_deviation[:, 0], self.experiment_timestamp_x_y_deviation[:, 2], label='Fused Poses')
-        ax.plot(self.cam_timestamp_x_y_deviation[:, 0], self.cam_timestamp_x_y_deviation[:, 2], label='Cam Poses')
-        ax.plot(self.lidar_timestamp_x_y_deviation[:, 0], self.lidar_timestamp_x_y_deviation[:, 2], label='Lidar Poses')
+        ax.plot(self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 1], label='Fused Poses')
+        ax.plot(self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 1], label='Cam Poses')
+        ax.plot(self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 1], label='Lidar Poses')
 
         ax.set(xlabel='Time (s)', ylabel='Y Deviation (m)')
         ax.legend()
