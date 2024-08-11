@@ -28,9 +28,13 @@ class CostBetweenPosesNode:
         self.ground_truth_buffer_for_cam = []
         self.ground_truth_buffer_for_lidar = []
 
-        self.max_shift_messages = rospy.get_param('~max_shift_messages', 50)  # Max shift in number of messages
+        self.max_shift_messages = rospy.get_param('~max_shift_messages', 0)  # Max shift in number of messages
         self.shift_step = rospy.get_param('~shift_step', 1)
-        self.time_tolerance = rospy.get_param('~time_tolerance', 0.05)  # Tolerance in seconds for syncing messages
+        self.time_tolerance = rospy.get_param('~time_tolerance', 0.2)  # Tolerance in seconds for syncing messages
+
+        self.experiment_timestamp_x_y_deviation = np.array([]).reshape(0, 3)
+        self.cam_timestamp_x_y_deviation = np.array([]).reshape(0, 3)
+        self.lidar_timestamp_x_y_deviation = np.array([]).reshape(0, 3)
 
         self.read_bags()
 
@@ -110,6 +114,7 @@ class CostBetweenPosesNode:
 
         return closest_pose
 
+
     def compute_costs(self):
         # Compute costs for each pair of buffers
         rospy.loginfo(len(self.experiment_buffer))
@@ -123,6 +128,46 @@ class CostBetweenPosesNode:
         self.compute_cost_for_pair(self.cam_buffer, self.ground_truth_buffer_for_cam, "/cam_poses_transformed")
         self.compute_cost_for_pair(self.lidar_buffer, self.ground_truth_buffer_for_lidar, "/lidar_poses_transformed")
 
+        self.plot_x_y_deviations_for_all()
+
+    def plot_x_y_deviations_for_all(self):
+        self.plot_x_deviation_for_all()
+        self.plot_y_deviation_for_all()
+
+    def plot_x_deviation_for_all(self):
+        # Plot x deviations for all topics in same plot in function of time
+        fig, ax = plt.subplots()
+        fig.suptitle('X Deviation for all topics in function of time')
+
+        ax.plot(self.experiment_timestamp_x_y_deviation[:, 0], self.experiment_timestamp_x_y_deviation[:, 2], label='Fused Poses')
+        ax.plot(self.cam_timestamp_x_y_deviation[:, 0], self.cam_timestamp_x_y_deviation[:, 2], label='Cam Poses')
+        ax.plot(self.lidar_timestamp_x_y_deviation[:, 0], self.lidar_timestamp_x_y_deviation[:, 2], label='Lidar Poses')
+
+        ax.set(xlabel='Time (s)', ylabel='X Deviation (m)')
+        ax.legend()
+        plt.show()
+
+        # Save the plot
+        bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
+        plt.savefig(f'{bag_name}_x_deviation_all.png')
+
+    def plot_y_deviation_for_all(self):
+        # Plot y deviations for all topics in same plot in function of time
+        fig, ax = plt.subplots()
+        fig.suptitle('Y Deviation for all topics in function of time')
+
+        ax.plot(self.experiment_timestamp_x_y_deviation[:, 0], self.experiment_timestamp_x_y_deviation[:, 2], label='Fused Poses')
+        ax.plot(self.cam_timestamp_x_y_deviation[:, 0], self.cam_timestamp_x_y_deviation[:, 2], label='Cam Poses')
+        ax.plot(self.lidar_timestamp_x_y_deviation[:, 0], self.lidar_timestamp_x_y_deviation[:, 2], label='Lidar Poses')
+
+        ax.set(xlabel='Time (s)', ylabel='Y Deviation (m)')
+        ax.legend()
+        plt.show()
+
+        # Save the plot
+        bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
+        plt.savefig(f'{bag_name}_y_deviation_all.png')
+
     def compute_cost_for_pair(self, buffer_a, buffer_b, label):
         min_rmse = float('inf')
         original_rmse = float('inf')
@@ -132,7 +177,7 @@ class CostBetweenPosesNode:
         optimal_shift = 0
         perfect_delay = 0
         
-        kept_total_poses_with_cost_array = np.array([]).reshape(0, 3)
+        kept_total_poses_with_cost_array = np.array([]).reshape(0, 6)
 
         for shift in range(-self.max_shift_messages, self.max_shift_messages + 1, self.shift_step):
             if shift < 0:
@@ -146,10 +191,11 @@ class CostBetweenPosesNode:
                 shifted_buffer_b = buffer_b
                 original_flag = True
 
-            total_poses_with_cost_array = np.array([]).reshape(0, 3)
+            total_poses_with_cost_array = np.array([]).reshape(0, 6)
 
             for a_msg, b_msg in zip(shifted_buffer_a, shifted_buffer_b):
                 poses_with_cost_array = self.calculate_cost(a_msg[1], b_msg[1])
+                poses_with_cost_array = np.hstack((np.full((poses_with_cost_array.shape[0], 1), a_msg[0]), poses_with_cost_array))
                 if poses_with_cost_array is not None:
                     total_poses_with_cost_array = np.vstack((total_poses_with_cost_array, poses_with_cost_array))
 
@@ -179,6 +225,13 @@ class CostBetweenPosesNode:
         rospy.loginfo("[%s] Minimum Average Error: %f", label, min_avg_error)
         rospy.loginfo("[%s] Original Average Error: %f", label, original_avg_error)
 
+        if label == "/fused_poses":
+            self.experiment_timestamp_x_y_deviation = kept_total_poses_with_cost_array[:, 3:]
+        elif label == "/cam_poses_transformed":
+            self.cam_timestamp_x_y_deviation = kept_total_poses_with_cost_array[:, 3:]
+        elif label == "/lidar_poses_transformed":
+            self.lidar_timestamp_x_y_deviation = kept_total_poses_with_cost_array[:, 3:]
+
         polar_poses_with_cost = self.cartesian_to_polar_poses_with_cost(kept_total_poses_with_cost_array)
 
         # Plot all errors
@@ -197,6 +250,12 @@ class CostBetweenPosesNode:
         #     rospy.loginfo(poses_a[row_ind[i]])
         #     rospy.loginfo(cost_matrix[row_ind[i], col_ind[i]])
         poses_b_with_cost = np.array([[poses_b[col_ind[i]][0], poses_b[col_ind[i]][1], cost_matrix[row_ind[i], col_ind[i]]] for i in range(len(row_ind))])
+
+        # Compute x and y deviations between poses
+        deviations = poses_a[row_ind] - poses_b[col_ind]
+
+        # Add deviation to poses_b_with_cost
+        poses_b_with_cost = np.hstack((poses_b_with_cost, deviations))
 
         return poses_b_with_cost
 
