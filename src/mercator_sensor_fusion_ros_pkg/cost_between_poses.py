@@ -232,7 +232,7 @@ class CostBetweenPosesNode:
         elif label == "/lidar_poses_transformed":
             self.lidar_timestamp_x_y_deviation = kept_total_poses_with_cost_array[:, 3:]
 
-        polar_poses_with_cost = self.cartesian_to_polar_poses_with_cost(kept_total_poses_with_cost_array)
+        polar_poses_with_cost = self.cartesian_to_polar_poses_with_cost(kept_total_poses_with_cost_array[:, :3])
 
         # Plot all errors
         self.plot_all_same_plot(polar_poses_with_cost, label)
