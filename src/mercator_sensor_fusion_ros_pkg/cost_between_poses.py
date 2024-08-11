@@ -137,31 +137,50 @@ class CostBetweenPosesNode:
         self.lidar_timestamp_x_y_deviation[:, 2] -= self.lidar_timestamp_x_y_deviation[0, 2]
         self.plot_x_and_y_deviation_for_all()
 
-    def plot_x_and_y_deviation_for_all(self):
-        # Create a figure with two subplots (1 row, 2 columns)
-        fig, axs = plt.subplots(2, 1, figsize=(10, 8))
-        fig.suptitle('X and Y Deviation for all sensors in function of time')
 
-        # Plot X deviations
-        axs[0].plot(self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 0], label='Fused Poses')
-        axs[0].plot(self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 0], label='Cam Poses')
-        axs[0].plot(self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 0], label='Lidar Poses')
+    def plot_x_and_y_deviation_for_all(self):
+        # Define the maximum time gap (in seconds) that you consider to be continuous
+        max_time_gap = 0.5  # Adjust this threshold based on your specific data
+
+        # Create a figure with two subplots (2 rows, 1 column)
+        fig, axs = plt.subplots(2, 1, figsize=(10, 8))
+        fig.suptitle('X and Y Deviation for all topics in function of time')
+
+        def plot_with_gaps(ax, times, deviations, color, label):
+            # Identify where the time gaps are larger than the threshold
+            time_diffs = np.diff(times)
+            gaps = np.where(time_diffs > max_time_gap)[0]
+
+            # Split the data into segments based on identified gaps
+            segments = np.split(np.arange(len(times)), gaps + 1)
+
+            for segment in segments:
+                ax.plot(times[segment], deviations[segment], color=color)
+            
+            # Add a single invisible plot to handle the legend
+            ax.plot([], [], color=color, label=label)
+
+        # Plot X deviations with gaps
+        plot_with_gaps(axs[0], self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 0], color='blue', label='Fused Poses')
+        plot_with_gaps(axs[0], self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 0], color='orange', label='Cam Poses')
+        plot_with_gaps(axs[0], self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 0], color='green', label='Lidar Poses')
         axs[0].set(xlabel='Time (s)', ylabel='X Deviation (m)')
         axs[0].legend()
 
-        # Plot Y deviations
-        axs[1].plot(self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 1], label='Fused Poses')
-        axs[1].plot(self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 1], label='Cam Poses')
-        axs[1].plot(self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 1], label='Lidar Poses')
+        # Plot Y deviations with gaps
+        plot_with_gaps(axs[1], self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 1], color='blue', label='Fused Poses')
+        plot_with_gaps(axs[1], self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 1], color='orange', label='Cam Poses')
+        plot_with_gaps(axs[1], self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 1], color='green', label='Lidar Poses')
         axs[1].set(xlabel='Time (s)', ylabel='Y Deviation (m)')
         axs[1].legend()
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to fit the title
 
-        # Save the figure
+        # Save the figure before displaying it
         bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
         plt.savefig(f'{bag_name}_xy_deviation_all.png')
 
+        # Show the figure
         plt.show()
 
     def compute_cost_for_pair(self, buffer_a, buffer_b, label):
