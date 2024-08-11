@@ -3,7 +3,7 @@
   <arg name="bag1_topic" default="/rvr/odom" />
   <arg name="bag2_topic" default="/tf" />
   <arg name="frame_id" default="base_link_31" />
-  <arg name="bag1" default="/home/said/fxpbags/rvr1/static_part_true_noise_rvr1.bag" />
+  <arg name="bag1" default="/home/said/fxpbags/rvr1/static_false_rvr1.bag" />
   <arg name="bag2" default="/home/said/fxpbags/tracking/trackrw.bag" />
 
   <!-- Pass arguments as parameters to the node -->

@@ -1,6 +1,6 @@
 <launch>
     <!-- Arguments for remapping topics -->
-    <arg name="experiment_bag_path" default="/home/said/fxpbags/rvr1/static_part_true_noise_rvr1_synced.bag" />
+    <arg name="experiment_bag_path" default="/home/said/fxpbags/rvr1/static_false_rvr1_synced.bag" />
     <arg name="ground_truth_bag_path" default="/home/said/fxpbags/tracking/trackstaticrvr1_synced_ground_truth.bag" />
     <arg name="fused_poses_topic" default="/fused_poses" />
 

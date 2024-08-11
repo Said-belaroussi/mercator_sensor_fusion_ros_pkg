@@ -136,59 +136,73 @@ class CostBetweenPosesNode:
         self.plot_all_in_one_figure()
 
     def plot_all_in_one_figure(self):
-        # Create a single figure with 9 subplots (3 rows, 3 columns)
-        fig, axs = plt.subplots(3, 3, figsize=(15, 12))
-        fig.suptitle('Error Analysis on Different Poses')
+        # Create a single figure with 5 subplots (2 rows, 3 columns)
+        fig, axs = plt.subplots(2, 3, figsize=(18, 10))
+        fig.suptitle('Comprehensive Error Analysis for All Topics')
 
         # Define the topics and data to be plotted
         topics_and_data = [
-            (self.experiment_polar_poses_with_cost, self.fused_poses_topic),
-            (self.cam_polar_poses_with_cost, '/cam_poses_transformed'),
-            (self.lidar_polar_poses_with_cost, '/lidar_poses_transformed')
+            (self.experiment_polar_poses_with_cost, 'Fused Poses'),
+            (self.cam_polar_poses_with_cost, 'Cam Poses'),
+            (self.lidar_polar_poses_with_cost, 'Lidar Poses')
         ]
 
-        for i, (polar_poses_with_cost, topic_name) in enumerate(topics_and_data):
-            topic_name = topic_name[1:]  # Remove leading '/' from topic name
+        colors = ['blue', 'orange', 'green']  # Colors for each topic
+        offsets = [-0.02, 0, 0.02]  # Small offsets for each topic to separate the sticks
+
+        # Plot cumulative histograms of errors (first row, first three columns)
+        for i, (polar_poses_with_cost, label) in enumerate(topics_and_data):
             col = i  # Determine the column index (0, 1, or 2)
-
-            # Plot cumulative histogram of errors
+            
+            # Cumulative histogram
             axs[0, col].hist(polar_poses_with_cost[:, 2], bins=100, cumulative=True, density=True)
-            axs[0, col].set(xlabel='Error (m)', ylabel='Percentage of poses', title=f'{topic_name} Poses')
-
+            axs[0, col].set(xlabel='Error (m)', ylabel='Percentage of poses', title=f'{label} Poses')
+            
             # Draw line at 67% of poses and display the corresponding error
             error_threshold = np.percentile(polar_poses_with_cost[:, 2], 67)
             axs[0, col].axvline(x=error_threshold, color='r', linestyle='--')
             axs[0, col].text(error_threshold, 0.5, f'67% < {error_threshold:.2f} m')
 
-            # Separate distance values on bins of 0.1 m and plot the average error on each bin
+        # Plot errors in function of distance (second row, first column)
+        for i, (polar_poses_with_cost, label) in enumerate(topics_and_data):
+            # Separate distance values into bins of 0.1 m and calculate the average error in each bin
             bins = np.arange(0, np.ceil(polar_poses_with_cost[:, 0].max()), 0.1)
             bin_indices = np.digitize(polar_poses_with_cost[:, 0], bins)
             bin_avg_errors = np.zeros(len(bins) - 1)
             for j in range(1, len(bins)):
                 bin_avg_errors[j - 1] = np.mean(polar_poses_with_cost[bin_indices == j, 2])
 
-            # Use vlines to create the stick plot for distance bins
-            axs[1, col].vlines(bins[:-1], 0, bin_avg_errors, colors='b', lw=2, label='Error')
-            axs[1, col].set(xlabel='Distance (m)', ylabel='Average error (m)')
-            axs[1, col].grid()
+            # Plot the average error as a function of distance with a small offset
+            axs[1, 0].vlines(bins[:-1] + offsets[i], 0, bin_avg_errors, colors=colors[i], lw=2, label=label)
+        
+        axs[1, 0].set(xlabel='Distance (m)', ylabel='Average error (m)')
+        axs[1, 0].grid()
+        axs[1, 0].legend()
 
-            # Separate angle values on bins of 5 degrees and plot the average error on each bin
+        # Plot errors in function of angle (second row, second column)
+        for i, (polar_poses_with_cost, label) in enumerate(topics_and_data):
+            # Separate angle values into bins of 5 degrees and calculate the average error in each bin
             bins = np.arange(0, 180, 5)
             bin_indices = np.digitize(np.degrees(polar_poses_with_cost[:, 1]), bins)
             bin_avg_errors = np.zeros(len(bins) - 1)
             for j in range(1, len(bins)):
                 bin_avg_errors[j - 1] = np.mean(polar_poses_with_cost[bin_indices == j, 2])
 
-            # Use vlines for the stick plot for angle bins
-            axs[2, col].vlines(bins[:-1], 0, bin_avg_errors, colors='b', lw=2, label='Error')
-            axs[2, col].set(xlabel='Angle (degrees)', ylabel='Average error (m)')
-            axs[2, col].grid()
+            # Plot the average error as a function of angle with a small offset
+            axs[1, 1].vlines(bins[:-1] + offsets[i]*20, 0, bin_avg_errors, colors=colors[i], lw=2, label=label)
+        
+        axs[1, 1].set(xlabel='Angle (degrees)', ylabel='Average error (m)')
+        axs[1, 1].grid()
+        axs[1, 1].legend()
+
+        # Remove the last subplot (second row, third column)
+        fig.delaxes(axs[1, 2])
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to fit the title
 
         # Save the plot
         bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
-        plt.savefig(f'{bag_name}_error_all_in_one.png')
+        plt.savefig(f'{bag_name}_comprehensive_error_analysis.png')
 
         # Show the figure
         plt.show()
