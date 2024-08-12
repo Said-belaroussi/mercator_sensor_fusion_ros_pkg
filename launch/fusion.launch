@@ -10,11 +10,11 @@
     <!-- Optionally override arguments here -->
     <arg name="camera_fov_deg" value="95"/>
     <arg name="camera_resolution" value="256"/>
-    <arg name="detection_method" value="partially_assisted_euclidean_clustering"/>
+    <arg name="detection_method" value="standalone_euclidean_clustering"/>
     <arg name="visualize" value="false"/>
     <arg name="clustering_distance_threshold" value="0.15"/>
     <arg name="clustering_min_points" value="2"/>
-    <arg name="clustering_max_points" value="30"/>
+    <arg name="clustering_max_points" value="10"/>
     <arg name="camera_poses_topic" value="custom_cam_poses"/>
     <arg name="fully_assisted_detection_distance_threshold" value="0.5"/>
     <arg name="oak" value="/oak"/>

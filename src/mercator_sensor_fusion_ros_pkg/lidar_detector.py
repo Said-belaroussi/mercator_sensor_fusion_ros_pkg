@@ -133,6 +133,8 @@ class LidarDetectorNode:
         max_angle = self.start_angle + (((self.camera_resolution - min_x)/self.camera_resolution)*self.camera_fov_deg* (math.pi / 180))
         # min_angle = - math.pi
         # max_angle = math.pi
+        min_angle -= math.pi/18
+        max_angle += math.pi/18
 
         return min_angle, max_angle
 
@@ -306,19 +308,25 @@ class LidarDetectorNode:
         """
         Return the position closest to the middle angle
         """
-        if len(positions) == 0:
-            return None
+        # if len(positions) == 0:
+        #     return None
         
-        # Calculate the angles of the positions
-        angles = [math.atan2(position[1], position[0]) for position in positions]
+        # # Calculate the angles of the positions
+        # angles = [math.atan2(position[1], position[0]) for position in positions]
 
-        # Calculate the difference between the angles and the middle angle
-        differences = [abs(angle - middle_angle) for angle in angles]
+        # # Calculate the difference between the angles and the middle angle
+        # differences = [abs(angle - middle_angle) for angle in angles]
 
-        # Find the index of the closest position
-        closest_index = differences.index(min(differences))
+        # # Find the index of the closest position
+        # closest_index = differences.index(min(differences))
 
-        closest_position = positions[closest_index]
+        # closest_position = positions[closest_index]
+
+        if len(positions) > 0:
+            distances = [math.sqrt(position[0]**2 + position[1]**2) for position in positions]
+            closest_position = positions[distances.index(min(distances))]
+        else:
+            closest_position = None
 
         return closest_position
 
@@ -333,7 +341,7 @@ class LidarDetectorNode:
             # Convert the data to Cartesian coordinates
             points = [self.depth_angle_to_two_d(depth, angle) for depth, angle in data]
 
-            rospy.loginfo(points)
+            # rospy.loginfo(points)
             # Cluster the points
             clusters = euclidean_clustering(points, self.clustering_distance_threshold, 
                         self.clustering_min_points, self.clustering_max_points)
