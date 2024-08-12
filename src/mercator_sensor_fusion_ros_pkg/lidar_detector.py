@@ -284,11 +284,11 @@ class LidarDetectorNode:
                 # Extract the relevant part of the Lidar scan based on the angles within the bounding box
                 zone_of_interest = [[data.ranges[i], data.angle_min + i * data.angle_increment]  for i in range(len(data.ranges)) if min_angle <= (data.angle_min + i * data.angle_increment) <= max_angle]
                 
+                # Calculate the middle angle of the bounding box
+                middle_angle = (min_angle + max_angle) / 2
+
                 # Calculate the depth, angle and convert it to cartesian using the provided detection function
-                detected_point = detection_function(zone_of_interest)
-                
-                # # Calculate the middle angle of the bounding box
-                # middle_angle = (min_angle + max_angle) / 2
+                detected_point = detection_function(zone_of_interest, middle_angle)
                 
                 # # Convert depth and middle angle to x, y coordinates
                 # x, y = self.depth_angle_to_two_d(depth, middle_angle)
@@ -302,21 +302,28 @@ class LidarDetectorNode:
             
         return positions
 
-    def closest_position(self, positions):
+    def closest_position(self, positions, middle_angle):
         """
-        Return the position closest to the Lidar
+        Return the position closest to the middle angle
         """
+        if len(positions) == 0:
+            return None
+        
+        # Calculate the angles of the positions
+        angles = [math.atan2(position[1], position[0]) for position in positions]
 
-        if len(positions) > 0:
-            distances = [math.sqrt(position[0]**2 + position[1]**2) for position in positions]
-            min_position = positions[distances.index(min(distances))]
-        else:
-            min_position = None
+        # Calculate the difference between the angles and the middle angle
+        differences = [abs(angle - middle_angle) for angle in angles]
 
-        return min_position
+        # Find the index of the closest position
+        closest_index = differences.index(min(differences))
+
+        closest_position = positions[closest_index]
+
+        return closest_position
 
 
-    def partially_assisted_euclidean_clustering(self, data):
+    def partially_assisted_euclidean_clustering(self, data, middle_angle):
         # Filter out 0 values
         data = [pair for pair in data if pair[0] != 0]
 
@@ -333,11 +340,11 @@ class LidarDetectorNode:
 
             positions = [np.mean(cluster, axis=0) for cluster in clusters]
 
-            closest_position = self.closest_position(positions)
+            closest_position = self.closest_position(positions, middle_angle)
 
         return closest_position
 
-    def partially_assisted_dbscan_clustering(self, data):
+    def partially_assisted_dbscan_clustering(self, data, middle_angle):
         # Filter out 0 values
         data = [pair for pair in data if pair[0] != 0]
 
@@ -353,7 +360,7 @@ class LidarDetectorNode:
 
         return closest_position
         
-    def minimum_distance_within_bbox_depth(self, data):
+    def minimum_distance_within_bbox_depth(self, data, middle_angle):
         """
         Remove all zero values from the data list (pairs of depth, angle) and return the minimum value with the angle
         """
