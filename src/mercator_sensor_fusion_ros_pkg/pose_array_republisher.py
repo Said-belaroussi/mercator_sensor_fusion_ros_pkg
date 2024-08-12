@@ -52,17 +52,20 @@ class PoseArrayRepublisherNode:
         # Filter detections based on confidence threshold
         self.filtered_detections = []
         for detection in detection_array_msg.detections:
-            if detection.bbox.center.theta > 0.7 and detection.bbox.size_x < 200 and detection.bbox.size_y < 100:
+            if detection.bbox.center.theta < 0.5 or detection.bbox.size_x > 200 or detection.bbox.size_y > 100:
                 self.filtered_detections.append(detection)
 
         # Only keep the filtered detections if there are any
-        if not self.filtered_detections:
+        if len(self.filtered_detections) > 0:
             self.filtered_detections = None
+        else:
+            self.filtered_detections = [1]
 
     def callback_cam(self, pose_array_msg):
         if self.filtered_detections:
             transformed_pose_array_msg = self.transform_poses(pose_array_msg, self.transform_matrix_cam)
             self.pub_cam.publish(transformed_pose_array_msg)
+            self.filtered_detections = None
 
     def callback_lidar(self, pose_array_msg):
         transformed_pose_array_msg = self.transform_poses(pose_array_msg, self.transform_matrix_lidar)

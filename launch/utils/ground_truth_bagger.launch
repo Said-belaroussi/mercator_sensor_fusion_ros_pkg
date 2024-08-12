@@ -2,9 +2,9 @@
   <!-- Arguments -->
   <arg name="new_frame_id" default="robot"/>
   <arg name="robot_names" default="['base_link_22', 'base_link_31', 'base_link_23']"/>
-  <arg name="reference_robot_name" default="base_link_31"/>
-  <arg name="reference_robot_rotation" default="-90.0"/>
-  <arg name="input_bag_file" default="/home/said/fxpbags/tracking/trackstaticrvr1_synced.bag"/>
+  <arg name="reference_robot_name" default="base_link_23"/>
+  <arg name="reference_robot_rotation" default="90.0"/>
+  <arg name="input_bag_file" default="/home/said/fxpbags/tracking/trackrw_synced.bag"/>
 
   <!-- Node launching -->
   <node pkg="mercator_sensor_fusion_ros_pkg" type="ground_truth_bagger" name="ground_truth_bagger" output="screen">
