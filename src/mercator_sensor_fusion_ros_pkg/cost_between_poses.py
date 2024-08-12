@@ -403,6 +403,8 @@ class CostBetweenPosesNode:
         #     rospy.loginfo(cost_matrix[row_ind[i], col_ind[i]])
         poses_b_with_cost = np.array([[poses_b[col_ind[i]][0], poses_b[col_ind[i]][1], cost_matrix[row_ind[i], col_ind[i]]] for i in range(len(row_ind))])
 
+        # Remove poses with cost higher than 0.5 m
+        poses_b_with_cost = poses_b_with_cost[poses_b_with_cost[:, 2] < 0.5]
         # Compute x and y deviations between poses
         deviations = poses_a[row_ind] - poses_b[col_ind]
 
