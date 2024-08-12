@@ -152,10 +152,10 @@ class PoseFusionNode:
         # tracked_obstacles = dict() # {frame_id: [[pose, timestamp], [pose, timestamp], ...]}
 
         if self.sensors_number != len(self.sensors_topics):
-            rospy.loginfo(self.sensors_number)
-            rospy.loginfo(self.sensors_topics)
-            rospy.loginfo(len(self.sensors_topics))
-            rospy.loginfo(type(self.sensors_topics))
+            # rospy.loginfo(self.sensors_number)
+            # rospy.loginfo(self.sensors_topics)
+            # rospy.loginfo(len(self.sensors_topics))
+            # rospy.loginfo(type(self.sensors_topics))
             raise ValueError("The number of sensors topics should be equal to the number of sensors")
         
         self.cam_sub = rospy.Subscriber('cam_poses', PoseArray, self.cam_callback, queue_size=3)
@@ -492,8 +492,8 @@ class PoseFusionNode:
         cam_poses_xy, lidar_poses_xy = self.extract_cam_lidar_poses(kf_frame_id)
 
         if len(cam_poses_xy) > 0 and len(lidar_poses_xy) > 0:
-            rospy.loginfo("cam_poses_xy: {}".format(cam_poses_xy))
-            rospy.loginfo("lidar_poses_xy: {}".format(lidar_poses_xy))
+            # rospy.loginfo("cam_poses_xy: {}".format(cam_poses_xy))
+            # rospy.loginfo("lidar_poses_xy: {}".format(lidar_poses_xy))
 
             # Perform matching between poses using the Hungarian algorithm
             cam_indices, lidar_indices = self.match_2_poses_arrays(cam_poses_xy, lidar_poses_xy)
@@ -501,8 +501,8 @@ class PoseFusionNode:
             for cam_idx, lidar_idx in zip(cam_indices, lidar_indices):
                 cam_pose = cam_poses_xy[cam_idx]
                 lidar_pose = lidar_poses_xy[lidar_idx]
-                rospy.loginfo("cam_pose: {}".format(cam_pose))
-                rospy.loginfo("lidar_pose: {}".format(lidar_pose))
+                # rospy.loginfo("cam_pose: {}".format(cam_pose))
+                # rospy.loginfo("lidar_pose: {}".format(lidar_pose))
 
                 # Compute the variances of the poses
                 cam_absolute_error = self.cam_absolute_error(cam_pose[0], cam_pose[1])
@@ -514,13 +514,13 @@ class PoseFusionNode:
                 # Compute the weights of the poses
                 cam_weight = 1/cam_variance
                 lidar_weight = 1/lidar_variance
-                rospy.loginfo("cam_weight: {}".format(cam_weight))
-                rospy.loginfo("lidar_weight: {}".format(lidar_weight))
+                # rospy.loginfo("cam_weight: {}".format(cam_weight))
+                # rospy.loginfo("lidar_weight: {}".format(lidar_weight))
                 # Compute the fused pose
                 fused_pose = [(cam_weight*cam_pose[0] + lidar_weight*lidar_pose[0])/ (cam_weight + lidar_weight),
                              (cam_weight*cam_pose[1] + lidar_weight*lidar_pose[1])/ (cam_weight + lidar_weight)]
                 # fused_pose = (cam_weight*cam_pose + lidar_weight*lidar_pose)/(cam_weight + lidar_weight)
-                rospy.loginfo("fused_pose: {}".format(fused_pose))
+                # rospy.loginfo("fused_pose: {}".format(fused_pose))
 
                 # Create Pose message
                 pose_msg = Pose()
@@ -558,8 +558,8 @@ class PoseFusionNode:
         corresponding_kf_ids = self.match_kf_poses(cam_poses_xy, kf_frame_id)
         
         if len(cam_poses_xy) > 0 and len(lidar_poses_xy) > 0:
-            rospy.loginfo("cam_poses_xy: {}".format(cam_poses_xy))
-            rospy.loginfo("lidar_poses_xy: {}".format(lidar_poses_xy))
+            # rospy.loginfo("cam_poses_xy: {}".format(cam_poses_xy))
+            # rospy.loginfo("lidar_poses_xy: {}".format(lidar_poses_xy))
 
             # Perform matching between poses using the Hungarian algorithm
             cam_indices, lidar_indices = self.match_2_poses_arrays(cam_poses_xy, lidar_poses_xy)

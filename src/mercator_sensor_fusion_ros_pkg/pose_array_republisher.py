@@ -63,8 +63,6 @@ class PoseArrayRepublisherNode:
         if self.filtered_detections:
             transformed_pose_array_msg = self.transform_poses(pose_array_msg, self.transform_matrix_cam)
             self.pub_cam.publish(transformed_pose_array_msg)
-        else:
-            rospy.loginfo("No detections with confidence > 0.8, cam_poses message dropped.")
 
     def callback_lidar(self, pose_array_msg):
         transformed_pose_array_msg = self.transform_poses(pose_array_msg, self.transform_matrix_lidar)

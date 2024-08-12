@@ -7,6 +7,7 @@ from scipy.optimize import linear_sum_assignment
 import numpy as np
 import threading
 import matplotlib.pyplot as plt
+import os
 
 
 class CostBetweenPosesNode:
@@ -198,14 +199,18 @@ class CostBetweenPosesNode:
         fig.delaxes(axs[1, 2])
 
         # Adjust layout to provide more space between plots
-        plt.subplots_adjust(hspace=0.8, wspace=0.2)
+        plt.subplots_adjust(hspace=0.4, wspace=0.2)
 
         # Save the plot
         bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
-        plt.savefig(f'{bag_name}_comprehensive_error_analysis.png')
+        plt.savefig(f'../01result_images/{bag_name}_error_analysis.png', format="png", bbox_inches='tight')
+
+        rospy.loginfo(os.getcwd())
 
         # Show the figure
         plt.show()
+
+        plt.close()
 
     def plot_x_y_deviations_for_all(self):
         # Offset timestamps to start at 0
@@ -298,15 +303,16 @@ class CostBetweenPosesNode:
             axs[i+1, 1].set_xlim([bin_range.min(), bin_range.max()])  # Center the histogram around 0
 
         # Adjust layout to provide more space between plots
-        plt.subplots_adjust(hspace=0.6, wspace=0.2)
+        plt.subplots_adjust(hspace=0.4, wspace=0.2)
 
         # Save the figure before displaying it
         bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
-        plt.savefig(f'{bag_name}_xy_deviation_analysis.png')
+        plt.savefig(f'../01result_images/{bag_name}_xy_deviation_analysis.png', format="png", bbox_inches='tight')
 
         # Show the figure
         plt.show()
 
+        plt.close()
 
     def compute_cost_for_pair(self, buffer_a, buffer_b, label):
         min_rmse = float('inf')
