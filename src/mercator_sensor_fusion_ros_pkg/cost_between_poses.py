@@ -29,7 +29,7 @@ class CostBetweenPosesNode:
         self.ground_truth_buffer_for_cam = []
         self.ground_truth_buffer_for_lidar = []
 
-        self.max_shift_messages = rospy.get_param('~max_shift_messages', 20)  # Max shift in number of messages
+        self.max_shift_messages = rospy.get_param('~max_shift_messages', 0)  # Max shift in number of messages
         self.shift_step = rospy.get_param('~shift_step', 1)
         self.time_tolerance = rospy.get_param('~time_tolerance', 0.2)  # Tolerance in seconds for syncing messages
 
