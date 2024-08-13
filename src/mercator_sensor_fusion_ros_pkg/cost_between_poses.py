@@ -29,7 +29,7 @@ class CostBetweenPosesNode:
         self.ground_truth_buffer_for_cam = []
         self.ground_truth_buffer_for_lidar = []
 
-        self.max_shift_messages = rospy.get_param('~max_shift_messages', 10)  # Max shift in number of messages
+        self.max_shift_messages = rospy.get_param('~max_shift_messages', 20)  # Max shift in number of messages
         self.shift_step = rospy.get_param('~shift_step', 1)
         self.time_tolerance = rospy.get_param('~time_tolerance', 0.2)  # Tolerance in seconds for syncing messages
 
@@ -375,7 +375,7 @@ class CostBetweenPosesNode:
                 # Compute Average Error
                 avg_error = np.mean(total_poses_with_cost_array[:, 2])        
 
-                if rmse < min_rmse:
+                if avg_error < min_avg_error:
                     min_rmse = rmse
                     optimal_shift = shift
                     perfect_delay = shifted_buffer_a[0][0] - shifted_buffer_b[0][0]

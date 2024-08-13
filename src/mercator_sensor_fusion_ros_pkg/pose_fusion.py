@@ -357,7 +357,7 @@ class PoseFusionNode:
 
         # Filter the matches based on the distance between the poses, no more than 0.5 meters
         poses_1_indices, poses_2_indices = self.filter_matches_based_on_distance(poses_1_xy, poses_2_xy, poses_1_indices, poses_2_indices)
-
+        
         return poses_1_indices, poses_2_indices
 
     def filter_matches_based_on_distance(self, poses_1_xy, poses_2_xy, poses_1_indices, poses_2_indices):
@@ -563,6 +563,7 @@ class PoseFusionNode:
 
             # Perform matching between poses using the Hungarian algorithm
             cam_indices, lidar_indices = self.match_2_poses_arrays(cam_poses_xy, lidar_poses_xy)
+            rospy.loginfo(f"matched: {len(cam_indices)}")
             
             for cam_idx, lidar_idx in zip(cam_indices, lidar_indices):
                 cam_pose = cam_poses_xy[cam_idx]

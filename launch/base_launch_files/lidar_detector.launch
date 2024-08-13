@@ -7,7 +7,7 @@
   <arg name="clustering_distance_threshold" default="0.15"/>
   <arg name="clustering_min_points" default="2"/>
   <arg name="clustering_max_points" default="30"/>
-  <arg name="camera_poses_topic" default="cam_poses_transformed"/>
+  <arg name="cam_poses_topic" default="cam_poses_transformed"/>
   <arg name="fully_assisted_detection_distance_threshold" default="0.3"/>
   <arg name="oak" default="oak"/>
   <arg name="scan" default="scan"/>
@@ -24,7 +24,7 @@
     <param name="clustering_distance_threshold" value="$(arg clustering_distance_threshold)" />
     <param name="clustering_min_points" value="$(arg clustering_min_points)" />
     <param name="clustering_max_points" value="$(arg clustering_max_points)" />
-    <param name="camera_poses_topic" value="$(arg camera_poses_topic)" />
+    <param name="cam_poses_topic" value="$(arg cam_poses_topic)" />
     <param name="fully_assisted_detection_distance_threshold" value="$(arg fully_assisted_detection_distance_threshold)" />
     
     <!-- Remap topics -->

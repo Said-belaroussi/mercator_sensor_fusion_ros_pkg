@@ -62,6 +62,7 @@ class LidarDetectorNode:
         self.robot_name = rospy.get_param("~robot_name", "robot")  # Default robot name is robot
         self.camera_fov_deg = rospy.get_param("~camera_fov_deg", 95)  # Default camera FOV is 95 degrees
         self.camera_resolution = rospy.get_param("~camera_resolution", 256)  # Default camera resolution is 256 pixels
+        self.cam_poses_topic = rospy.get_param("~cam_poses_topic", 'cam_poses_topic')
         self.detection_method = rospy.get_param("~detection_method", "max_strictly_below_median")  # Default detection method is max_strictly_below_median
         self.visualize = rospy.get_param("~visualize", True)  # Default visualization is enabled
 
@@ -90,7 +91,7 @@ class LidarDetectorNode:
 
         if self.detection_method == "fully_assisted_detection":
             # Fully assisted detection requires the position from the camera in the LiDAR frame of the object
-            self.camera_sub = rospy.Subscriber('cam_poses', PoseArray, self.camera_callback)
+            self.camera_sub = rospy.Subscriber(self.cam_poses_topic, PoseArray, self.camera_callback)
 
         # Publisher
         self.positions_pub = rospy.Publisher('lidar_poses', PoseArray, queue_size=10)
