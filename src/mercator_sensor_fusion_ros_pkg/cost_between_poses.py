@@ -29,8 +29,8 @@ class CostBetweenPosesNode:
         self.ground_truth_buffer_for_cam = []
         self.ground_truth_buffer_for_lidar = []
 
-        self.max_shift_messages = rospy.get_param('~max_shift_messages', 250)  # Max shift in number of messages
-        self.shift_step = rospy.get_param('~shift_step', 5)
+        self.max_shift_messages = rospy.get_param('~max_shift_messages', 0)  # Max shift in number of messages
+        self.shift_step = rospy.get_param('~shift_step', 1)
         self.time_tolerance = rospy.get_param('~time_tolerance', 0.2)  # Tolerance in seconds for syncing messages
 
         self.experiment_timestamp_x_y_deviation = np.array([]).reshape(0, 3)
@@ -246,14 +246,14 @@ class CostBetweenPosesNode:
         plot_with_gaps(axs[0, 0], self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 0], color='orange', label='Cam Poses')
         plot_with_gaps(axs[0, 0], self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 0], color='green', label='Lidar Poses')
         axs[0, 0].set(title='X Deviation over time for fused and sensors poses', xlabel='Time (s)', ylabel='X Deviation (m)')
-        axs[0, 0].legend(fontsize='small')
+        axs[0, 0].legend(fontsize=5)
 
         # Plot Y deviations with gaps (second plot)
         plot_with_gaps(axs[0, 1], self.experiment_timestamp_x_y_deviation[:, 2], self.experiment_timestamp_x_y_deviation[:, 1], color='blue', label='Fused Poses')
         plot_with_gaps(axs[0, 1], self.cam_timestamp_x_y_deviation[:, 2], self.cam_timestamp_x_y_deviation[:, 1], color='orange', label='Cam Poses')
         plot_with_gaps(axs[0, 1], self.lidar_timestamp_x_y_deviation[:, 2], self.lidar_timestamp_x_y_deviation[:, 1], color='green', label='Lidar Poses')
         axs[0, 1].set(title='Y Deviation over time for fused and sensors poses', xlabel='Time (s)', ylabel='Y Deviation (m)')
-        axs[0, 1].legend(fontsize='small')
+        axs[0, 1].legend(fontsize=5)
 
         # Define colors for each topic
         colors = ['blue', 'orange', 'green']
@@ -268,7 +268,7 @@ class CostBetweenPosesNode:
         # Set a symmetric bin range around 0 for X and Y deviations
         bin_range = np.linspace(-np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 0].max()), abs(self.experiment_timestamp_x_y_deviation[:, 0].min()))), 
                                 np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 0].max()), abs(self.experiment_timestamp_x_y_deviation[:, 0].min()))), 
-                                100)
+                                50)
 
         for i, (data, label) in enumerate(data_sets):
             counts, _ = np.histogram(data, bins=bin_range)
@@ -277,12 +277,13 @@ class CostBetweenPosesNode:
             mean = np.mean(data)
             std_dev = np.std(data)
             axs[i+1, 0].axvline(mean, color='red', linestyle='dashed', linewidth=2)
-            axs[i+1, 0].text(mean + 0.05, np.max(probabilities) * 0.5, f'Mean: {mean:.2f}\nStd: {std_dev:.2f}', color='red')
+            axs[i+1, 0].text(mean + 0.05, np.max(probabilities) * 0.5, f'Mean: {mean:.2f}\nSD: {std_dev:.2f}', color='red')
             axs[i+1, 0].set(title=f'X Deviation Distribution - {label}', xlabel='X Deviation (m)', ylabel='Frequency')
             axs[i+1, 0].set_xlim([bin_range.min(), bin_range.max()])  # Center the histogram around 0
 
         # Plot histograms for Y deviations (fourth row)
         data_sets = [
+            (self.experiment_timestamp_x_y_deviation[:, 1], 'Fused Poses'),
             (self.cam_timestamp_x_y_deviation[:, 1], 'Cam Poses'),
             (self.lidar_timestamp_x_y_deviation[:, 1], 'Lidar Poses')
         ]
@@ -290,7 +291,7 @@ class CostBetweenPosesNode:
         # Set a symmetric bin range around 0 for Y deviations
         bin_range = np.linspace(-np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 1].max()), abs(self.experiment_timestamp_x_y_deviation[:, 1].min()))), 
                                 np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 1].max()), abs(self.experiment_timestamp_x_y_deviation[:, 1].min()))), 
-                                100)
+                                50)
 
         for i, (data, label) in enumerate(data_sets):
             counts, _ = np.histogram(data, bins=bin_range)
@@ -299,12 +300,12 @@ class CostBetweenPosesNode:
             mean = np.mean(data)
             std_dev = np.std(data)
             axs[i+1, 1].axvline(mean, color='red', linestyle='dashed', linewidth=2)
-            axs[i+1, 1].text(mean + 0.05, np.max(probabilities) * 0.5, f'Mean: {mean:.2f}\nStd: {std_dev:.2f}', color='red')
+            axs[i+1, 1].text(mean + 0.05, np.max(probabilities) * 0.5, f'Mean: {mean:.2f}\nSD: {std_dev:.2f}', color='red')
             axs[i+1, 1].set(title=f'Y Deviation Distribution - {label}', xlabel='Y Deviation (m)', ylabel='Frequency')
             axs[i+1, 1].set_xlim([bin_range.min(), bin_range.max()])  # Center the histogram around 0
 
         # Adjust layout to provide more space between plots
-        plt.subplots_adjust(hspace=0.4, wspace=0.2)
+        plt.subplots_adjust(hspace=0.6, wspace=0.2)
 
         # Save the figure before displaying it
         bag_name = self.experiment_bag_path.split('/')[-1].split('.')[0]
