@@ -110,6 +110,14 @@ class CostBetweenPosesNode:
             self.cam_buffer.append((timestamp, msg.poses))
             self.ground_truth_buffer_for_cam.append((timestamp, gt_pose))
 
+            # Write both lidar and ground truth poses to a csv file
+            with open('../cam_poses.csv', 'a') as f:
+                for pose in msg.poses:
+                    f.write(f'{timestamp},{pose.position.x},{pose.position.y}\n')
+            with open('../cam_ground_truth_poses.csv', 'a') as f:
+                for pose in gt_pose:
+                    f.write(f'{timestamp},{pose.position.x},{pose.position.y}\n')
+
     def lidar_callback(self, msg, timestamp):
         gt_pose = self.find_closest_ground_truth(timestamp, self.ground_truth_buffer)
         if gt_pose and msg.header.frame_id == 'robot':
@@ -174,15 +182,18 @@ class CostBetweenPosesNode:
         # Plot cumulative histograms of errors (first row, first three columns)
         for i, (polar_poses_with_cost, label) in enumerate(topics_and_data):
             col = i  # Determine the column index (0, 1, or 2)
+
+            # Calculate total number of poses
+            total_poses = polar_poses_with_cost.shape[0]
             
             # Cumulative histogram
             axs[0, col].hist(polar_poses_with_cost[:, 2], bins=100, cumulative=True, density=True)
-            axs[0, col].set(xlabel='Error (m)', ylabel='Cumulative frequency', title=f'Cumulative histogram of {label} errors')
+            axs[0, col].set(xlabel='Error (m)', ylabel='Cumulative frequency', title=f'Cumulative histogram of {label} errors (N={total_poses})')
             
             # Draw line at 67% of poses and display the corresponding error
             error_threshold = np.percentile(polar_poses_with_cost[:, 2], 67)
             axs[0, col].axvline(x=error_threshold, color='r', linestyle='--')
-            axs[0, col].text(error_threshold, 0.5, f'67% < {error_threshold:.2f} m')
+            axs[0, col].text(error_threshold, 0.5, f'67% < {error_threshold:.3f} m')
 
         # Plot errors in function of distance (second row, first column)
         for i, (polar_poses_with_cost, label) in enumerate(topics_and_data):
@@ -229,7 +240,7 @@ class CostBetweenPosesNode:
         rospy.loginfo(os.getcwd())
 
         # Show the figure
-        plt.show()
+        # plt.show()
 
         plt.close()
 
@@ -333,7 +344,7 @@ class CostBetweenPosesNode:
         plt.savefig(f'../01result_images/{bag_name}_xy_deviation_analysis.png', format="png", bbox_inches='tight')
 
         # Show the figure
-        plt.show()
+        # plt.show()
 
         plt.close()
 
