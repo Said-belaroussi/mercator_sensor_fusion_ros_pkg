@@ -278,7 +278,7 @@ class LidarDetectorNode:
         
 
         for detection in last_detections_copy.detections:
-            if not (detection.bbox.center.theta < 0.7 or detection.bbox.size_x > 200 or detection.bbox.size_y > 100 or detection.bbox.center.y > 180):
+            if detection.bbox.center.theta > 0.7 and detection.bbox.size_x < 200 and detection.bbox.size_y < 100:
                 bbox = detection.bbox
                 
                 min_angle, max_angle = self.min_max_angles(bbox)
