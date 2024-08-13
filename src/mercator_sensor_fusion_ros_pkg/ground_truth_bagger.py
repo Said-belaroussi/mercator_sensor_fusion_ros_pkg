@@ -23,6 +23,7 @@ class GroundTruthBaggerNode:
 
         rospy.loginfo(robot_names)
         rospy.loginfo(reference_robot_name)
+        rospy.loginfo(self.reference_robot_rotation)
 
         if not robot_names or not reference_robot_name:
             rospy.logerr("Robot names or reference robot name not provided. Exiting...")

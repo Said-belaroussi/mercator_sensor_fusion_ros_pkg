@@ -87,19 +87,19 @@ class CostBetweenPosesNode:
 
     def experiment_callback(self, msg, timestamp):
         gt_pose = self.find_closest_ground_truth(timestamp, self.ground_truth_buffer)
-        if gt_pose:
+        if gt_pose and msg.header.frame_id == 'robot':
             self.experiment_buffer.append((timestamp, msg.poses))
             self.ground_truth_buffer_for_experiment.append((timestamp, gt_pose))
 
     def cam_callback(self, msg, timestamp):
         gt_pose = self.find_closest_ground_truth(timestamp, self.ground_truth_buffer)
-        if gt_pose:
+        if gt_pose and msg.header.frame_id == 'robot':
             self.cam_buffer.append((timestamp, msg.poses))
             self.ground_truth_buffer_for_cam.append((timestamp, gt_pose))
 
     def lidar_callback(self, msg, timestamp):
         gt_pose = self.find_closest_ground_truth(timestamp, self.ground_truth_buffer)
-        if gt_pose:
+        if gt_pose and msg.header.frame_id == 'robot':
             self.lidar_buffer.append((timestamp, msg.poses))
             self.ground_truth_buffer_for_lidar.append((timestamp, gt_pose))
 
@@ -403,8 +403,6 @@ class CostBetweenPosesNode:
         #     rospy.loginfo(cost_matrix[row_ind[i], col_ind[i]])
         poses_b_with_cost = np.array([[poses_b[col_ind[i]][0], poses_b[col_ind[i]][1], cost_matrix[row_ind[i], col_ind[i]]] for i in range(len(row_ind))])
 
-        # Remove poses with cost higher than 0.5 m
-        poses_b_with_cost = poses_b_with_cost[poses_b_with_cost[:, 2] < 0.5]
         # Compute x and y deviations between poses
         deviations = poses_a[row_ind] - poses_b[col_ind]
 
