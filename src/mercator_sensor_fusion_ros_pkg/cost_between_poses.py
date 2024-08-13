@@ -29,7 +29,7 @@ class CostBetweenPosesNode:
         self.ground_truth_buffer_for_cam = []
         self.ground_truth_buffer_for_lidar = []
 
-        self.max_shift_messages = rospy.get_param('~max_shift_messages', 0)  # Max shift in number of messages
+        self.max_shift_messages = rospy.get_param('~max_shift_messages', 10)  # Max shift in number of messages
         self.shift_step = rospy.get_param('~shift_step', 1)
         self.time_tolerance = rospy.get_param('~time_tolerance', 0.2)  # Tolerance in seconds for syncing messages
 
@@ -52,31 +52,44 @@ class CostBetweenPosesNode:
         experiment_messages = list(experiment_bag.read_messages(topics=[self.fused_poses_topic, '/cam_poses_transformed', '/lidar_poses_transformed']))
         ground_truth_messages = list(ground_truth_bag.read_messages(topics=['/ground_truth_poses']))
 
+
+        experiment_messages_to_time = list(experiment_bag.read_messages(topics=[self.fused_poses_topic]))
+        cam_messages_to_time = list(experiment_bag.read_messages(topics=['/cam_poses_transformed']))
+        lidar_messages_to_time = list(experiment_bag.read_messages(topics=['/lidar_poses_transformed']))
+
         first_experiment_time = None
         first_ground_truth_time = None
 
         # Get the first timestamps
         rospy.loginfo(len(experiment_messages))
         rospy.loginfo(len(ground_truth_messages))
-        first_experiment_time = experiment_messages[0][2].to_sec()
+        first_experiment_time = experiment_messages_to_time[0][2].to_sec()
+        first_cam_time = cam_messages_to_time[0][2].to_sec()
+        first_lidar_time = lidar_messages_to_time[0][2].to_sec()
+
         first_ground_truth_time = ground_truth_messages[0][2].to_sec()
         rospy.loginfo(first_experiment_time)
         rospy.loginfo(first_ground_truth_time)
 
         # Compute the time offset between the two bags
-        time_offset = first_experiment_time - first_ground_truth_time
+        time_offset_experiment = first_experiment_time - first_ground_truth_time
+        time_offset_cam = first_cam_time - first_ground_truth_time
+        time_offset_lidar = first_lidar_time - first_ground_truth_time
+
 
         for topic, msg, t in ground_truth_messages:
             self.ground_truth_callback(msg, t.to_sec())
 
         # Process each message in order of timestamp
         for topic, msg, t in experiment_messages:
-            adjusted_time = t.to_sec() - time_offset
             if topic == self.fused_poses_topic:
+                adjusted_time = t.to_sec() - time_offset_experiment
                 self.experiment_callback(msg, adjusted_time)
             elif topic == '/cam_poses_transformed':
+                adjusted_time = t.to_sec() - time_offset_cam
                 self.cam_callback(msg, adjusted_time)
             elif topic == '/lidar_poses_transformed':
+                adjusted_time = t.to_sec() - time_offset_lidar
                 self.lidar_callback(msg, adjusted_time)
 
         experiment_bag.close()
@@ -102,6 +115,14 @@ class CostBetweenPosesNode:
         if gt_pose and msg.header.frame_id == 'robot':
             self.lidar_buffer.append((timestamp, msg.poses))
             self.ground_truth_buffer_for_lidar.append((timestamp, gt_pose))
+
+            # Write both lidar and ground truth poses to a csv file
+            with open('../lidar_poses.csv', 'a') as f:
+                for pose in msg.poses:
+                    f.write(f'{timestamp},{pose.position.x},{pose.position.y}\n')
+            with open('../ground_truth_poses.csv', 'a') as f:
+                for pose in gt_pose:
+                    f.write(f'{timestamp},{pose.position.x},{pose.position.y}\n')
 
     def ground_truth_callback(self, msg, timestamp):
         # Append ground truth poses without filtering
