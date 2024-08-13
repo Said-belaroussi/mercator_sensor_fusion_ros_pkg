@@ -273,7 +273,7 @@ class CostBetweenPosesNode:
         for i, (data, label) in enumerate(data_sets):
             counts, _ = np.histogram(data, bins=bin_range)
             probabilities = counts / np.sum(counts)  # Normalize to get probabilities
-            axs[i+1, 0].bar(bin_range[:-1], probabilities, width=np.diff(bin_range), color=colors[i+1], alpha=0.7, edgecolor='black')
+            axs[i+1, 0].bar(bin_range[:-1], probabilities, width=np.diff(bin_range), color=colors[i], alpha=0.7, edgecolor='black')
             mean = np.mean(data)
             std_dev = np.std(data)
             axs[i+1, 0].axvline(mean, color='red', linestyle='dashed', linewidth=2)
@@ -295,7 +295,7 @@ class CostBetweenPosesNode:
         for i, (data, label) in enumerate(data_sets):
             counts, _ = np.histogram(data, bins=bin_range)
             probabilities = counts / np.sum(counts)  # Normalize to get probabilities
-            axs[i+1, 1].bar(bin_range[:-1], probabilities, width=np.diff(bin_range), color=colors[i+1], alpha=0.7, edgecolor='black')
+            axs[i+1, 1].bar(bin_range[:-1], probabilities, width=np.diff(bin_range), color=colors[i], alpha=0.7, edgecolor='black')
             mean = np.mean(data)
             std_dev = np.std(data)
             axs[i+1, 1].axvline(mean, color='red', linestyle='dashed', linewidth=2)
