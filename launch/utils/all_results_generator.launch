@@ -4,10 +4,68 @@
     <arg name="ground_truth_bag_path" default="/home/said/fxpbags/tracking/trackstaticrvr1_synced_ground_truth.bag" />
     <arg name="fused_poses_topic" default="/fused_poses" />
 
+    
+        <!-- Node to calculate cost between poses -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="cost_between_poses" name="cost_between_poses1" output="screen">
+    <param name="experiment_bag_path" type="string" value="/home/said/fxpbags/rvr1/pathrvr1_stand.bag" />
+    <param name="ground_truth_bag_path" type="string" value="/home/said/fxpbags/tracking/trackpathrvr1_synced_ground_truth.bag" />
+    <param name="fused_poses_topic" type="string" value="$(arg fused_poses_topic)" />
+    </node>
+
+    
+        <!-- Node to calculate cost between poses -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="cost_between_poses" name="cost_between_poses2" output="screen">
+    <param name="experiment_bag_path" type="string" value="/home/said/fxpbags/rvr1/pathrvr1_part.bag" />
+    <param name="ground_truth_bag_path" type="string" value="/home/said/fxpbags/tracking/trackpathrvr1_synced_ground_truth.bag" />
+    <param name="fused_poses_topic" type="string" value="$(arg fused_poses_topic)" />
+    </node>
+
+        <!-- Node to calculate cost between poses -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="cost_between_poses" name="cost_between_poses3" output="screen">
+    <param name="experiment_bag_path" type="string" value="/home/said/fxpbags/rvr1/pathrvr1_full.bag" />
+    <param name="ground_truth_bag_path" type="string" value="/home/said/fxpbags/tracking/trackpathrvr1_synced_ground_truth.bag" />
+    <param name="fused_poses_topic" type="string" value="$(arg fused_poses_topic)" />
+    </node>
+
+        <!-- Node to calculate cost between poses -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="cost_between_poses" name="cost_between_poses4" output="screen">
+    <param name="experiment_bag_path" type="string" value="/home/said/fxpbags/rvr1/staticrvr1_stand.bag" />
+    <param name="ground_truth_bag_path" type="string" value="/home/said/fxpbags/tracking/trackstaticrvr1_synced_ground_truth.bag" />
+    <param name="fused_poses_topic" type="string" value="$(arg fused_poses_topic)" />
+    </node>
+
+        <!-- Node to calculate cost between poses -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="cost_between_poses" name="cost_between_poses5" output="screen">
+    <param name="experiment_bag_path" type="string" value="/home/said/fxpbags/rvr1/staticrvr1_part.bag" />
+    <param name="ground_truth_bag_path" type="string" value="/home/said/fxpbags/tracking/trackstaticrvr1_synced_ground_truth.bag" />
+    <param name="fused_poses_topic" type="string" value="$(arg fused_poses_topic)" />
+    </node>
+
     <!-- Node to calculate cost between poses -->
-  <node pkg="mercator_sensor_fusion_ros_pkg" type="cost_between_poses" name="cost_between_poses" output="screen">
-    <param name="experiment_bag_path" type="string" value="$(arg experiment_bag_path)" />
-    <param name="ground_truth_bag_path" type="string" value="$(arg ground_truth_bag_path)" />
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="cost_between_poses" name="cost_between_poses6" output="screen">
+    <param name="experiment_bag_path" type="string" value="/home/said/fxpbags/rvr1/staticrvr1_full.bag" />
+    <param name="ground_truth_bag_path" type="string" value="/home/said/fxpbags/tracking/trackstaticrvr1_synced_ground_truth.bag" />
+    <param name="fused_poses_topic" type="string" value="$(arg fused_poses_topic)" />
+    </node>
+
+            <!-- Node to calculate cost between poses -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="cost_between_poses" name="cost_between_poses7" output="screen">
+    <param name="experiment_bag_path" type="string" value="/home/said/fxpbags/rvr1/rwrvr1_stand.bag" />
+    <param name="ground_truth_bag_path" type="string" value="/home/said/fxpbags/tracking/trackrw_synced_rvr1_ground_truth.bag" />
+    <param name="fused_poses_topic" type="string" value="$(arg fused_poses_topic)" />
+    </node>
+
+            <!-- Node to calculate cost between poses -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="cost_between_poses" name="cost_between_poses8" output="screen">
+    <param name="experiment_bag_path" type="string" value="/home/said/fxpbags/rvr1/rwrvr1_part.bag" />
+    <param name="ground_truth_bag_path" type="string" value="/home/said/fxpbags/tracking/trackrw_synced_rvr1_ground_truth.bag" />
+    <param name="fused_poses_topic" type="string" value="$(arg fused_poses_topic)" />
+    </node>
+
+        <!-- Node to calculate cost between poses -->
+  <node pkg="mercator_sensor_fusion_ros_pkg" type="cost_between_poses" name="cost_between_poses9" output="screen">
+    <param name="experiment_bag_path" type="string" value="/home/said/fxpbags/rvr1/rwrvr1_full.bag" />
+    <param name="ground_truth_bag_path" type="string" value="/home/said/fxpbags/tracking/trackrw_synced_rvr1_ground_truth.bag" />
     <param name="fused_poses_topic" type="string" value="$(arg fused_poses_topic)" />
     </node>
 </launch>
