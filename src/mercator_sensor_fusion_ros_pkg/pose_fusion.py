@@ -476,7 +476,7 @@ class PoseFusionNode:
                     return cam_poses_xy, []
                 if self.lidar_poses[kf_frame_id] is not None:
                     lidar_poses_xy = np.array([[pose.position.x, pose.position.y] for pose in self.lidar_poses[kf_frame_id].poses])
-                    self.lidar_poses[kf_frame_id] = None
+                    # self.lidar_poses[kf_frame_id] = None
 
         return cam_poses_xy, lidar_poses_xy
 
