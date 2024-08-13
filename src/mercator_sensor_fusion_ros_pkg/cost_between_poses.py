@@ -225,7 +225,7 @@ class CostBetweenPosesNode:
         max_time_gap = 0.5  # Adjust this threshold based on your specific data
 
         # Create a figure with 8 subplots (4 rows, 2 columns)
-        fig, axs = plt.subplots(3, 2, figsize=(14, 16))
+        fig, axs = plt.subplots(4, 2, figsize=(14, 16))
 
         def plot_with_gaps(ax, times, deviations, color, label):
             # Identify where the time gaps are larger than the threshold
@@ -260,6 +260,7 @@ class CostBetweenPosesNode:
 
         # Plot histograms for X deviations (third row)
         data_sets = [
+            (self.experiment_timestamp_x_y_deviation[:, 0], 'Fused Poses'),
             (self.cam_timestamp_x_y_deviation[:, 0], 'Cam Poses'),
             (self.lidar_timestamp_x_y_deviation[:, 0], 'Lidar Poses')
         ]
@@ -267,7 +268,7 @@ class CostBetweenPosesNode:
         # Set a symmetric bin range around 0 for X and Y deviations
         bin_range = np.linspace(-np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 0].max()), abs(self.experiment_timestamp_x_y_deviation[:, 0].min()))), 
                                 np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 0].max()), abs(self.experiment_timestamp_x_y_deviation[:, 0].min()))), 
-                                50)
+                                100)
 
         for i, (data, label) in enumerate(data_sets):
             counts, _ = np.histogram(data, bins=bin_range)
@@ -289,7 +290,7 @@ class CostBetweenPosesNode:
         # Set a symmetric bin range around 0 for Y deviations
         bin_range = np.linspace(-np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 1].max()), abs(self.experiment_timestamp_x_y_deviation[:, 1].min()))), 
                                 np.ceil(max(abs(self.experiment_timestamp_x_y_deviation[:, 1].max()), abs(self.experiment_timestamp_x_y_deviation[:, 1].min()))), 
-                                50)
+                                100)
 
         for i, (data, label) in enumerate(data_sets):
             counts, _ = np.histogram(data, bins=bin_range)
