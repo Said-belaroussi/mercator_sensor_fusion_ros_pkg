@@ -21,10 +21,18 @@ def polar_to_cartesian(range_data, angle_min, angle_increment):
     return np.vstack((range_data * np.cos(adjusted_angles), range_data * np.sin(adjusted_angles))).T
 
 def euclidean_clustering(points, distance_threshold, min_points, max_points):
-    """Cluster points based on Euclidean distance."""
+    """Cluster points based on Euclidean distance and filter by radius."""
     tree = KDTree(points)
     unvisited = set(range(len(points)))
     clusters = []
+
+    def compute_centroid(cluster):
+        """Compute the centroid of a cluster."""
+        return np.mean([points[i] for i in cluster], axis=0)
+
+    def compute_radius(cluster, centroid):
+        """Compute the radius of a cluster as the max distance from centroid."""
+        return max(np.linalg.norm(points[i] - centroid) for i in cluster)
 
     while unvisited:
         current_point = unvisited.pop()
@@ -42,7 +50,10 @@ def euclidean_clustering(points, distance_threshold, min_points, max_points):
                     search_queue.append(neighbor)
 
         if min_points <= len(current_cluster) <= max_points:
-            clusters.append([points[i] for i in current_cluster])
+            centroid = compute_centroid(current_cluster)
+            radius = compute_radius(current_cluster, centroid)
+            if radius <= 0.04:
+                clusters.append([points[i] for i in current_cluster])
 
     return clusters
 
