@@ -208,7 +208,7 @@ class PoseFusionNode:
         else:
             relative_error = 0.06
         
-        return relative_error*distance
+        return relative_error*distance/10
 
     def lidar_absolute_error(self, x, y):
         """
@@ -227,7 +227,7 @@ class PoseFusionNode:
         else:
             absolute_error = 0.035*distance
         
-        return absolute_error
+        return absolute_error/20
 
     def compute_measurement_covariance(self, measurements):
         """
