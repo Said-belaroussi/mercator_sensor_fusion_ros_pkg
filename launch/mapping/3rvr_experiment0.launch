@@ -1,17 +1,23 @@
 <launch>
 
-<!-- <group ns="rvr10"> -->
+  <arg name="scan_topic" default="/correct_scan" />
+  <arg name="tf_topic" default="/tf" />
 
-  <arg name="scan_topic" default="rvr10/map_scan" />
-  <arg name="tf_topic" default="tf" />
+  <include file="$(find mercator_sensor_fusion_ros_pkg)/launch/base_launch_files/rotate_laser_scan.launch">
+    <arg name="rotation_angle_in_radians" value="-1.570796"/>
+    <arg name="rotated_scan" value="$(arg scan_topic)"/>
+  </include>
+
+  <node pkg="tf" type="static_transform_publisher" name="robot_to_laser_scan_broadcaster" 
+        args="0 0 0 0 0 0 robot laser_frame 100" /> <!-- 100 Hz-->
 
   <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen"> <!--output to become log with multiple instances-->
-
-    <remap from="map" to="rvr10/map" />
-    <remap from="map_metadata" to="rvr10/map_metadata" />
-   
-    <param name="odom_frame" value="rvr10/odom"/>
-    <param name="base_frame" value="rvr10/base_link"/>
+	
+    <remap from="map" to="rvr3/map" />
+    <remap from="map_metadata" to="rvr3/map_metadata" />
+    
+    <param name="odom_frame" value="odom"/>
+    <param name="base_frame" value="robot"/>
     <param name="map_frame" value="map"/>
 
     <!-- Process 1 out of every this many scans (set it to a higher number to skip more scans)  -->
@@ -20,7 +26,7 @@
     <param name="map_update_interval" value="0.5"/> <!-- default: 5.0 -->
 
     <!-- The maximum usable range of the laser. A beam is cropped to this value.  -->
-    <param name="maxUrange" value="1.5"/> <!--0.10-->
+    <param name="maxUrange" value="0.6"/> <!--0.10-->
 
     <!-- The maximum range of the sensor. If regions with no obstacles within the range of the sensor should appear as free space in the map, set maxUrange < maximum range of the real sensor <= maxRange -->
     <param name="maxRange" value="12"/>  <!--0.15 maxRange here needs to match the maxRange sent in the LaserScan msgs--> 
@@ -71,12 +77,8 @@
 
     <remap from="scan" to="$(arg scan_topic)"/>
     <remap from="tf" to="$(arg tf_topic)"/>
-    <param name="transform_publish_period" value="0"/>
+    <!-- <param name="transform_publish_period" value="0"/> -->
   </node>
-<!--</group>-->
 
-
-<!--node pkg="tf" type="static_transform_publisher" name="world_to_$(arg first_tb3)_tf_broadcaster"  args="0 0 0 0 0 0 /map /$(arg first_tb3)/map 100"/>
-<node pkg="tf" type="static_transform_publisher" name="world_to_$(arg second_tb3)_tf_broadcaster" args="0 0 0 0 0 0 /map /$(arg second_tb3)/map 100"/-->
 </launch>
 

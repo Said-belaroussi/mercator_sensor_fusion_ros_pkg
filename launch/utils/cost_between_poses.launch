@@ -1,7 +1,7 @@
 <launch>
     <!-- Arguments for remapping topics -->
-    <arg name="experiment_bag_path" default="/home/said/fxpbags/rvr1/obsrvr1_stand_test1_false2_synced.bag" />
-    <arg name="ground_truth_bag_path" default="/home/said/fxpbags/tracking/trackobs_synced_rvr1_ground_truth.bag" />
+    <arg name="experiment_bag_path" default="/home/said/fxpbags/rvr1/obsonervr3_lidartrue_synced.bag" />
+    <arg name="ground_truth_bag_path" default="/home/said/fxpbags/tracking/trackobsone_synced_rvr3_ground_truth.bag" />
     <arg name="fused_poses_topic" default="/fused_poses" />
 
     <!-- Node to calculate cost between poses -->
