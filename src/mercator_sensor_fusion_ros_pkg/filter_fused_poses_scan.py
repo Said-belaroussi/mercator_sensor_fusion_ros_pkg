@@ -39,7 +39,7 @@ class FilterFusedPosesScanNode:
         """
         # Modify the LaserScan ranges based on the PoseArray
         if self.is_pose_array_recent():
-            self.modify_scan_based_on_poses(rotated_scan)
+            self.modify_scan_based_on_poses(scan_msg)
 
         rotated_scan = LaserScan()
         rotated_scan.header = scan_msg.header
@@ -75,6 +75,9 @@ class FilterFusedPosesScanNode:
         angle_min = scan_msg.angle_min
         angle_increment = scan_msg.angle_increment
         ranges = scan_msg.ranges
+        ranges = list(ranges)
+        # if type(ranges) != list:
+        #     rospy.loginfo(ranges)
 
         for pose in self.last_pose_array.poses:
             pose_x = pose.position.x
@@ -90,7 +93,7 @@ class FilterFusedPosesScanNode:
                 if distance <= 0.12:
                     ranges[i] = scan_msg.range_max
 
-        scan_msg.ranges = ranges
+        scan_msg.ranges = tuple(ranges)
 
     def scan_callback(self, scan_msg):
         """
