@@ -1,0 +1,34 @@
+<launch>
+    <!-- Launch the map_saver node -->
+    <node pkg="map_server" type="map_saver" name="map_saver1" output="screen">
+        <!-- Specify the file name where the map will be saved -->
+        <param name="filename" value="../map_images/rvr1map_filtered1"/>
+        <!-- Remap the map topic -->
+        <remap from="/map" to="/rvr1/map"/>
+    </node>
+
+        <!-- Launch the map_saver node -->
+    <node pkg="map_server" type="map_saver" name="map_saver2" output="screen">
+        <!-- Specify the file name where the map will be saved -->
+        <param name="filename" value="../map_images/rvr2map_filtered1"/>
+        <!-- Remap the map topic -->
+        <remap from="/map" to="/rvr2/map"/>
+    </node>
+
+        <!-- Launch the map_saver node -->
+    <node pkg="map_server" type="map_saver" name="map_saver3" output="screen">
+        <!-- Specify the file name where the map will be saved -->
+        <param name="filename" value="../map_images/rvr3map_filtered1"/>
+        <!-- Remap the map topic -->
+        <remap from="/map" to="/rvr3/map"/>
+    </node>
+
+        <!-- Launch the map_saver node -->
+    <node pkg="map_server" type="map_saver" name="map_saver4" output="screen">
+        <!-- Specify the file name where the map will be saved -->
+        <param name="filename" value="../map_images/map_merged_filtered1"/>
+        <!-- Remap the map topic -->
+        <remap from="/map" to="map_merged"/>
+    </node>
+    
+</launch>

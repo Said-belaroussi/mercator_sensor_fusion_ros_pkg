@@ -90,8 +90,11 @@ class FilterFusedPosesScanNode:
                 scan_y = ranges[i] * np.sin(angle)
 
                 distance = np.sqrt((pose_x - scan_x)**2 + (pose_y - scan_y)**2)
-                if distance <= 0.12:
+                if distance <= 0.125:
+                    rospy.loginfo("modified laserscan")
                     ranges[i] = scan_msg.range_max
+                # if i < len(ranges)/2:
+                #     ranges[i] = scan_msg.range_min
 
         scan_msg.ranges = tuple(ranges)
 

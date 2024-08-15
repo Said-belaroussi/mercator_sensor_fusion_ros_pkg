@@ -53,22 +53,22 @@
     <param name="linearUpdate" value="0.01"/>
 
     <!-- Process a scan each time the robot rotates this far  -->
-    <param name="angularUpdate" value="0.01"/>
+    <param name="angularUpdate" value="0.5"/>
 
     <param name="temporalUpdate" value="-1.0"/>
     <param name="resampleThreshold" value="0.5"/>
 
     <!-- Number of particles in the filter. default 30        -->
-    <param name="particles" value="10"/>
+    <param name="particles" value="100"/>
 
     <!-- Initial map size  -->
-    <param name="xmin" value="-2"/>
-    <param name="ymin" value="-2"/>
-    <param name="xmax" value="2"/>
-    <param name="ymax" value="2"/>
+    <param name="xmin" value="-4"/>
+    <param name="ymin" value="-4"/>
+    <param name="xmax" value="4"/>
+    <param name="ymax" value="4"/>
 
     <!-- Processing parameters (resolution of the map)  -->
-    <param name="delta" value="0.02"/>
+    <param name="delta" value="0.01"/>
 
     <param name="llsamplerange" value="0.01"/>
     <param name="llsamplestep" value="0.01"/>

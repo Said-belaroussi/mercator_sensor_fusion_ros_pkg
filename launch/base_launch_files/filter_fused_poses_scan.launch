@@ -2,6 +2,7 @@
     <!-- Arguments -->
     <arg name="rotation_angle_in_radians" default="3.14159"/>
     <arg name="rotated_scan" default="/corrected_scan"/>
+    <arg name="scan" default="/scan"/>
 
     <!-- Launch the RotateLaserScanNode with a specific rotation angle -->
     <node pkg="mercator_sensor_fusion_ros_pkg" type="filter_fused_poses_scan" name="filter_fused_poses_scan" output="screen">
@@ -10,5 +11,6 @@
 
         <!-- Topic remappings -->
         <remap from="/rotated_scan" to="$(arg rotated_scan)"/>
+        <remap from="/scan" to="$(arg scan)"/>
     </node>
 </launch>
