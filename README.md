@@ -24,12 +24,15 @@ export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1 (if cannot allocate me
 ## Main software launch:
 
 roslaunch mercator_sensor_fusion_ros_pkg fusion.launch
+
 roslaunch mercator_sensor_fusion_ros_pkg camera_all_detector.launch
 
 ## Experiment assessment:
 
 roslaunch mercator_sensor_fusion_ros_pkg sync_rosbag.launch
+
 roslaunch mercator_sensor_fusion_ros_pkg ground_truth_bagger.launch
+
 roslaunch mercator_sensor_fusion_ros_pkg cost_between_poses.launch
 
 ## Evaluate experiments from multiple rosbags at same time:
